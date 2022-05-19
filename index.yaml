@@ -1,0 +1,81 @@
+apiVersion: v1
+entries:
+  rime:
+  - apiVersion: v2
+    appVersion: v0.15.4
+    created: "2022-05-19T07:47:26.61051-07:00"
+    dependencies:
+    - name: mongodb
+      repository: https://charts.bitnami.com/bitnami
+      version: 10.19.0
+    - condition: rimeExtras.vouch
+      name: vouch
+      repository: https://halkeye.github.io/helm-charts/
+      version: 2.0.0
+    - name: ingress-nginx
+      repository: https://kubernetes.github.io/ingress-nginx
+      version: 3.34.0
+    - name: kong
+      repository: https://charts.konghq.com
+      version: 2.7.0
+    - name: redis
+      repository: https://charts.bitnami.com/bitnami
+      version: 15.5.5
+    description: A Helm chart for RIME's hosted services
+    digest: a1b7de6080334112c1bd276fc0ef06587d075041e063435a5c1a960a37155298
+    kubeVersion: '>=1.20.0-0'
+    name: rime
+    type: application
+    urls:
+    - http://robustintelligence.com/helm/.chart-releases/rime-0.15.4.tgz
+    version: 0.15.4
+  rime-extras:
+  - apiVersion: v2
+    appVersion: v0.15.4
+    created: "2022-05-19T07:47:26.619621-07:00"
+    dependencies:
+    - condition: rimeExtras.datadog
+      name: datadog
+      repository: https://helm.datadoghq.com
+      version: 2.20.3
+    - condition: rimeExtras.velero
+      name: velero
+      repository: https://vmware-tanzu.github.io/helm-charts
+      version: 2.23.6
+    description: A Helm chart for RIME's extra resources
+    digest: 66d90d049af1e51339550bac010ca6415f6e7ae2ea49f18c08f695f4905a84d7
+    name: rime-extras
+    type: application
+    urls:
+    - http://robustintelligence.com/helm/.chart-releases/rime-extras-0.15.4.tgz
+    version: 0.15.4
+  rime-kube-system:
+  - apiVersion: v2
+    appVersion: v0.15.4
+    created: "2022-05-19T07:47:26.625194-07:00"
+    dependencies:
+    - condition: rimeSystem.clusterAutoscaler
+      name: cluster-autoscaler
+      repository: https://kubernetes.github.io/autoscaler
+      version: 9.10.5
+    - condition: rimeSystem.externalDns
+      name: external-dns
+      repository: https://charts.bitnami.com/bitnami
+      version: 5.4.1
+    - condition: rimeSystem.awsLoadBalancerController
+      name: aws-load-balancer-controller
+      repository: https://aws.github.io/eks-charts
+      version: 1.2.7
+    - condition: rimeSystem.metricsServer
+      name: metrics-server
+      repository: https://charts.bitnami.com/bitnami
+      version: 5.11.0
+    description: A Helm chart for RIME's kubesystem resources
+    digest: 752cc1b759dd22f6485824fc1323b1af74521a7a91fea308941693dfd35f8491
+    kubeVersion: '>=1.20.0-0'
+    name: rime-kube-system
+    type: application
+    urls:
+    - http://robustintelligence.com/helm/.chart-releases/rime-kube-system-0.15.4.tgz
+    version: 0.15.4
+generated: "2022-05-19T07:47:26.588952-07:00"
