@@ -3,7 +3,7 @@ entries:
   rime:
   - apiVersion: v2
     appVersion: v0.18.0-rc.7
-    created: "2022-08-16T05:52:22.70408017Z"
+    created: "2022-08-19T18:00:48.018697687Z"
     dependencies:
     - name: mongodb
       repository: https://charts.bitnami.com/bitnami
@@ -27,7 +27,7 @@ entries:
     version: 0.18.0-rc.7
   - apiVersion: v2
     appVersion: v0.18.0-rc.6
-    created: "2022-08-16T05:52:22.681088437Z"
+    created: "2022-08-19T18:00:47.977512595Z"
     dependencies:
     - name: mongodb
       repository: https://charts.bitnami.com/bitnami
@@ -51,7 +51,7 @@ entries:
     version: 0.18.0-rc.6
   - apiVersion: v2
     appVersion: v0.18.0-rc.3
-    created: "2022-08-16T05:52:22.658070804Z"
+    created: "2022-08-19T18:00:47.945913672Z"
     dependencies:
     - name: mongodb
       repository: https://charts.bitnami.com/bitnami
@@ -75,7 +75,7 @@ entries:
     version: 0.18.0-rc.3
   - apiVersion: v2
     appVersion: v0.17.5
-    created: "2022-08-16T05:52:22.633902764Z"
+    created: "2022-08-19T18:00:47.917079667Z"
     dependencies:
     - name: mongodb
       repository: https://charts.bitnami.com/bitnami
@@ -99,7 +99,7 @@ entries:
     version: 0.17.5
   - apiVersion: v2
     appVersion: v0.17.3
-    created: "2022-08-16T05:52:22.61067953Z"
+    created: "2022-08-19T18:00:47.886984754Z"
     dependencies:
     - name: mongodb
       repository: https://charts.bitnami.com/bitnami
@@ -123,7 +123,7 @@ entries:
     version: 0.17.3
   - apiVersion: v2
     appVersion: v0.17.2
-    created: "2022-08-16T05:52:22.588106499Z"
+    created: "2022-08-19T18:00:47.852747211Z"
     dependencies:
     - name: mongodb
       repository: https://charts.bitnami.com/bitnami
@@ -147,7 +147,7 @@ entries:
     version: 0.17.2
   - apiVersion: v2
     appVersion: v0.17.1
-    created: "2022-08-16T05:52:22.567157878Z"
+    created: "2022-08-19T18:00:47.824695713Z"
     dependencies:
     - name: mongodb
       repository: https://charts.bitnami.com/bitnami
@@ -170,8 +170,36 @@ entries:
     - https://robustintelligence.github.io/helm/chart-releases/rime-0.17.1.tgz
     version: 0.17.1
   - apiVersion: v2
+    appVersion: v0.16.14
+    created: "2022-08-19T18:00:47.739274907Z"
+    dependencies:
+    - name: mongodb
+      repository: https://charts.bitnami.com/bitnami
+      version: 10.31.5
+    - condition: rimeExtras.vouch
+      name: vouch
+      repository: https://halkeye.github.io/helm-charts/
+      version: 2.0.0
+    - name: ingress-nginx
+      repository: https://kubernetes.github.io/ingress-nginx
+      version: 3.34.0
+    - name: kong
+      repository: https://charts.konghq.com
+      version: 2.7.0
+    - name: redis
+      repository: https://charts.bitnami.com/bitnami
+      version: 15.7.0
+    description: A Helm chart for RIME's hosted services
+    digest: 38d05d99252bc7db5eb421efb58ec7e6d42c3127bc0e2f4086ee0479eaf734ba
+    kubeVersion: '>=1.20.0-0'
+    name: rime
+    type: application
+    urls:
+    - https://robustintelligence.github.io/helm/chart-releases/rime-0.16.14.tgz
+    version: 0.16.14
+  - apiVersion: v2
     appVersion: v0.16.11
-    created: "2022-08-16T05:52:22.505152619Z"
+    created: "2022-08-19T18:00:47.706803277Z"
     dependencies:
     - name: mongodb
       repository: https://charts.bitnami.com/bitnami
@@ -199,7 +227,7 @@ entries:
     version: 0.16.11
   - apiVersion: v2
     appVersion: v0.16.10
-    created: "2022-08-16T05:52:22.484924902Z"
+    created: "2022-08-19T18:00:47.678765179Z"
     dependencies:
     - name: mongodb
       repository: https://charts.bitnami.com/bitnami
@@ -227,7 +255,7 @@ entries:
     version: 0.16.10
   - apiVersion: v2
     appVersion: v0.16.9
-    created: "2022-08-16T05:52:22.545767354Z"
+    created: "2022-08-19T18:00:47.792709986Z"
     dependencies:
     - name: mongodb
       repository: https://charts.bitnami.com/bitnami
@@ -255,7 +283,7 @@ entries:
     version: 0.16.9
   - apiVersion: v2
     appVersion: v0.16.7
-    created: "2022-08-16T05:52:22.525470337Z"
+    created: "2022-08-19T18:00:47.765303092Z"
     dependencies:
     - name: mongodb
       repository: https://charts.bitnami.com/bitnami
@@ -283,7 +311,7 @@ entries:
     version: 0.16.7
   - apiVersion: v2
     appVersion: v0.15.4
-    created: "2022-08-16T05:52:22.464159882Z"
+    created: "2022-08-19T18:00:47.648139262Z"
     dependencies:
     - name: mongodb
       repository: https://charts.bitnami.com/bitnami
@@ -312,7 +340,7 @@ entries:
   rime-agent:
   - apiVersion: v2
     appVersion: v0.18.0-rc.7
-    created: "2022-08-16T05:52:22.707699391Z"
+    created: "2022-08-19T18:00:48.024172926Z"
     description: A Helm chart for the Robust Intelligence Platform Agent, part of
       the Data Plane.
     digest: fd55c6a520de9c151bee67c514e2acf1ae6f466d18202f1445138919785091ee
@@ -324,7 +352,7 @@ entries:
     version: 0.18.0-rc.7
   - apiVersion: v2
     appVersion: v0.18.0-rc.6
-    created: "2022-08-16T05:52:22.707078887Z"
+    created: "2022-08-19T18:00:48.02338672Z"
     description: A Helm chart for the Robust Intelligence Platform Agent, part of
       the Data Plane.
     digest: e9e76f68fbd8ff2f845c00fd484d0e5331667309cc8446f7376f038ce259d9aa
@@ -336,7 +364,7 @@ entries:
     version: 0.18.0-rc.6
   - apiVersion: v2
     appVersion: v0.18.0-rc.3
-    created: "2022-08-16T05:52:22.706467384Z"
+    created: "2022-08-19T18:00:48.022515214Z"
     description: A Helm chart for the Robust Intelligence Platform Agent, part of
       the Data Plane.
     digest: fcc506dd58bf440b0b2eea911dd8e4435d8fb0ddfecf43cbdd99b2ce067682fe
@@ -348,7 +376,7 @@ entries:
     version: 0.18.0-rc.3
   - apiVersion: v2
     appVersion: v0.17.5
-    created: "2022-08-16T05:52:22.70586588Z"
+    created: "2022-08-19T18:00:48.021676908Z"
     description: A Helm chart for the RIME dataplane agent
     digest: ebe7e7e90942adeb747f7100adb3a369b37cd0472b6f84c525b645c47cd40a37
     kubeVersion: '>=1.20.0-0'
@@ -359,7 +387,7 @@ entries:
     version: 0.17.5
   - apiVersion: v2
     appVersion: v0.17.3
-    created: "2022-08-16T05:52:22.705433678Z"
+    created: "2022-08-19T18:00:48.021035504Z"
     description: A Helm chart for the RIME dataplane agent
     digest: f63c71f7ab75f6739f1626cd91d4925ec65badc732329308c51f4c4515ca12aa
     kubeVersion: '>=1.20.0-0'
@@ -370,7 +398,7 @@ entries:
     version: 0.17.3
   - apiVersion: v2
     appVersion: v0.17.2
-    created: "2022-08-16T05:52:22.704990575Z"
+    created: "2022-08-19T18:00:48.020063897Z"
     description: A Helm chart for the RIME dataplane agent
     digest: 95a2893465e64ea5e5b75bdce5b21b247ef249abf605cb8d149447ae8824712c
     kubeVersion: '>=1.20.0-0'
@@ -381,7 +409,7 @@ entries:
     version: 0.17.2
   - apiVersion: v2
     appVersion: v0.17.1
-    created: "2022-08-16T05:52:22.704562773Z"
+    created: "2022-08-19T18:00:48.019377492Z"
     description: A Helm chart for the RIME dataplane agent
     digest: 9070fab9e15a1f64f3b8cf3a917cc72f3e990881392df467c49508d0136cc247
     kubeVersion: '>=1.20.0-0'
@@ -393,7 +421,7 @@ entries:
   rime-extras:
   - apiVersion: v2
     appVersion: v0.18.0-rc.7
-    created: "2022-08-16T05:52:22.860412074Z"
+    created: "2022-08-19T18:00:48.241758368Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -412,7 +440,7 @@ entries:
     version: 0.18.0-rc.7
   - apiVersion: v2
     appVersion: v0.18.0-rc.6
-    created: "2022-08-16T05:52:22.847925202Z"
+    created: "2022-08-19T18:00:48.227018663Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -431,7 +459,7 @@ entries:
     version: 0.18.0-rc.6
   - apiVersion: v2
     appVersion: v0.18.0-rc.3
-    created: "2022-08-16T05:52:22.834733226Z"
+    created: "2022-08-19T18:00:48.211586254Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -450,7 +478,7 @@ entries:
     version: 0.18.0-rc.3
   - apiVersion: v2
     appVersion: v0.17.5
-    created: "2022-08-16T05:52:22.822608356Z"
+    created: "2022-08-19T18:00:48.195970043Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -469,7 +497,7 @@ entries:
     version: 0.17.5
   - apiVersion: v2
     appVersion: v0.17.3
-    created: "2022-08-16T05:52:22.810487786Z"
+    created: "2022-08-19T18:00:48.177812415Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -488,7 +516,7 @@ entries:
     version: 0.17.3
   - apiVersion: v2
     appVersion: v0.17.2
-    created: "2022-08-16T05:52:22.797690412Z"
+    created: "2022-08-19T18:00:48.161280998Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -507,7 +535,7 @@ entries:
     version: 0.17.2
   - apiVersion: v2
     appVersion: v0.17.1
-    created: "2022-08-16T05:52:22.784857137Z"
+    created: "2022-08-19T18:00:48.143658073Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -525,8 +553,27 @@ entries:
     - https://robustintelligence.github.io/helm/chart-releases/rime-extras-0.17.1.tgz
     version: 0.17.1
   - apiVersion: v2
+    appVersion: v0.16.14
+    created: "2022-08-19T18:00:48.090853199Z"
+    dependencies:
+    - condition: rimeExtras.datadog
+      name: datadog
+      repository: https://helm.datadoghq.com
+      version: 2.20.3
+    - condition: rimeExtras.velero
+      name: velero
+      repository: https://vmware-tanzu.github.io/helm-charts
+      version: 2.23.6
+    description: A Helm chart for RIME's extra resources
+    digest: 71b7b3c0467c58f15d83193bc58c14ab9244026380b9b8e4c6047dacd9cd4fc3
+    name: rime-extras
+    type: application
+    urls:
+    - https://robustintelligence.github.io/helm/chart-releases/rime-extras-0.16.14.tgz
+    version: 0.16.14
+  - apiVersion: v2
     appVersion: v0.16.11
-    created: "2022-08-16T05:52:22.74723632Z"
+    created: "2022-08-19T18:00:48.074380782Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -545,7 +592,7 @@ entries:
     version: 0.16.11
   - apiVersion: v2
     appVersion: v0.16.10
-    created: "2022-08-16T05:52:22.733963543Z"
+    created: "2022-08-19T18:00:48.058335968Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -564,7 +611,7 @@ entries:
     version: 0.16.10
   - apiVersion: v2
     appVersion: v0.16.9
-    created: "2022-08-16T05:52:22.772178164Z"
+    created: "2022-08-19T18:00:48.123945233Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -583,7 +630,7 @@ entries:
     version: 0.16.9
   - apiVersion: v2
     appVersion: v0.16.7
-    created: "2022-08-16T05:52:22.759573791Z"
+    created: "2022-08-19T18:00:48.106940913Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -602,7 +649,7 @@ entries:
     version: 0.16.7
   - apiVersion: v2
     appVersion: v0.15.4
-    created: "2022-08-16T05:52:22.720892067Z"
+    created: "2022-08-19T18:00:48.042000552Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -622,7 +669,7 @@ entries:
   rime-kube-system:
   - apiVersion: v2
     appVersion: v0.18.0-rc.7
-    created: "2022-08-16T05:52:22.941177542Z"
+    created: "2022-08-19T18:00:48.361875819Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -650,7 +697,7 @@ entries:
     version: 0.18.0-rc.7
   - apiVersion: v2
     appVersion: v0.18.0-rc.6
-    created: "2022-08-16T05:52:22.936865717Z"
+    created: "2022-08-19T18:00:48.356039278Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -678,7 +725,7 @@ entries:
     version: 0.18.0-rc.6
   - apiVersion: v2
     appVersion: v0.18.0-rc.3
-    created: "2022-08-16T05:52:22.929861976Z"
+    created: "2022-08-19T18:00:48.350442938Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -706,7 +753,7 @@ entries:
     version: 0.18.0-rc.3
   - apiVersion: v2
     appVersion: v0.17.5
-    created: "2022-08-16T05:52:22.925569451Z"
+    created: "2022-08-19T18:00:48.342898984Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -734,7 +781,7 @@ entries:
     version: 0.17.5
   - apiVersion: v2
     appVersion: v0.17.3
-    created: "2022-08-16T05:52:22.921279327Z"
+    created: "2022-08-19T18:00:48.337269145Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -762,7 +809,7 @@ entries:
     version: 0.17.3
   - apiVersion: v2
     appVersion: v0.17.2
-    created: "2022-08-16T05:52:22.915648394Z"
+    created: "2022-08-19T18:00:48.331497904Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -790,7 +837,7 @@ entries:
     version: 0.17.2
   - apiVersion: v2
     appVersion: v0.17.1
-    created: "2022-08-16T05:52:22.908260851Z"
+    created: "2022-08-19T18:00:48.320371825Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -817,8 +864,36 @@ entries:
     - https://robustintelligence.github.io/helm/chart-releases/rime-kube-system-0.17.1.tgz
     version: 0.17.1
   - apiVersion: v2
+    appVersion: v0.16.14
+    created: "2022-08-19T18:00:48.284731872Z"
+    dependencies:
+    - condition: rimeSystem.clusterAutoscaler
+      name: cluster-autoscaler
+      repository: https://kubernetes.github.io/autoscaler
+      version: 9.10.5
+    - condition: rimeSystem.externalDns
+      name: external-dns
+      repository: https://charts.bitnami.com/bitnami
+      version: 6.1.0
+    - condition: rimeSystem.awsLoadBalancerController
+      name: aws-load-balancer-controller
+      repository: https://aws.github.io/eks-charts
+      version: 1.2.7
+    - condition: rimeSystem.metricsServer
+      name: metrics-server
+      repository: https://charts.bitnami.com/bitnami
+      version: 5.11.0
+    description: A Helm chart for RIME's kubesystem resources
+    digest: 2174c1d3976612d125b50cdce59106be41381857300bb5647677d42b72d87a71
+    kubeVersion: '>=1.20.0-0'
+    name: rime-kube-system
+    type: application
+    urls:
+    - https://robustintelligence.github.io/helm/chart-releases/rime-kube-system-0.16.14.tgz
+    version: 0.16.14
+  - apiVersion: v2
     appVersion: v0.16.11
-    created: "2022-08-16T05:52:22.884140012Z"
+    created: "2022-08-19T18:00:48.272886288Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -846,7 +921,7 @@ entries:
     version: 0.16.11
   - apiVersion: v2
     appVersion: v0.16.10
-    created: "2022-08-16T05:52:22.876659169Z"
+    created: "2022-08-19T18:00:48.261904011Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -874,7 +949,7 @@ entries:
     version: 0.16.10
   - apiVersion: v2
     appVersion: v0.16.9
-    created: "2022-08-16T05:52:22.899761902Z"
+    created: "2022-08-19T18:00:48.310540555Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -902,7 +977,7 @@ entries:
     version: 0.16.9
   - apiVersion: v2
     appVersion: v0.16.7
-    created: "2022-08-16T05:52:22.892331959Z"
+    created: "2022-08-19T18:00:48.294083639Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -930,7 +1005,7 @@ entries:
     version: 0.16.7
   - apiVersion: v2
     appVersion: v0.15.4
-    created: "2022-08-16T05:52:22.867872418Z"
+    created: "2022-08-19T18:00:48.252318643Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -956,4 +1031,4 @@ entries:
     urls:
     - https://robustintelligence.github.io/helm/chart-releases/rime-kube-system-0.15.4.tgz
     version: 0.15.4
-generated: "2022-08-16T05:52:22.441999954Z"
+generated: "2022-08-19T18:00:47.619815761Z"
