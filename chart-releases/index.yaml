@@ -1,0 +1,94 @@
+apiVersion: v1
+entries:
+  rime:
+  - apiVersion: v2
+    appVersion: v2.0.0-rc.3
+    created: "2023-04-06T17:15:52.300601864Z"
+    dependencies:
+    - name: mongodb
+      repository: https://charts.bitnami.com/bitnami
+      version: 12.1.27
+    - name: ingress-nginx
+      repository: https://kubernetes.github.io/ingress-nginx
+      version: 4.2.0
+    - name: redis
+      repository: https://charts.bitnami.com/bitnami
+      version: 17.0.5
+    - name: vault
+      repository: https://helm.releases.hashicorp.com
+      version: 0.21.0
+    description: A Helm chart for RIME's hosted services
+    digest: dfd4270238b54ca1b0a403f748018086af5e20d071ac477fb331b3d8a771101d
+    kubeVersion: '>=1.20.0-0'
+    name: rime
+    type: application
+    urls:
+    - https://robustintelligence.github.io/helm/rime-2.0.0-rc.3.tgz
+    version: 2.0.0-rc.3
+  rime-agent:
+  - apiVersion: v2
+    appVersion: v2.0.0-rc.3
+    created: "2023-04-06T17:15:52.30160747Z"
+    description: A Helm chart for the Robust Intelligence Platform Agent, part of
+      the Data Plane.
+    digest: 81b33c602036b277864b56599e5249de3826dc8cf0a044f1c2b76fcdbea58515
+    kubeVersion: '>=1.20.0-0'
+    name: rime-agent
+    type: application
+    urls:
+    - https://robustintelligence.github.io/helm/rime-agent-2.0.0-rc.3.tgz
+    version: 2.0.0-rc.3
+  rime-extras:
+  - apiVersion: v2
+    appVersion: v2.0.0-rc.3
+    created: "2023-04-06T17:15:52.319627075Z"
+    dependencies:
+    - condition: rimeExtras.datadog
+      name: datadog
+      repository: https://helm.datadoghq.com
+      version: 2.20.3
+    - condition: rimeExtras.velero
+      name: velero
+      repository: https://vmware-tanzu.github.io/helm-charts
+      version: 2.23.6
+    description: A Helm chart for RIME's extra resources
+    digest: 21a77ab2f49e1881455e6f88d35631bf8dc7499076bbd7f31a9457632e6af124
+    name: rime-extras
+    type: application
+    urls:
+    - https://robustintelligence.github.io/helm/rime-extras-2.0.0-rc.3.tgz
+    version: 2.0.0-rc.3
+  rime-kube-system:
+  - apiVersion: v2
+    appVersion: v2.0.0-rc.3
+    created: "2023-04-06T17:15:52.327265719Z"
+    dependencies:
+    - condition: rimeSystem.clusterAutoscaler
+      name: cluster-autoscaler
+      repository: https://kubernetes.github.io/autoscaler
+      version: 9.10.5
+    - condition: rimeSystem.externalDns
+      name: external-dns
+      repository: https://kubernetes-sigs.github.io/external-dns/
+      version: 1.10.1
+    - condition: rimeSystem.awsLoadBalancerController
+      name: aws-load-balancer-controller
+      repository: https://aws.github.io/eks-charts
+      version: 1.4.2
+    - condition: rimeSystem.metricsServer
+      name: metrics-server
+      repository: https://kubernetes-sigs.github.io/metrics-server/
+      version: 3.8.2
+    - condition: cert-manager.enabled
+      name: cert-manager
+      repository: https://charts.jetstack.io
+      version: v1.10.0
+    description: A Helm chart for RIME's kubesystem resources
+    digest: f16ad7488a6b09d715368661094082148d533816bcc744f31f090df49323bd7f
+    kubeVersion: '>=1.20.0-0'
+    name: rime-kube-system
+    type: application
+    urls:
+    - https://robustintelligence.github.io/helm/rime-kube-system-2.0.0-rc.3.tgz
+    version: 2.0.0-rc.3
+generated: "2023-04-06T17:15:52.278202134Z"
