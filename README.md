@@ -1,4 +1,6 @@
 # The Robust Intelligence Helm Charts
+TODO logo here
+
 ```
 helm repo add robustintelligence https://robustintelligence.github.io/helm --force-update
 ```
@@ -12,27 +14,64 @@ This repository contains 4 Helm charts:
 - `rime-kube-system` (optional)
   - K8s Cluster infrastructure services, such as [External DNS](https://github.com/kubernetes-sigs/external-dns/tree/master/charts/external-dns)
 
-For Standard deployments, you need only install the `rime-agent` chart in a K8s namespace, which is auto-configured during the guided installation process.
+Detailed READMEs for each chart are in the subfolders.
+
+# Installation
+
+For standard installation, you need only install the `rime-agent` chart in a K8s namespace, which is auto-configured during the guided installation process.
+
 Please refer to Installation in the product documentation for details:
 - [Installation](https://docs.rime.dev/en/2.0.0/installation/index.html)
 
-For Self-Hosted deployments, refer to [Deployment](#deployment) below.
+For **Self-Hosted** deployments, see below.
 
 ---
 
-# Deployment
-For Self-Hosted deployments, both the `rime` and `rime-agent` charts are necessary, and it is recommended to install both `rime-extras` and `rime-kube-system` (unless the contained functionalities already exist in your K8s cluster).
+# Self-Hosted Installation
+For a standalone Robust Intelligence cluster, both the `rime` and `rime-agent` charts are necessary, and it is recommended to install both `rime-extras` and `rime-kube-system` (unless the contained functionalities already exist in your K8s cluster).
 
 ## `rime`
+
+<details>
+<summary>Prerequisites</summary>
+TODO
+</details>
+
+### Configuring Parameters
+TODO
+### Installing the Chart
+TODO
+### Uninstalling the Chart
 TODO
 
 ## `rime-agent`
+### Prerequisites
+TODO
+### Configuring Parameters
+TODO
+### Installing the Chart
+TODO
+### Uninstalling the Chart
 TODO
 
-## `rime-extras`
+## `rime-extras` (Recommended)
+### Prerequisites
+TODO
+### Configuring Parameters
+TODO
+### Installing the Chart
+TODO
+### Uninstalling the Chart
 TODO
 
-## `rime-kube-system`
+## `rime-kube-system` (Recommended)
+### Prerequisites
+TODO
+### Configuring Parameters
+TODO
+### Installing the Chart
+TODO
+### Uninstalling the Chart
 TODO
 
 ---
