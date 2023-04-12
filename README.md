@@ -12,9 +12,16 @@ This repository contains 4 Helm charts:
 - `rime-kube-system` (optional)
   - K8s Cluster infrastructure services, such as [External DNS](https://github.com/kubernetes-sigs/external-dns/tree/master/charts/external-dns)
 
+For Standard deployments, you need only install the `rime-agent` chart in a K8s namespace, which is auto-configured during the guided installation process.
+Please refer to Installation in the product documentation for details:
+- [Installation](https://docs.rime.dev/en/2.0.0/installation/index.html)
+
+For Self-Hosted deployments, refer to [Deployment](#deployment) below.
+
 ---
 
 # Deployment
+For Self-Hosted deployments, both the `rime` and `rime-agent` charts are necessary, and it is recommended to install both `rime-extras` and `rime-kube-system` (unless the contained functionalities already exist in your K8s cluster).
 
 ## `rime`
 TODO
