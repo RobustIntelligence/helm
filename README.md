@@ -33,9 +33,10 @@ For a standalone Robust Intelligence cluster, both the `rime` and `rime-agent` c
 ### General Prerequisites
 1. A Kubernetes cluster (version 1.23 or greater)
     - A dedicated Robust Intelligence namespace
+    - If using AWS EKS: enable [IAM roles for service accounts (IRSA)](https://docs.aws.amazon.com/emr/latest/EMR-on-EKS-DevelopmentGuide/setting-up-enable-IAM.html)
 2. [Helm](https://helm.sh/) (version 3)
 3. [kubectl](https://kubernetes.io/docs/reference/kubectl/kubectl/)
-4. A read token for the Robust Intelligence artifact repository as a [K8s secret](https://kubernetes.io/docs/concepts/configuration/secret/#docker-config-secrets)
+4. A read token for the Robust Intelligence artifact repository as a [K8s secret](https://kubernetes.io/docs/concepts/configuration/secret/#docker-config-secrets) (will be provided by your Solutions Architect)
 
 ### Recommended K8s Cluster Configuration
 The core charts (`rime` and `rime-agent`) can be deployed to a single namespace.
@@ -57,6 +58,12 @@ NOTE: Resources for the `rime-kube-system` pertain to infrastructure services li
 3. [AWS Load Balancer Controller](https://github.com/kubernetes-sigs/aws-load-balancer-controller/tree/v2.4.2) prerequisites (recommended, AWS-only)
 4. [Metrics Server](https://github.com/kubernetes-sigs/metrics-server/tree/v0.6.1) prerequisites (recommended, necessary for autoscaling)
 
+#### GCP (GKE)
+NOTE: The [Cluster Autoscaler](https://github.com/kubernetes/autoscaler/tree/cluster-autoscaler-1.21.0/cluster-autoscaler/cloudprovider) and [Metrics Server](https://github.com/kubernetes-sigs/metrics-server/tree/v0.6.1) come configured by default with GKE clusters, so no additional configuration is necessary.
+
+#### Azure (AKS)
+NOTE: The [Cluster Autoscaler](https://github.com/kubernetes/autoscaler/tree/cluster-autoscaler-1.21.0/cluster-autoscaler/cloudprovider) and [Metrics Server](https://github.com/kubernetes-sigs/metrics-server/tree/v0.6.1) come configured by default with AKS clusters, so no additional configuration is necessary.
+  
 </details>
 
 ### Configuring Parameters
@@ -69,7 +76,7 @@ Note that if deploying [cert-manager](https://github.com/cert-manager/cert-manag
 # When ready to deploy, remove --dry-run
 helm upgrade -i rime-kube-system robustintelligence/rime-kube-system \
   --version $RI_VERSION \
-  --values $VALUES_FILE \
+  --values $RIME_KUBE_SYSTEM_VALUES_FILE \
   --namespace kube-system \
   --debug \
   --dry-run
@@ -88,10 +95,11 @@ helm uninstall rime-kube-system -n kube-system
 #### General
 1. A domain for your service
     - A TLS certificate
+2. A product license (will be provided by your Solutions Architect)
 
 #### AWS (EKS)
 1. A domain for your service managed by [Route53](https://aws.amazon.com/route53/)
-    - A TLS certificate in ACM (recommended)
+    - A TLS certificate in ACM
 2. **Managed Images** prerequisites (add-on feature)
     - An Elastic Container Registry (ECR)
     - IAM permissions for Image Builder role
@@ -108,11 +116,34 @@ helm uninstall rime-kube-system -n kube-system
 </details>
 
 ### Configuring Parameters
-TODO
+For a detailed overview of this chart's values, see the `rime` README [here](). Your Solutions Architect will assist with configuring parameters during deployment.
+
+Some of the main sections to configure include:
+1. `rime.secrets`: application secrets for product license, admin one-time credentials, etc.
+    - (use `rime.secrets.existingSecretName` to specify these values through a K8s secret)
+2. `rime.datasetManagerServer`: settings for the **Managed Blob Storage** feature (AWS-only)
+    - If enabling this feature, set `rime.datasetManagerServer.enabled: true` and specify the Managed Blob Storage IAM role
+3. `rime.imageRegistryServer`: settings for the **Managed Images** feature (AWS-only)
+    - If enabling this feature, set `rime.imageRegistryServer.enabled: true` and specify the Image Builder and Repo Manager IAM roles
+4. `ingress-nginx`: settings for the [Ingress-NGINX Controller](https://artifacthub.io/packages/helm/ingress-nginx/ingress-nginx)
+    - Specify `ingress-nginx.controller.service.annotations` for your load balancing configuration
+5. `tls`: whether to enable internal TLS for specific services
+
 ### Installing the Chart
-TODO
-### Uninstalling the Chart
-TODO
+```
+# When ready to deploy, remove --dry-run
+helm upgrade -i rime robustintelligence/rime-kube-system \
+  --version $RI_VERSION \
+  --values $RIME_VALUES_FILE \
+  --namespace $RI_NAMESPACE \
+  --debug \
+  --dry-run
+```
+
+#### Uninstalling the Chart
+```
+helm uninstall rime -n $RI_NAMESPACE
+```
 
 ## `rime-agent`
 
