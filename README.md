@@ -193,18 +193,40 @@ helm uninstall rime-agent -n $RI_NAMESPACE
 ```
 
 ## `rime-extras` (Recommended)
+It's recommended to deploy the `rime-extras` chart in a separate namespace (e.g., called `rime-extras`).
 
 <details>
 <summary><h3>Prerequisites</h3></summary>
-TODO S3 Buckets, IAM, DataDog key
+
+1. [DataDog](https://github.com/DataDog/helm-charts/tree/datadog-2.20.3/charts/datadog) prerequisites
+    - A DataDog API key (will be provided by your Solutions Architect)
+2. [Velero](https://github.com/vmware-tanzu/helm-charts/tree/velero-2.23.6/charts/velero) prerequisites
+    - Follow the [setup instructions](https://velero.io/docs/v1.6/supported-providers/) for your provider
+
 </details>
 
 ### Configuring Parameters
-TODO
+For a detailed overview of this chart's values, see the `rime-extras` README [here](). Your Solutions Architect will assist with configuring parameters during deployment.
+
+For DataDog, you may wish to configure the log masking logic specified in `datadog.datadog.env`.
+
+For Velero, you may wish to configure the backup schedule and horizon in `velero.schedules.mongodb-backup`.
+
 ### Installing the Chart
-TODO
-### Uninstalling the Chart
-TODO
+```
+# When ready to deploy, remove --dry-run
+helm upgrade -i rime-extras robustintelligence/rime-extras \
+  --version $RI_VERSION \
+  --values $RIME_EXTRAS_VALUES_FILE \
+  --namespace $RIME_EXTRAS_NAMESPACE \
+  --debug \
+  --dry-run
+```
+
+#### Uninstalling the Chart
+```
+helm uninstall rime-extras -n $RIME_EXTRAS_NAMESPACE
+```
 
 ---
 
