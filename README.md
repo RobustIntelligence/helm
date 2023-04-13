@@ -1,5 +1,11 @@
-# The Robust Intelligence Helm Charts
-TODO logo here
+# Robust Intelligence Helm Charts
+<picture>
+ <source srcset="https://assets-global.website-files.com/62a7e9e01c9610dd11622fc6/62a8d4255468bd5859438043_logo-ri-white.svg">
+ <img alt="Robust Intelligence Logo" src="YOUR-DEFAULT-IMAGE">
+</picture>
+
+<br />
+<br />
 
 ```
 helm repo add robustintelligence https://robustintelligence.github.io/helm --force-update
@@ -18,7 +24,7 @@ Detailed READMEs for each chart are in the subfolders.
 
 # Installation
 
-For standard installation, you need only install the `rime-agent` chart in a K8s namespace, which is auto-configured during the guided installation process.
+**For a standard installation, you need only install the `rime-agent` chart in a K8s namespace, which is auto-configured during the guided installation process.**
 
 Please refer to Installation in the product documentation for details:
 - [Installation](https://docs.rime.dev/en/2.0.0/installation/index.html)
@@ -48,7 +54,6 @@ Additionally, we recommend the following:
 2. An expandable and encrypted [StorageClass](https://kubernetes.io/docs/concepts/storage/storage-classes/) for services in the Robust Intelligence namespace
 
 ## `rime-kube-system` (Recommended)
-
 NOTE: Resources for the `rime-kube-system` pertain to infrastructure services like the [Cluster Autoscaler](https://github.com/kubernetes/autoscaler/tree/cluster-autoscaler-1.21.0/cluster-autoscaler/cloudprovider) or [External DNS](https://github.com/kubernetes-sigs/external-dns/tree/v0.12.0/charts/external-dns); therefore, they are deployed in the `kube-system` namespace.
 
 <details>
@@ -90,7 +95,6 @@ helm uninstall rime-kube-system -n kube-system
 ```
 
 ## `rime`
-
 <details>
 <summary><h3>Prerequisites</h3></summary>
 
@@ -148,7 +152,6 @@ helm uninstall rime -n $RI_NAMESPACE
 ```
 
 ## `rime-agent`
-
 <details>
 <summary><h3>Prerequisites</h3></summary>
 
