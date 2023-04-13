@@ -30,11 +30,48 @@ For **Self-Hosted** deployments, see below.
 # Self-Hosted Installation
 For a standalone Robust Intelligence cluster, both the `rime` and `rime-agent` charts are necessary, and it is recommended to install both `rime-extras` and `rime-kube-system` (unless the contained functionalities already exist in your K8s cluster).
 
+### General Prerequisites
+1. A Kubernetes cluster (version 1.23 or greater)
+    - A dedicated Robust Intelligence namespace
+2. [Helm](https://helm.sh/) (version 3)
+3. [kubectl](https://kubernetes.io/docs/reference/kubectl/kubectl/)
+
+### Recommended K8s Cluster Configuration
+The core charts (`rime` and `rime-agent`) can be deployed to a single namespace.
+Additionally, we recommend the following:
+1. A dedicated node group (with autoscaling) for the `rime-agent` workloads
+    - Label: `dedicated=model-testing`, Taint: `dedicated=model-testing:NoSchedule`
+2. An expandable and encrypted [StorageClass](https://kubernetes.io/docs/concepts/storage/storage-classes/) for services in the Robust Intelligence namespace
+
 ## `rime`
 
 <details>
-<summary>Prerequisites</summary>
-TODO
+<summary><h3>Prerequisites</h3></summary>
+
+#### General
+1. A read token for the Robust Intelligence artifact repository (will be provided by your Solutions Architect)
+2. A domain for your service
+    - A TLS certificate
+
+#### AWS (EKS)
+1. A read token for the Robust Intelligence artifact repository as a [K8s secret](https://kubernetes.io/docs/concepts/configuration/secret/#docker-config-secrets)
+2. A domain for your service managed by [Route53](https://aws.amazon.com/route53/)
+    - A TLS certificate in ACM (recommended)
+3. **Managed Images** prerequisites (add-on feature)
+    - An Elastic Container Registry (ECR)
+    - IAM permissions for Image Builder role
+    - IAM permissions for Repo Manager role
+
+#### GCP (GKE)
+1. A read token for the Robust Intelligence artifact repository as a [K8s secret](https://kubernetes.io/docs/concepts/configuration/secret/#docker-config-secrets)
+2. A domain for your service managed by [Cloud DNS](https://cloud.google.com/dns/)
+    - A TLS certificate as a [K8s secret](https://kubernetes.io/docs/concepts/configuration/secret/#tls-secrets)
+
+#### Azure (AKS)
+1. A read token for the Robust Intelligence artifact repository as a [K8s secret](https://kubernetes.io/docs/concepts/configuration/secret/#docker-config-secrets)
+2. A domain for your service
+    - A TLS certificate as a [K8s secret](https://kubernetes.io/docs/concepts/configuration/secret/#tls-secrets)
+
 </details>
 
 ### Configuring Parameters
@@ -45,8 +82,15 @@ TODO
 TODO
 
 ## `rime-agent`
-### Prerequisites
-TODO
+
+<details>
+<summary><h3>Prerequisites</h3></summary>
+
+1. A blob storage entity
+2. An authorization policy allowing read access to ^
+
+</details>
+
 ### Configuring Parameters
 TODO
 ### Installing the Chart
@@ -55,8 +99,12 @@ TODO
 TODO
 
 ## `rime-extras` (Recommended)
-### Prerequisites
-TODO
+
+<details>
+<summary><h3>Prerequisites</h3></summary>
+TODO S3 Buckets, IAM, DataDog key
+</details>
+
 ### Configuring Parameters
 TODO
 ### Installing the Chart
@@ -65,8 +113,12 @@ TODO
 TODO
 
 ## `rime-kube-system` (Recommended)
-### Prerequisites
-TODO
+
+<details>
+<summary><h3>Prerequisites</h3></summary>
+TODO IAM
+</details>
+
 ### Configuring Parameters
 TODO
 ### Installing the Chart
