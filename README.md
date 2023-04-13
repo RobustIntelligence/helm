@@ -9,9 +9,9 @@ This repository contains 4 Helm charts:
   - Core application services (i.e., the *control plane*)
 - `rime-agent`
   - Model Testing agent (i.e., the *data plane*)
-- `rime-extras` (optional)
+- `rime-extras` (recommended)
   - 3rd-party add-ons like Velero backups or DataDog monitoring
-- `rime-kube-system` (optional)
+- `rime-kube-system` (recommended)
   - K8s Cluster infrastructure services, such as [External DNS](https://github.com/kubernetes-sigs/external-dns/tree/master/charts/external-dns)
 
 Detailed READMEs for each chart are in the subfolders.
@@ -32,11 +32,13 @@ For a standalone Robust Intelligence cluster, both the `rime` and `rime-agent` c
 
 ### General Prerequisites
 1. A Kubernetes cluster (version 1.23 or greater)
-    - A dedicated Robust Intelligence namespace
-    - If using AWS EKS: enable [IAM roles for service accounts (IRSA)](https://docs.aws.amazon.com/emr/latest/EMR-on-EKS-DevelopmentGuide/setting-up-enable-IAM.html)
-2. [Helm](https://helm.sh/) (version 3)
-3. [kubectl](https://kubernetes.io/docs/reference/kubectl/kubectl/)
-4. A read token for the Robust Intelligence artifact repository as a [K8s secret](https://kubernetes.io/docs/concepts/configuration/secret/#docker-config-secrets) (will be provided by your Solutions Architect)
+    - (AWS EKS) enable [IAM roles for service accounts (IRSA)](https://docs.aws.amazon.com/emr/latest/EMR-on-EKS-DevelopmentGuide/setting-up-enable-IAM.html)
+    - (GCP GKE) enable [Workload Identity](https://cloud.google.com/kubernetes-engine/docs/how-to/workload-identity)
+    - (Azure AKS) enable [Workload Identity](https://learn.microsoft.com/en-us/azure/aks/workload-identity-overview) (recommended)
+2. A dedicated K8s namespace for Robust Intelligence 
+3. [Helm](https://helm.sh/) (version 3)
+4. [kubectl](https://kubernetes.io/docs/reference/kubectl/kubectl/)
+5. A read token for the Robust Intelligence artifact repository as a [K8s secret](https://kubernetes.io/docs/concepts/configuration/secret/#docker-config-secrets) (will be provided by your Solutions Architect)
 
 ### Recommended K8s Cluster Configuration
 The core charts (`rime` and `rime-agent`) can be deployed to a single namespace.
@@ -53,10 +55,10 @@ NOTE: Resources for the `rime-kube-system` pertain to infrastructure services li
 <summary><h3>Prerequisites</h3></summary>
 
 1. Permissions to create resources in the `kube-system` namespace
-1. [Cluster Autoscaler](https://github.com/kubernetes/autoscaler/tree/cluster-autoscaler-1.21.0/cluster-autoscaler/cloudprovider) prerequisites (recommended)
-2. [External DNS](https://github.com/kubernetes-sigs/external-dns/tree/v0.12.0/charts/external-dns) prerequisites (recommended)
-3. [AWS Load Balancer Controller](https://github.com/kubernetes-sigs/aws-load-balancer-controller/tree/v2.4.2) prerequisites (recommended, AWS-only)
-4. [Metrics Server](https://github.com/kubernetes-sigs/metrics-server/tree/v0.6.1) prerequisites (recommended, necessary for autoscaling)
+2. [Cluster Autoscaler](https://github.com/kubernetes/autoscaler/tree/cluster-autoscaler-1.21.0/cluster-autoscaler/cloudprovider) prerequisites (recommended)
+3. [External DNS](https://github.com/kubernetes-sigs/external-dns/tree/v0.12.0/charts/external-dns) prerequisites (recommended)
+4. [AWS Load Balancer Controller](https://github.com/kubernetes-sigs/aws-load-balancer-controller/tree/v2.4.2) prerequisites (recommended, AWS-only)
+5. [Metrics Server](https://github.com/kubernetes-sigs/metrics-server/tree/v0.6.1) prerequisites (recommended, necessary for autoscaling)
 
 #### GCP (GKE)
 NOTE: The [Cluster Autoscaler](https://github.com/kubernetes/autoscaler/tree/cluster-autoscaler-1.21.0/cluster-autoscaler/cloudprovider) and [Metrics Server](https://github.com/kubernetes-sigs/metrics-server/tree/v0.6.1) come configured by default with GKE clusters, so no additional configuration is necessary.
@@ -132,7 +134,7 @@ Some of the main sections to configure include:
 ### Installing the Chart
 ```
 # When ready to deploy, remove --dry-run
-helm upgrade -i rime robustintelligence/rime-kube-system \
+helm upgrade -i rime robustintelligence/rime \
   --version $RI_VERSION \
   --values $RIME_VALUES_FILE \
   --namespace $RI_NAMESPACE \
@@ -150,17 +152,45 @@ helm uninstall rime -n $RI_NAMESPACE
 <details>
 <summary><h3>Prerequisites</h3></summary>
 
+#### General
 1. A blob storage entity
 2. An authorization policy allowing read access to ^
 
+#### AWS (EKS)
+1. A blob storage entity ([S3 bucket](https://docs.aws.amazon.com/AmazonS3/latest/userguide/UsingBucket.html))
+2. An authorization policy allowing read access to ^ ([IAM role](https://docs.aws.amazon.com/eks/latest/userguide/associate-service-account-role.html))
+
+#### GCP (GKE)
+1. A blob storage entity ([Cloud Storage bucket](https://cloud.google.com/storage/docs/buckets))
+2. An authorization policy allowing read access to ^ ([Service Account](https://cloud.google.com/kubernetes-engine/docs/how-to/workload-identity))
+
+#### Azure (AKS)
+1. A [Storage Account](https://learn.microsoft.com/en-us/azure/storage/common/storage-account-overview)
+2. A blob storage entity ([Blob Storage Container](https://learn.microsoft.com/en-us/azure/storage/blobs/blob-containers-portal))
+3. An authorization policy allowing read access to ^ ([Managed Identity](https://learn.microsoft.com/en-us/azure/aks/learn/tutorial-kubernetes-workload-identity#create-a-managed-identity-and-grant-permissions-to-access-the-secret))
+  
 </details>
 
 ### Configuring Parameters
-TODO
+For a detailed overview of this chart's values, see the `rime-agent` README [here](). Your Solutions Architect will assist with configuring parameters during deployment.
+
+Generally, the only setup needed for the `rime-agent` is to identify the authorization for the `rime-agent-model-tester` ServiceAccount under `rimeAgent.modelTestJob.serviceAccount`.
+
 ### Installing the Chart
-TODO
-### Uninstalling the Chart
-TODO
+```
+# When ready to deploy, remove --dry-run
+helm upgrade -i rime-agent robustintelligence/rime-agent \
+  --version $RI_VERSION \
+  --values $RIME_AGENT_VALUES_FILE \
+  --namespace $RI_NAMESPACE \
+  --debug \
+  --dry-run
+```
+
+#### Uninstalling the Chart
+```
+helm uninstall rime-agent -n $RI_NAMESPACE
+```
 
 ## `rime-extras` (Recommended)
 
