@@ -1,0 +1,98 @@
+# Config map that defines templates for model testing jobs.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "rime-agent.fullname" . }}-{{ .Values.rimeAgent.operator.name }}-conf
+data:
+  server.config: |
+{{ include "rime-agent.serverArgs" . | indent 4 }}
+  job_configmap.config: |
+    apiVersion: v1
+    kind: ConfigMap
+    metadata:
+      name: job-conf-placeholder
+    immutable: true
+  job.config: |
+    apiVersion: batch/v1
+    kind: Job
+    metadata:
+      name: job-placeholder
+    spec:
+      activeDeadlineSeconds: {{ .Values.rimeAgent.operator.modelTestJob.activeDeadlineSeconds }}
+      ttlSecondsAfterFinished: {{ .Values.rimeAgent.operator.modelTestJob.ttlSecondsAfterFinished }}
+      template:
+        metadata:
+          labels:
+            {{- include "rime-agent.labels" . | nindent 12 }}
+            {{- with .Values.rimeAgent.operator.modelTestJob.labels }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          annotations:
+            {{- include "rime-agent.annotations" . | nindent 12 }}
+            {{- with .Values.rimeAgent.operator.modelTestJob.annotations }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+        spec:
+          {{- include "rime-agent.imagePullSecretsYaml" . | nindent 10 }}
+          {{- with .Values.rimeAgent.operator.modelTestJob.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          serviceAccountName: {{ include "rime-agent.modelTestJob.serviceAccountName" . }}
+          containers:
+          - name: {{ .Values.rimeAgent.operator.modelTestJob.name }}
+            image: "{{ .Values.rimeAgent.images.modelTestJobImage.registry }}/{{ .Values.rimeAgent.images.modelTestJobImage.name }}"
+            env:
+              - name: UPLOAD_SERVER
+                value: {{ .Values.rimeAgent.connections.platformAddress | default .Values.rimeAgent.connections.uploadServerRestAddress }}
+              - name: FIREWALL_SERVER
+                value: {{ .Values.rimeAgent.connections.platformAddress | default .Values.rimeAgent.connections.firewallServerRestAddress }}
+              - name: DATA_COLLECTOR
+                value: {{ .Values.rimeAgent.connections.platformAddress | default .Values.rimeAgent.connections.dataCollectorRestAddress }}
+              - name: DATASET_MANAGER
+                value: {{ .Values.rimeAgent.connections.platformAddress | default .Values.rimeAgent.connections.datasetManagerRestAddress }}
+              - name: API_KEY
+                valueFrom:
+                  secretKeyRef:
+                    name: {{ include "rime-agent.secretName" . }}
+                    key: api_key
+              - name: RIME_DISABLE_TLS
+                value: {{ if .Values.rimeAgent.connections.platformAddress }} "false" {{ else }} "true" {{ end }}
+            {{- with .Values.rimeAgent.operator.modelTestJob.extraEnv }}
+              {{- toYaml . | nindent 14 }}
+            {{- end }}
+            imagePullPolicy: {{ .Values.rimeAgent.images.modelTestJobImage.pullPolicy }}
+            volumeMounts:
+              {{- if .Values.tls.crossplaneEnabled }}
+              - name: {{ .Values.rimeAgent.operator.modelTestJob.name }}-{{ .Release.Namespace }}-tls
+                mountPath: /var/tmp/{{ .Values.rimeAgent.operator.modelTestJob.name }}-tls
+                readOnly: true
+              {{- end }}
+              {{- with .Values.rimeAgent.operator.modelTestJob.extraVolumeMounts }}
+                {{- toYaml . | nindent 14 }}
+              {{- end }}
+            resources:
+              {{- toYaml .Values.rimeAgent.operator.modelTestJob.resources | nindent 14 }}
+          restartPolicy: Never
+          {{- with .Values.rimeAgent.operator.modelTestJob.nodeSelector }}
+          nodeSelector:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.rimeAgent.operator.modelTestJob.tolerations }}
+          tolerations:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.rimeAgent.operator.modelTestJob.affinity }}
+          affinity:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          volumes:
+            {{- if .Values.tls.crossplaneEnabled }}
+            - name: {{ .Values.rimeAgent.operator.modelTestJob.name }}-{{ .Release.Namespace }}-tls
+              secret:
+                secretName: {{ .Values.rimeAgent.operator.modelTestJob.name }}-{{ .Release.Namespace }}-tls
+            {{- end }}
+            {{- with .Values.rimeAgent.operator.modelTestJob.extraVolumes }}
+              {{- toYaml . | nindent 12 }}
+            {{- end }}
+      backoffLimit: {{ .Values.rimeAgent.operator.modelTestJob.backoffLimit }}

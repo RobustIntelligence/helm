@@ -1,0 +1,29 @@
+{{- if .Values.tls.crossplaneEnabled }}
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ include "rime-agent.fullname" . }}-{{ .Values.rimeAgent.operator.name }}-certificate
+spec:
+  secretName: {{ include "rime-agent.fullname" . }}-{{ .Values.rimeAgent.operator.name }}-tls
+  duration: 4320h # 180d
+  renewBefore: 744h # 31d
+  subject:
+    organizations:
+      - RobustIntelligence
+  isCA: false
+  privateKey:
+    algorithm: RSA
+    encoding: PKCS1
+    size: 2048
+    rotationPolicy: Always
+  usages:
+    - server auth
+    - client auth
+  dnsNames:
+    - {{ include "rime-agent.fullname" . }}-{{ .Values.rimeAgent.operator.name }}
+    - localhost
+  issuerRef:
+    name: rime-{{ .Release.Namespace }}-ca-issuer
+    kind: Issuer
+    group: cert-manager.io
+{{- end }}
