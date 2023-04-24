@@ -1,0 +1,82 @@
+{{- if and .Values.rime.initVault.enabled (not .Values.external.vault.enabled) }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "rime.fullname" . }}-{{ .Values.rime.initVault.name }}
+  labels:
+    {{- include "rime.labels" . | nindent 4 }}
+    {{- with .Values.rime.initVault.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  annotations:
+    # This is what defines this resource as a hook. Without this line, the
+    # job is considered part of the release.
+    # NOTE: post-upgrade relies on the database-setup script being idempotent.
+    "helm.sh/hook": post-install,post-upgrade
+    # Hooks are sorted in ascending order.
+    "helm.sh/hook-weight": "6"
+    "helm.sh/hook-delete-policy": before-hook-creation
+    {{- include "rime.annotations" . | nindent 4 }}
+    {{- with .Values.rime.initVault.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  template:
+    metadata:
+      labels:
+        {{- include "rime.labels" . | nindent 8 }}
+        {{- with .Values.rime.initVault.labels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      annotations:
+        {{- include "rime.annotations" . | nindent 8 }}
+        {{- with .Values.rime.initVault.annotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.rime.images.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.rime.initVault.securityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "rime.initVault.serviceAccountName" . }}
+      containers:
+        - name: {{ .Values.rime.initVault.name }}
+          image: "{{ .Values.rime.images.backendImage.registry}}/{{ .Values.rime.images.backendImage.name }}"
+          imagePullPolicy: "{{ .Values.rime.images.backendImage.pullPolicy }}"
+          command:
+            - "/rime/init-vault"
+          args:
+            - "--server-config-path=/config/worker.config"
+            # 4 minute timeout because the maximum execution time for a helm chart hook is 5 min.
+            - "-timeout=4m"
+            {{- if .Values.rime.initVault.debug }}
+            - "-debug"
+            {{- end }}
+          {{- if .Values.tls.enableCertManager }}
+          volumeMounts:
+            - name: {{ include "rime.fullname" . }}-{{ .Values.rime.initVault.name }}-config
+              mountPath: "/config"
+              readOnly: true
+            - name: {{ include "rime.fullname" . }}-{{ .Values.rime.initVault.name }}-tls
+              mountPath: /var/tmp/tls/common
+              readOnly: true
+          {{- end }}
+      restartPolicy: OnFailure
+      {{- if .Values.tls.enableCertManager }}
+      volumes:
+        - name: {{ include "rime.fullname" . }}-{{ .Values.rime.initVault.name }}-config
+          configMap:
+            name: {{ include "rime.fullname" . }}-{{ .Values.rime.initVault.name }}-conf
+            items:
+              - key: "worker.config"
+                path: "worker.config"
+        - name: {{ include "rime.fullname" . }}-{{ .Values.rime.initVault.name }}-tls
+          secret:
+            secretName: {{ include "rime.fullname" . }}-{{ .Values.rime.initVault.name }}-tls
+      {{- end }}
+  backoffLimit: {{ .Values.rime.initVault.backoffLimit }}
+  {{- end }}

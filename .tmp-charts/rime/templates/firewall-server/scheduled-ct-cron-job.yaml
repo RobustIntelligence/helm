@@ -1,0 +1,81 @@
+{{- if .Values.rime.firewallServer.scheduledCTCron.enabled }}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ include "rime.fullname" . }}-{{ .Values.rime.firewallServer.scheduledCTCron.name }}
+  labels:
+    app: {{ .Values.rime.firewallServer.scheduledCTCron.name }}
+      {{- include "rime.labels" . | nindent 4 }}
+      {{- with .Values.rime.firewallServer.scheduledCTCron.labels }}
+      {{- toYaml . | nindent 4 }}
+      {{- end }}
+  annotations:
+      {{- include "rime.annotations" . | nindent 4 }}
+      {{- with .Values.rime.firewallServer.scheduledCTCron.annotations }}
+      {{- toYaml . | nindent 4 }}
+      {{- end }}
+spec:
+  schedule: "{{ .Values.rime.firewallServer.scheduledCTCron.schedule }}"
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            app: {{ .Values.rime.firewallServer.scheduledCTCron.name }}
+            {{- include "rime.labels" . | nindent 12 }}
+            {{- with .Values.rime.firewallServer.scheduledCTCron.labels }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          annotations:
+            {{- include "rime.annotations" . | nindent 12 }}
+            {{- with .Values.rime.firewallServer.scheduledCTCron.labels }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+        spec:
+          {{- with .Values.rime.images.imagePullSecrets }}
+          imagePullSecrets:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          containers:
+            - name: "scheduled-ct-worker"
+              env:
+                {{- include "rime.commonEnv" . | nindent 16 }}
+              image: "{{ .Values.rime.images.backendImage.registry}}/{{ .Values.rime.images.backendImage.name }}"
+              imagePullPolicy: {{ .Values.rime.images.backendImage.pullPolicy }}
+              command:
+                - "/rime/scheduled_ct_worker"
+                - "--server-config-path=/config/worker.config"
+                {{- if .Values.tls.grpcEnabled }}
+                - "--auth-mode=tls"
+                {{ end }}
+                - "--timeout=4m"
+                {{- if .Values.rime.verbose }}
+                - "-verbose"
+                {{- end }}
+              volumeMounts:
+                - name: {{ include "rime.fullname" . }}-worker-config
+                  mountPath: "/config"
+                  readOnly: true
+                {{- if .Values.tls.enableCertManager }}
+                - name: {{ include "rime.fullname" . }}-scheduled-ct-tls
+                  mountPath: "/var/tmp/tls/common"
+                  readOnly: true
+                {{- end }}
+                {{- include "rime.externalTLSSecretVolumeMounts" . | nindent 16 }}
+          restartPolicy: Never
+          volumes:
+            - name: {{ include "rime.fullname" . }}-worker-config
+              configMap:
+                name: {{ include "rime.fullname" . }}-worker-conf
+                items:
+                  - key: "worker.config"
+                    path: "worker.config"
+            {{- if .Values.tls.enableCertManager }}
+            - name: {{ include "rime.fullname" . }}-scheduled-ct-tls
+              secret:
+                secretName: {{ include "rime.fullname" . }}-scheduled-ct-tls
+            {{- end }}
+            {{- include "rime.externalTLSSecretVolumes" . | nindent 12 }}
+      backoffLimit: 0
+      activeDeadlineSeconds: 300
+  {{- end }}
