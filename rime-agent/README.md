@@ -78,7 +78,7 @@ Kubernetes: `>=1.20.0-0`
 | rimeAgent.operator.modelTestJob.nodeSelector | object | `{}` | node selector for model test jobs. |
 | rimeAgent.operator.modelTestJob.resources | object | `{"limits":{"cpu":"3000m","memory":"8000Mi"},"requests":{"cpu":"3000m","memory":"8000Mi"}}` | resource request and limits for model test jobs. |
 | rimeAgent.operator.modelTestJob.securityContext | object | `{}` |  |
-| rimeAgent.operator.modelTestJob.serviceAccount.annotations | object | `{}` | if create is true, annotations to add to the service account. # Since data is stored in a cloud storage (e.g. S3, GCS), add an annotation to allow read access here. # EKS IAM setup for S3: https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html # GKE IAM setup for GCS: https://cloud.google.com/kubernetes-engine/docs/how-to/workload-identity |
+| rimeAgent.operator.modelTestJob.serviceAccount.annotations | object | `{}` | if create is true, annotations to add to the service account. # Since data is stored in a cloud storage (e.g. S3, GCS), add an annotation to allow read access here. # EKS IAM setup for S3: https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html # GKE IAM setup for GCS: https://cloud.google.com/kubernetes-engine/docs/how-to/workload-identity  Azure IAM setup: https://azure.github.io/azure-workload-identity/docs/ |
 | rimeAgent.operator.modelTestJob.serviceAccount.create | bool | `true` | Specifies whether a ServiceAccount should be created. |
 | rimeAgent.operator.modelTestJob.serviceAccount.name | string | `nil` | Specify a preexisting ServiceAccount to use if create is false. |
 | rimeAgent.operator.modelTestJob.tolerations | list | `[]` | tolerations for model test jobs. |
