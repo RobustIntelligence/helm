@@ -17,7 +17,7 @@ REPO_URL=https://robustintelligence.github.io/helm
 
 OPERATOR_ROLE_FILE := rime-agent/templates/operator/role.yaml
 
-.PHONY: clean .tmp-charts/rime  .tmp-charts/rime-agent  .tmp-charts/rime-extras .tmp-charts/rime-kube-system gen_operator_manifests
+.PHONY: clean .tmp-charts/rime  .tmp-charts/rime-agent  .tmp-charts/rime-extras .tmp-charts/rime-kube-system
 
 clean:
 	rm -rf .tmp-charts/
@@ -57,7 +57,7 @@ clean:
 		popd \
 	)
 
-.rime-releases/rime-agent-$(VERSION).tgz: gen_operator_manifests .tmp-charts/rime-agent
+.rime-releases/rime-agent-$(VERSION).tgz: .tmp-charts/rime-agent
 	( \
 		$(call check_defined, APP_VERSION VERSION, helm chart version) \
 		mkdir -p .rime-releases && \
