@@ -55,7 +55,7 @@ data:
                 valueFrom:
                   secretKeyRef:
                     name: {{ include "rime-agent.secretName" . }}
-                    key: api_key
+                    key: api-key
               - name: RIME_DISABLE_TLS
                 value: {{ if .Values.rimeAgent.connections.platformAddress }} "false" {{ else }} "true" {{ end }}
             {{- with .Values.rimeAgent.operator.modelTestJob.extraEnv }}
