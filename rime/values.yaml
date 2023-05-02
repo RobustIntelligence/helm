@@ -1150,9 +1150,27 @@ rime:
       # # Uncomment if using externalDns (from rime-kube-system) and fill out the hostname
       # # accordingly (e.g., "rime.${domain}")
       # external-dns.alpha.kubernetes.io/hostname: ""
+      nginx.ingress.kubernetes.io/affinity: "cookie",
+      nginx.ingress.kubernetes.io/affinity-mode: "persistent",
+      nginx.ingress.kubernetes.io/session-cookie-expires: "172800",
+      nginx.ingress.kubernetes.io/session-cookie-max-age: "172800",
+      nginx.ingress.kubernetes.io/session-cookie-path: "/",
+      nginx.ingress.kubernetes.io/session-cookie-httponly: "true",
+      nginx.ingress.kubernetes.io/session-cookie-secure: "true",
     }
     labels: {}
     tls: []
+
+  auth-ingress:
+    annotations: {
+      nginx.ingress.kubernetes.io/affinity: "cookie",
+      nginx.ingress.kubernetes.io/affinity-mode: "persistent",
+      nginx.ingress.kubernetes.io/session-cookie-expires: "172800",
+      nginx.ingress.kubernetes.io/session-cookie-max-age: "172800",
+      nginx.ingress.kubernetes.io/session-cookie-path: "/",
+      nginx.ingress.kubernetes.io/session-cookie-httponly: "true",
+      nginx.ingress.kubernetes.io/session-cookie-secure: "true",
+    }
 
   # -- `monitoring` (Prometheus metrics) K8s-level configurations
   # @default -- (see individual values in `values.yaml`)
