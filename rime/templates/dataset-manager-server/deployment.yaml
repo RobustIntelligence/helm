@@ -102,9 +102,6 @@ spec:
             - "/rime/rime"
           args:
             - "start-dataset-manager-server"
-            {{- if .Values.tls.grpcEnabled }}
-            - "--auth-mode=tls"
-            {{ end }}
             - "--server-config-path=/config/server.config"
             - "--dataset-manager-port={{ .Values.rime.datasetManagerServer.port }}"
             - "--dataset-manager-rest-port={{ .Values.rime.datasetManagerServer.restPort }}"

@@ -85,6 +85,7 @@ common:
         mongoTLSEnabled: {{ .Values.tls.mongoEnabled }}
         restTLSEnabled: {{ .Values.tls.restEnabled }}
         vaultTLSDisabled: {{ .Values.tls.vaultDisabled }}
+        grpcTLSEnabled: {{ .Values.tls.grpcEnabled }}
     mongo:
         databaseName: {{ default "rime-store" .Values.external.mongo.databaseName }}
         urlPrefix: {{ default "mongodb+srv://" .Values.external.mongo.urlPrefix }}

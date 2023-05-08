@@ -44,9 +44,6 @@ spec:
               imagePullPolicy: {{ .Values.rime.images.backendImage.pullPolicy }}
               command:
                 - "/rime/digest_notif_worker"
-                {{- if .Values.tls.grpcEnabled }}
-                - "--auth-mode=tls"
-                {{ end }}
                 - "--server-config-path=/config/worker.config"
               volumeMounts:
                 - name: {{ include "rime.fullname" . }}-worker-config

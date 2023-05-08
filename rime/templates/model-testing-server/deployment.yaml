@@ -108,9 +108,6 @@ spec:
             - "/rime/rime"
           args:
             - "start-model-testing-server"
-            {{- if .Values.tls.grpcEnabled }}
-            - "--auth-mode=tls"
-            {{ end }}
             - "--server-config-path=/config/server.config"
             - "--model-testing-port={{ .Values.rime.modelTestingServer.port }}"
             - "--model-testing-rest-port={{ .Values.rime.modelTestingServer.restPort }}"

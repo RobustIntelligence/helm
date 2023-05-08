@@ -101,9 +101,6 @@ spec:
             - "/rime/rime"
           args:
             - "start-firewall-server"
-            {{- if .Values.tls.grpcEnabled }}
-            - "--auth-mode=tls"
-            {{ end }}
             - "--server-config-path=/config/server.config"
             - "--firewall-port={{ .Values.rime.firewallServer.port }}"
             - "--firewall-rest-port={{ .Values.rime.firewallServer.restPort }}"

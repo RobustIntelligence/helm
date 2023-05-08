@@ -62,9 +62,6 @@ spec:
         - "--base-configmap-template-file=/config/job_configmap.config"
         - "--base-job-template-file=/config/job.config"
         - "--app-name={{ include "rime-agent.fullname" . }}"
-        {{- if .Values.tls.crossplaneEnabled }}
-        - "--auth-mode=tls"
-        {{- end }}
         - "--server-config-path=/server-config/server.config"
         {{- if .Values.rimeAgent.operator.logArchival.enabled }}
         - "--blob-store-bucket-name={{ .Values.rimeAgent.operator.logArchival.storageBucketName }}"

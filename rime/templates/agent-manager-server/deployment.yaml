@@ -109,9 +109,6 @@ spec:
             - "/rime/rime"
           args:
             - "start-agent-manager-server"
-            {{- if .Values.tls.grpcEnabled }}
-            - "--auth-mode=tls"
-            {{ end }}
             - "--server-config-path=/config/server.config"
             - "--agent-manager-port={{ .Values.rime.agentManagerServer.port }}"
             - "--agent-manager-rest-port={{ .Values.rime.agentManagerServer.restPort }}"
