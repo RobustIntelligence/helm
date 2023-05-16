@@ -75,7 +75,8 @@ spec:
               {{- if .Values.tls.restEnabled }}
               scheme: HTTPS
               {{ end }}
-            periodSeconds: 5
+            periodSeconds: 30
+            timeoutSeconds: 15
           readinessProbe:
             httpGet:
               path: /
@@ -83,7 +84,8 @@ spec:
               {{- if .Values.tls.restEnabled }}
               scheme: HTTPS
               {{ end }}
-            periodSeconds: 5
+            periodSeconds: 30
+            timeoutSeconds: 15
           startupProbe:
             httpGet:
               path: /
@@ -92,7 +94,8 @@ spec:
               scheme: HTTPS
               {{ end }}
             failureThreshold: 60
-            periodSeconds: 5
+            periodSeconds: 30
+            timeoutSeconds: 15
           resources:
             {{- toYaml .Values.rime.frontendServer.deployment.resources | nindent 12 }}
           {{- if .Values.tls.enableCertManager }}
