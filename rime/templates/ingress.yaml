@@ -15,7 +15,7 @@ metadata:
     nginx.ingress.kubernetes.io/auth-url: http://{{ include "rime.fullname" . }}-{{ .Values.rime.authServer.name }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.rime.authServer.port}}/v1/auth/validate
     {{- end }}
     nginx.ingress.kubernetes.io/auth-method: POST
-    nginx.ingress.kubernetes.io/auth-response-headers: X-Rime-User, X-Rime-Api-Key, X-Rime-Api-Key-Name, X-Rime-Workspace
+    nginx.ingress.kubernetes.io/auth-response-headers: X-Rime-User, X-Rime-Api-Key, X-Rime-Api-Key-Name, X-Rime-Workspace, X-Rime-Client-Internal-Token, X-Rime-Agent
     {{- if .Values.tls.restEnabled }}
     nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
     nginx.ingress.kubernetes.io/proxy-ssl-secret: "{{.Release.Namespace}}/{{ include "rime.fullname" . }}-ingress-tls"
@@ -24,6 +24,10 @@ metadata:
     nginx.ingress.kubernetes.io/proxy-connect-timeout: "360"
     nginx.ingress.kubernetes.io/proxy-send-timeout: "360"
     nginx.ingress.kubernetes.io/proxy-read-timeout: "360"
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      add_header X-Frame-Options "sameorigin";
+      add_header X-Content-Type-Options "nosniff";
+      add_header Strict-Transport-Security "max-age=31536000; includeSubDomains; preload";
     {{- with .Values.rime.ingress.annotations }}
     {{- toYaml . | nindent 4 }}
     {{- end }}
@@ -210,7 +214,14 @@ spec:
                 name: {{ include "rime.fullname" . }}-{{ .Values.rime.modelTestingServer.name }}
                 port:
                   number: {{ .Values.rime.modelTestingServer.restPort }}
-          - path: /v1/logs
+          - path: /internal/generative-stress-tests
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "rime.fullname" . }}-{{ .Values.rime.modelTestingServer.name }}
+                port:
+                  number: {{ .Values.rime.modelTestingServer.restPort }}
+          - path: /internal/logs
             pathType: Prefix
             backend:
               service:
@@ -231,7 +242,7 @@ spec:
                 name: {{ include "rime.fullname" . }}-{{ .Values.rime.imageRegistryServer.name }}
                 port:
                   number: {{ .Values.rime.imageRegistryServer.restPort }}
-          - path: /v1-beta/jobs
+          - path: /v1/jobs
             pathType: Prefix
             backend:
               service:
@@ -295,6 +306,14 @@ spec:
                 port:
                   number: {{ .Values.rime.webServer.grpcRestPort }}
           - path: /internal/config-validator
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "rime.fullname" . }}-{{ .Values.rime.webServer.name }}
+                port:
+                  number: {{ .Values.rime.webServer.grpcRestPort }}
+          # TODO(RAT-1738): remove this ingress rule when we remove the toy example.
+          - path: /internal/fooexample
             pathType: Prefix
             backend:
               service:

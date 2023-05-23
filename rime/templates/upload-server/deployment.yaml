@@ -107,9 +107,6 @@ spec:
             - "/rime/rime"
           args:
             - "start-upload-server"
-            {{- if .Values.tls.grpcEnabled }}
-            - "--auth-mode=tls"
-            {{ end }}
             - "--server-config-path=/config/server.config"
             - "--upload-port={{ .Values.rime.uploadServer.port }}"
             {{- if .Values.rime.monitoring.enabled }}

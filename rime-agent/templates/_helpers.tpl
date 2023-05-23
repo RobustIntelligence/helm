@@ -49,7 +49,10 @@ helm.sh/chart: {{ include "rime-agent.chart" . }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{- if .Values.rimeAgent.commonLabels}}
+{{ toYaml .Values.rimeAgent.commonLabels }}
 {{- end }}
+{{- end -}}
 
 {{/*
 Common annotations added to all resources.
@@ -77,6 +80,7 @@ common:
         caPath: "/var/tmp/tls/common/ca.crt"
         certPath: "/var/tmp/tls/common/tls.crt"
         keyPath: "/var/tmp/tls/common/tls.key"
+        grpcTLSEnabled: true
     {{- end }}
     connections:
         addresses:
@@ -89,6 +93,10 @@ common:
 dataplane:
     isInternal: {{ .Values.rimeAgent.isInternal }}
     platformAddress: {{ .Values.rimeAgent.connections.platformAddress }}
+
+    connections:
+        addresses:
+            rimeDataPlaneServerAddr: "{{ include "rime-agent.fullname" . }}-{{ .Values.rimeAgent.rimeCrossPlaneServer.name }}:{{ .Values.rimeAgent.rimeCrossPlaneServer.port }}"
 {{- end }}
 
 {{/*
@@ -99,6 +107,17 @@ Return the service account name used by the operator controller manager.
     {{ default (printf "%s-%s" (include "rime-agent.fullname" .) .Values.rimeAgent.launcher.name) .Values.rimeAgent.launcher.serviceAccount.name | trunc 63 | trimSuffix "-" }}
 {{- else -}}
     {{ default "default" .Values.rimeAgent.launcher.serviceAccount.name }}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Return the service account name used by the rimeServer.
+*/}}
+{{- define "rime-agent.rimeServer.serviceAccountName" -}}
+{{- if .Values.rimeAgent.rimeCrossPlaneServer.serviceAccount.create -}}
+    {{ default (printf "%s-%s" (include "rime-agent.fullname" .) .Values.rimeAgent.rimeCrossPlaneServer.name) .Values.rimeAgent.rimeCrossPlaneServer.serviceAccount.name | trunc 63 | trimSuffix "-" }}
+{{- else -}}
+    {{ default "default" .Values.rimeAgent.rimeCrossPlaneServer.serviceAccount.name }}
 {{- end -}}
 {{- end -}}
 

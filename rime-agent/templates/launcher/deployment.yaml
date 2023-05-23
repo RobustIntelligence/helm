@@ -59,9 +59,6 @@ spec:
           command:
             - "/rime/launcher"
           args:
-            {{- if .Values.tls.crossplaneEnabled }}
-            - "--auth-mode=tls"
-            {{- end }}
             {{- if .Values.rimeAgent.id }}
             - "--id={{ .Values.rimeAgent.id }}"
             {{- end }}

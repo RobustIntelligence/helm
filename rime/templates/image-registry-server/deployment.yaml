@@ -107,9 +107,6 @@ spec:
             - "/rime/rime"
           args:
             - "start-image-registry-server"
-            {{- if .Values.tls.grpcEnabled }}
-            - "--auth-mode=tls"
-            {{ end }}
             - "--server-config-path=/config/server.config"
             - "--image-builder-job-configmap-file=/config/image_builder_job_configmap.config"
             - "--image-builder-job-file=/config/image_builder_job.config"

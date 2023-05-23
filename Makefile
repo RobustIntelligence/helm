@@ -17,7 +17,7 @@ REPO_URL=https://robustintelligence.github.io/helm
 
 OPERATOR_ROLE_FILE := rime-agent/templates/operator/role.yaml
 
-.PHONY: clean .tmp-charts/rime  .tmp-charts/rime-agent  .tmp-charts/rime-extras .tmp-charts/rime-kube-system gen_operator_manifests
+.PHONY: clean .tmp-charts/rime  .tmp-charts/rime-agent  .tmp-charts/rime-extras .tmp-charts/rime-kube-system
 
 clean:
 	rm -rf .tmp-charts/
@@ -38,8 +38,7 @@ clean:
 
 .tmp-charts/rime-agent: .tmp-charts/rime-agent/Chart.yaml .tmp-charts/rime-agent/values.yaml $(patsubst %, .tmp-charts/%, $(wildcard rime-agent/templates/*.*)) $(patsubst %, .tmp-charts/%, $(wildcard rime-agent/templates/operator/*.*)) $(patsubst %, .tmp-charts/%, $(wildcard rime-agent/crds/*.*))
 	( \
-		cp -rf "rime-agent/crds" ".tmp-charts/rime-agent/." && \
-		cp "$(OPERATOR_ROLE_FILE)" ".tmp-charts/rime-agent/templates/operator/." \
+		cp -rf "rime-agent/templates/." ".tmp-charts/rime-agent/templates/." \
 	)
 
 .tmp-charts/rime-extras: .tmp-charts/rime-extras/Chart.yaml .tmp-charts/rime-extras/Chart.lock .tmp-charts/rime-extras/values.yaml $(patsubst %, .tmp-charts/%, $(wildcard rime-extras/charts/*.tgz))
@@ -57,7 +56,7 @@ clean:
 		popd \
 	)
 
-.rime-releases/rime-agent-$(VERSION).tgz: gen_operator_manifests .tmp-charts/rime-agent
+.rime-releases/rime-agent-$(VERSION).tgz: .tmp-charts/rime-agent
 	( \
 		$(call check_defined, APP_VERSION VERSION, helm chart version) \
 		mkdir -p .rime-releases && \
@@ -97,13 +96,13 @@ clean:
 create_rime_charts_release: clean .rime-releases/index.yaml
 
 ### Operator manfiest files for rime-agent helm chart ###
-gen_operator_manifests: rime-agent/crds/rimejob-crd.yaml $(OPERATOR_ROLE_FILE)
+gen_operator_manifests: rime-agent/crds/rbst.io_crossplanerpcjobs.yaml rime-agent/crds/rbst.io_rimejobs.yaml $(OPERATOR_ROLE_FILE)
 
-rime-agent/crds/rimejob-crd.yaml: rime-agent/crds ../../go/dataplane/operator/api/v1/rimejob.go ../../go/dataplane/operator/api/v1/groupversion_info.go
-	# TODO: make gen_go_protos a prereq instead
+rime-agent/crds/rbst.io_crossplanerpcjobs.yaml rime-agent/crds/rbst.io_rimejobs.yaml: rime-agent/crds ../../go/dataplane/operator/api/v1/rimejob.go ../../go/dataplane/operator/api/v1/crossplanerpcjob.go ../../go/dataplane/operator/api/v1/groupversion_info.go
 	cd ../.. && make gen_go_protos
 	cd ../../go/dataplane/operator && \
-	controller-gen crd paths="./..." output:crd:stdout > ../../../deployments/helm/rime-agent/crds/rimejob-crd.yaml
+	controller-gen crd paths="./..." output:crd:stdout output:crd:dir=../../../deployments/helm/rime-agent/crds/
+
 
 # CRD is generated into a subdirectory called 'crds' so that helm will skip if already installed
 # as CRDs are cluster scope.
@@ -112,7 +111,6 @@ rime-agent/crds:
 	mkdir -p $@
 
 $(OPERATOR_ROLE_FILE): ../../go/dataplane/operator/controllers/rimejob_controller.go
-	# TODO: make gen_go_protos a prereq instead
 	cd ../.. && make gen_go_protos
 	cd ../../go/dataplane/operator && \
 	controller-gen rbac:roleName="PLACEHOLDER_ROLE_NAME" paths="./..." output:rbac:stdout | sed 's/PLACEHOLDER_ROLE_NAME/{{ include "rime-agent.fullname" . }}-{{ .Values.rimeAgent.operator.name }}-role/1' > ../../../deployments/helm/$(OPERATOR_ROLE_FILE)

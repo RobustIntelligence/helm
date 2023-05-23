@@ -85,6 +85,7 @@ common:
         mongoTLSEnabled: {{ .Values.tls.mongoEnabled }}
         restTLSEnabled: {{ .Values.tls.restEnabled }}
         vaultTLSDisabled: {{ .Values.tls.vaultDisabled }}
+        grpcTLSEnabled: {{ .Values.tls.grpcEnabled }}
     mongo:
         databaseName: {{ default "rime-store" .Values.external.mongo.databaseName }}
         urlPrefix: {{ default "mongodb+srv://" .Values.external.mongo.urlPrefix }}
@@ -153,6 +154,9 @@ common:
             imageRegistryServerAddr: "{{ include "rime.fullname" . }}-{{ .Values.rime.imageRegistryServer.name }}:{{ .Values.rime.imageRegistryServer.port }}"
             {{- end }}
             modelTestingServerAddr: "{{ include "rime.fullname" . }}-{{ .Values.rime.modelTestingServer.name }}:{{ .Values.rime.modelTestingServer.port }}"
+    crossServiceKeyRef:
+        secretName: {{ include "rime.generatedSecretsName" . }}
+        key: crossServiceKey
 {{- end }}
 
 {{/*
