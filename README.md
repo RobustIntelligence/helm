@@ -74,7 +74,7 @@ NOTE: The [Cluster Autoscaler](https://github.com/kubernetes/autoscaler/tree/clu
 </details>
 
 ### Configuring Parameters
-For a detailed overview of this chart's values, see the `rime-kube-system` README [here](). Your Solutions Architect will assist with configuring parameters during deployment.
+For a detailed overview of this chart's values, see the `rime-kube-system` README [here](./rime-kube-system). Your Solutions Architect will assist with configuring parameters during deployment.
 
 Note that if deploying [cert-manager](https://github.com/cert-manager/cert-manager/tree/v1.10.0) for internal TLS (recommended), CRDs will be created. These CRDS must be created *before* deploying any other Robust Intelligence charts.
 
@@ -122,7 +122,7 @@ helm uninstall rime-kube-system -n kube-system
 </details>
 
 ### Configuring Parameters
-For a detailed overview of this chart's values, see the `rime` README [here](). Your Solutions Architect will assist with configuring parameters during deployment.
+For a detailed overview of this chart's values, see the `rime` README [here](./rime). Your Solutions Architect will assist with configuring parameters during deployment.
 
 Some of the main sections to configure include:
 1. `rime.secrets`: application secrets for product license, admin one-time credentials, etc.
@@ -175,9 +175,16 @@ helm uninstall rime -n $RI_NAMESPACE
 </details>
 
 ### Configuring Parameters
-For a detailed overview of this chart's values, see the `rime-agent` README [here](). Your Solutions Architect will assist with configuring parameters during deployment.
+For a detailed overview of this chart's values, see the `rime-agent` README [here](./rime-agent). Your Solutions Architect will assist with configuring parameters during deployment.
 
-Generally, the only setup needed for the `rime-agent` is to identify the authorization for the `rime-agent-model-tester` ServiceAccount under `rimeAgent.modelTestJob.serviceAccount`.
+Generally, there are two main setup steps for the `rime-agent` Helm chart:
+1. Identify the authorization for the `rime-agent-model-tester` ServiceAccount under `rimeAgent.modelTestJob.serviceAccount`.
+2. Configure endpoints in the `rimeAgent.connections` section.
+    - For **internal** agents (i.e., within the same cluster, which is the default for Self-Hosted deployments):
+        - Each endpoint takes the form `${RIME_RELEASE_NAME}-${SERVER_NAME}.${RIME_NAMESPACE}:${PORT}` (e.g., `rime-acme-agent-manager-server.acme:5016`).
+        - If enabling mutual TLS within the cluster, the `*RestAddress` endpoints must have HTTPS enabled (e.g., `https://rime-acme-agent-manager-server.acme:5016`).
+    - For **external** agents (i.e., outside of the cluster):
+        - Only specify `rimeAgent.connections.platformAddress`, which should be the domain of your web application.
 
 ### Installing the Chart
 ```
@@ -209,7 +216,7 @@ It's recommended to deploy the `rime-extras` chart in a separate namespace (e.g.
 </details>
 
 ### Configuring Parameters
-For a detailed overview of this chart's values, see the `rime-extras` README [here](). Your Solutions Architect will assist with configuring parameters during deployment.
+For a detailed overview of this chart's values, see the `rime-extras` README [here](./rime-extras). Your Solutions Architect will assist with configuring parameters during deployment.
 
 For DataDog, you may wish to configure the log masking logic specified in `datadog.datadog.env`.
 

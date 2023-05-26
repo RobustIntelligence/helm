@@ -45,9 +45,6 @@ spec:
               command:
                 - "/rime/scheduled_ct_worker"
                 - "--server-config-path=/config/worker.config"
-                {{- if .Values.tls.grpcEnabled }}
-                - "--auth-mode=tls"
-                {{ end }}
                 - "--timeout=4m"
                 {{- if .Values.rime.verbose }}
                 - "-verbose"

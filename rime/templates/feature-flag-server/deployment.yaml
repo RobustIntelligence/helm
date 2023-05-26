@@ -100,9 +100,6 @@ spec:
             - "/rime/rime"
           args:
             - "start-feature-flag-server"
-            {{- if .Values.tls.grpcEnabled }}
-            - "--auth-mode=tls"
-            {{ end }}
             - "--server-config-path=/config/server.config"
             - "--feature-flag-port={{ .Values.rime.featureFlagServer.port }}"
             - "--feature-flag-rest-port={{ .Values.rime.featureFlagServer.restPort }}"

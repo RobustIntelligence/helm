@@ -12,7 +12,7 @@ data:
     metadata:
       name: job-conf-placeholder
     immutable: true
-  job.config: |
+  rime_job.config: |
     apiVersion: batch/v1
     kind: Job
     metadata:
@@ -55,7 +55,7 @@ data:
                 valueFrom:
                   secretKeyRef:
                     name: {{ include "rime-agent.secretName" . }}
-                    key: api_key
+                    key: api-key
               - name: RIME_DISABLE_TLS
                 value: {{ if .Values.rimeAgent.connections.platformAddress }} "false" {{ else }} "true" {{ end }}
             {{- with .Values.rimeAgent.operator.modelTestJob.extraEnv }}
@@ -96,3 +96,83 @@ data:
               {{- toYaml . | nindent 12 }}
             {{- end }}
       backoffLimit: {{ .Values.rimeAgent.operator.modelTestJob.backoffLimit }}
+
+  crossplane_job.config: |
+    apiVersion: batch/v1
+    kind: Job
+    metadata:
+      name: job-placeholder
+    spec:
+      activeDeadlineSeconds: {{ .Values.rimeAgent.operator.crossPlaneRPCJob.activeDeadlineSeconds }}
+      ttlSecondsAfterFinished: {{ .Values.rimeAgent.operator.crossPlaneRPCJob.ttlSecondsAfterFinished }}
+      template:
+        metadata:
+          labels:
+            {{- include "rime-agent.labels" . | nindent 12 }}
+            {{- with .Values.rimeAgent.operator.crossPlaneRPCJob.labels }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          annotations:
+            {{- include "rime-agent.annotations" . | nindent 12 }}
+            {{- with .Values.rimeAgent.operator.crossPlaneRPCJob.annotations }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+        spec:
+          {{- include "rime-agent.imagePullSecretsYaml" . | nindent 10 }}
+          {{- with .Values.rimeAgent.operator.crossPlaneRPCJob.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          containers:
+          - name: {{ .Values.rimeAgent.operator.crossPlaneRPCJob.name }}
+            image: "{{ .Values.rimeAgent.images.agentImage.registry }}/{{ .Values.rimeAgent.images.agentImage.name }}"
+            env:
+              - name: RIME_API_KEY
+                valueFrom:
+                  secretKeyRef:
+                    name: {{ include "rime-agent.secretName" .}}
+                    key: api-key
+                    optional: true
+            {{- with .Values.rimeAgent.operator.crossPlaneRPCJob.extraEnv }}
+              {{- toYaml . | nindent 14 }}
+            {{- end }}
+            imagePullPolicy: {{ .Values.rimeAgent.images.agentImage.pullPolicy }}
+            volumeMounts:
+              {{- if .Values.tls.crossplaneEnabled }}
+              - name: {{ .Values.rimeAgent.operator.crossPlaneRPCJob.name }}-{{ .Release.Namespace }}-tls
+                mountPath: /var/tmp/tls/common
+                readOnly: true
+              {{- end }}
+              - name: {{ include "rime-agent.fullname" . }}-{{ .Values.rimeAgent.operator.crossPlaneRPCJob.name }}-common-config
+                mountPath: "/config"
+                readOnly: true
+              {{- with .Values.rimeAgent.operator.crossPlaneRPCJob.extraVolumeMounts }}
+                {{- toYaml . | nindent 14 }}
+              {{- end }}
+            resources:
+              {{- toYaml .Values.rimeAgent.operator.crossPlaneRPCJob.resources | nindent 14 }}
+          restartPolicy: Never
+          {{- with .Values.rimeAgent.operator.crossPlaneRPCJob.tolerations }}
+          tolerations:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.rimeAgent.operator.crossPlaneRPCJob.affinity }}
+          affinity:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          volumes:
+            - name: {{ include "rime-agent.fullname" . }}-{{ .Values.rimeAgent.operator.crossPlaneRPCJob.name }}-common-config
+              configMap:
+                name: {{ include "rime-agent.fullname" . }}-{{ .Values.rimeAgent.operator.crossPlaneRPCJob.name }}-common-conf
+                items:
+                  - key: "server.config"
+                    path: "server.config"
+            {{- if .Values.tls.crossplaneEnabled }}
+            - name: {{ .Values.rimeAgent.operator.crossPlaneRPCJob.name }}-{{ .Release.Namespace }}-tls
+              secret:
+                secretName: {{ .Values.rimeAgent.operator.crossPlaneRPCJob.name }}-{{ .Release.Namespace }}-tls
+            {{- end }}
+            {{- with .Values.rimeAgent.operator.crossPlaneRPCJob.extraVolumes }}
+              {{- toYaml . | nindent 12 }}
+            {{- end }}
+      backoffLimit: {{ .Values.rimeAgent.operator.crossPlaneRPCJob.backoffLimit }}

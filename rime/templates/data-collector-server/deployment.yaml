@@ -100,9 +100,6 @@ spec:
             - "/rime/rime"
           args:
             - "start-data-collector-server"
-            {{- if .Values.tls.grpcEnabled }}
-            - "--auth-mode=tls"
-            {{ end }}
             - "--server-config-path=/config/server.config"
             - "--data-collector-port={{ .Values.rime.dataCollectorServer.port }}"
             - "--data-collector-rest-port={{ .Values.rime.dataCollectorServer.restPort }}"

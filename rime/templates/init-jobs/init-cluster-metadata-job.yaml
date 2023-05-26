@@ -107,9 +107,6 @@ spec:
             - "/rime/dbworker"
           args:
             - "init-cluster-metadata"
-            {{- if .Values.tls.grpcEnabled }}
-            - "--auth-mode=tls"
-            {{ end }}
             - "--server-config-path=/config/worker.config"
             - "-overwrite-feature-flags={{ .Values.rime.initClusterMetadata.overwriteLicense }}"
             {{if .Values.rime.imageRegistryServer.enabled }}
