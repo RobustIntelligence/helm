@@ -2,8 +2,30 @@ apiVersion: v1
 entries:
   rime:
   - apiVersion: v2
+    appVersion: v2.1.0-rc.7
+    created: "2023-06-22T22:11:39.907402886Z"
+    dependencies:
+    - condition: mongodb.enabled
+      name: mongodb
+      repository: https://charts.bitnami.com/bitnami
+      version: 12.1.27
+    - name: ingress-nginx
+      repository: https://kubernetes.github.io/ingress-nginx
+      version: 4.2.0
+    - name: vault
+      repository: https://helm.releases.hashicorp.com
+      version: 0.21.0
+    description: A Helm chart for RIME's hosted services
+    digest: a5c93065b6680e63801015da841362d8af313989133997a06fa09cdf85c02951
+    kubeVersion: '>=1.20.0-0'
+    name: rime
+    type: application
+    urls:
+    - https://robustintelligence.github.io/helm/chart-releases/rime-2.1.0-rc.7.tgz
+    version: 2.1.0-rc.7
+  - apiVersion: v2
     appVersion: v2.1.0-rc.5
-    created: "2023-05-30T23:41:18.955458032Z"
+    created: "2023-06-22T22:11:39.892008523Z"
     dependencies:
     - condition: mongodb.enabled
       name: mongodb
@@ -25,7 +47,7 @@ entries:
     version: 2.1.0-rc.5
   - apiVersion: v2
     appVersion: v2.1.0-rc.4
-    created: "2023-05-30T23:41:18.935618582Z"
+    created: "2023-06-22T22:11:39.877237967Z"
     dependencies:
     - condition: mongodb.enabled
       name: mongodb
@@ -47,7 +69,7 @@ entries:
     version: 2.1.0-rc.4
   - apiVersion: v2
     appVersion: v2.1.0-rc.1
-    created: "2023-05-30T23:41:18.916218228Z"
+    created: "2023-06-22T22:11:39.861881504Z"
     dependencies:
     - condition: mongodb.enabled
       name: mongodb
@@ -69,7 +91,7 @@ entries:
     version: 2.1.0-rc.1
   - apiVersion: v2
     appVersion: v2.1.0-rc.0
-    created: "2023-05-30T23:41:18.896858774Z"
+    created: "2023-06-22T22:11:39.847053947Z"
     dependencies:
     - condition: mongodb.enabled
       name: mongodb
@@ -91,7 +113,7 @@ entries:
     version: 2.1.0-rc.0
   - apiVersion: v2
     appVersion: v2.0.14
-    created: "2023-05-30T23:41:18.737946972Z"
+    created: "2023-06-22T22:11:39.725002954Z"
     dependencies:
     - condition: mongodb.enabled
       name: mongodb
@@ -113,7 +135,7 @@ entries:
     version: 2.0.14
   - apiVersion: v2
     appVersion: v2.0.12
-    created: "2023-05-30T23:41:18.715455541Z"
+    created: "2023-06-22T22:11:39.7104544Z"
     dependencies:
     - condition: mongodb.enabled
       name: mongodb
@@ -135,7 +157,7 @@ entries:
     version: 2.0.12
   - apiVersion: v2
     appVersion: v2.0.11
-    created: "2023-05-30T23:41:18.695081795Z"
+    created: "2023-06-22T22:11:39.695756144Z"
     dependencies:
     - condition: mongodb.enabled
       name: mongodb
@@ -157,7 +179,7 @@ entries:
     version: 2.0.11
   - apiVersion: v2
     appVersion: v2.0.10
-    created: "2023-05-30T23:41:18.674669948Z"
+    created: "2023-06-22T22:11:39.680856486Z"
     dependencies:
     - condition: mongodb.enabled
       name: mongodb
@@ -179,7 +201,7 @@ entries:
     version: 2.0.10
   - apiVersion: v2
     appVersion: v2.0.9
-    created: "2023-05-30T23:41:18.876968824Z"
+    created: "2023-06-22T22:11:39.830991077Z"
     dependencies:
     - condition: mongodb.enabled
       name: mongodb
@@ -201,7 +223,7 @@ entries:
     version: 2.0.9
   - apiVersion: v2
     appVersion: v2.0.8
-    created: "2023-05-30T23:41:18.857850968Z"
+    created: "2023-06-22T22:11:39.815533113Z"
     dependencies:
     - condition: mongodb.enabled
       name: mongodb
@@ -223,7 +245,7 @@ entries:
     version: 2.0.8
   - apiVersion: v2
     appVersion: v2.0.7
-    created: "2023-05-30T23:41:18.838230316Z"
+    created: "2023-06-22T22:11:39.799102639Z"
     dependencies:
     - condition: mongodb.enabled
       name: mongodb
@@ -245,7 +267,7 @@ entries:
     version: 2.0.7
   - apiVersion: v2
     appVersion: v2.0.6
-    created: "2023-05-30T23:41:18.818063968Z"
+    created: "2023-06-22T22:11:39.783562074Z"
     dependencies:
     - condition: mongodb.enabled
       name: mongodb
@@ -267,7 +289,7 @@ entries:
     version: 2.0.6
   - apiVersion: v2
     appVersion: v2.0.5
-    created: "2023-05-30T23:41:18.798174418Z"
+    created: "2023-06-22T22:11:39.767935509Z"
     dependencies:
     - condition: mongodb.enabled
       name: mongodb
@@ -289,7 +311,7 @@ entries:
     version: 2.0.5
   - apiVersion: v2
     appVersion: v2.0.4
-    created: "2023-05-30T23:41:18.779073562Z"
+    created: "2023-06-22T22:11:39.753622357Z"
     dependencies:
     - condition: mongodb.enabled
       name: mongodb
@@ -311,7 +333,7 @@ entries:
     version: 2.0.4
   - apiVersion: v2
     appVersion: v2.0.3
-    created: "2023-05-30T23:41:18.759788307Z"
+    created: "2023-06-22T22:11:39.739268305Z"
     dependencies:
     - condition: mongodb.enabled
       name: mongodb
@@ -333,7 +355,7 @@ entries:
     version: 2.0.3
   - apiVersion: v2
     appVersion: v2.0.1
-    created: "2023-05-30T23:41:18.654418101Z"
+    created: "2023-06-22T22:11:39.666402533Z"
     dependencies:
     - condition: mongodb.enabled
       name: mongodb
@@ -355,7 +377,7 @@ entries:
     version: 2.0.1
   - apiVersion: v2
     appVersion: v2.0.0
-    created: "2023-05-30T23:41:18.633774257Z"
+    created: "2023-06-22T22:11:39.651336774Z"
     dependencies:
     - condition: mongodb.enabled
       name: mongodb
@@ -377,7 +399,7 @@ entries:
     version: 2.0.0
   - apiVersion: v2
     appVersion: v2.0.0-rc.14
-    created: "2023-05-30T23:41:18.51526775Z"
+    created: "2023-06-22T22:11:39.559094197Z"
     dependencies:
     - condition: mongodb.enabled
       name: mongodb
@@ -399,7 +421,7 @@ entries:
     version: 2.0.0-rc.14
   - apiVersion: v2
     appVersion: v2.0.0-rc.13
-    created: "2023-05-30T23:41:18.494590006Z"
+    created: "2023-06-22T22:11:39.544390941Z"
     dependencies:
     - condition: mongodb.enabled
       name: mongodb
@@ -421,7 +443,7 @@ entries:
     version: 2.0.0-rc.13
   - apiVersion: v2
     appVersion: v2.0.0-rc.11
-    created: "2023-05-30T23:41:18.469011398Z"
+    created: "2023-06-22T22:11:39.529465383Z"
     dependencies:
     - condition: mongodb.enabled
       name: mongodb
@@ -443,7 +465,7 @@ entries:
     version: 2.0.0-rc.11
   - apiVersion: v2
     appVersion: v2.0.0-rc.10
-    created: "2023-05-30T23:41:18.448736151Z"
+    created: "2023-06-22T22:11:39.514392823Z"
     dependencies:
     - condition: mongodb.enabled
       name: mongodb
@@ -465,7 +487,7 @@ entries:
     version: 2.0.0-rc.10
   - apiVersion: v2
     appVersion: v2.0.0-rc.7
-    created: "2023-05-30T23:41:18.613000213Z"
+    created: "2023-06-22T22:11:39.636641018Z"
     dependencies:
     - condition: mongodb.enabled
       name: mongodb
@@ -487,7 +509,7 @@ entries:
     version: 2.0.0-rc.7
   - apiVersion: v2
     appVersion: v2.0.0-rc.6
-    created: "2023-05-30T23:41:18.59487625Z"
+    created: "2023-06-22T22:11:39.621122954Z"
     dependencies:
     - name: mongodb
       repository: https://charts.bitnami.com/bitnami
@@ -508,7 +530,7 @@ entries:
     version: 2.0.0-rc.6
   - apiVersion: v2
     appVersion: v2.0.0-rc.5
-    created: "2023-05-30T23:41:18.577299882Z"
+    created: "2023-06-22T22:11:39.606433198Z"
     dependencies:
     - name: mongodb
       repository: https://charts.bitnami.com/bitnami
@@ -529,7 +551,7 @@ entries:
     version: 2.0.0-rc.5
   - apiVersion: v2
     appVersion: v2.0.0-rc.4
-    created: "2023-05-30T23:41:18.560473509Z"
+    created: "2023-06-22T22:11:39.592011345Z"
     dependencies:
     - name: mongodb
       repository: https://charts.bitnami.com/bitnami
@@ -550,7 +572,7 @@ entries:
     version: 2.0.0-rc.4
   - apiVersion: v2
     appVersion: v2.0.0-rc.3
-    created: "2023-05-30T23:41:18.542064248Z"
+    created: "2023-06-22T22:11:39.577066587Z"
     dependencies:
     - name: mongodb
       repository: https://charts.bitnami.com/bitnami
@@ -574,7 +596,7 @@ entries:
     version: 2.0.0-rc.3
   - apiVersion: v2
     appVersion: v2.0.0-rc.1
-    created: "2023-05-30T23:41:18.430950785Z"
+    created: "2023-06-22T22:11:39.498758157Z"
     dependencies:
     - name: mongodb
       repository: https://charts.bitnami.com/bitnami
@@ -598,7 +620,7 @@ entries:
     version: 2.0.0-rc.1
   - apiVersion: v2
     appVersion: v2.0.0-beta.19
-    created: "2023-05-30T23:41:18.251052041Z"
+    created: "2023-06-22T22:11:39.346582945Z"
     dependencies:
     - name: mongodb
       repository: https://charts.bitnami.com/bitnami
@@ -622,7 +644,7 @@ entries:
     version: 2.0.0-beta.19
   - apiVersion: v2
     appVersion: v2.0.0-beta.18
-    created: "2023-05-30T23:41:18.227193021Z"
+    created: "2023-06-22T22:11:39.325073318Z"
     dependencies:
     - name: mongodb
       repository: https://charts.bitnami.com/bitnami
@@ -646,7 +668,7 @@ entries:
     version: 2.0.0-beta.18
   - apiVersion: v2
     appVersion: v2.0.0-beta.16
-    created: "2023-05-30T23:41:18.201550314Z"
+    created: "2023-06-22T22:11:39.303632991Z"
     dependencies:
     - name: mongodb
       repository: https://charts.bitnami.com/bitnami
@@ -670,7 +692,7 @@ entries:
     version: 2.0.0-beta.16
   - apiVersion: v2
     appVersion: v2.0.0-beta.15
-    created: "2023-05-30T23:41:18.174001822Z"
+    created: "2023-06-22T22:11:39.281105952Z"
     dependencies:
     - name: mongodb
       repository: https://charts.bitnami.com/bitnami
@@ -694,7 +716,7 @@ entries:
     version: 2.0.0-beta.15
   - apiVersion: v2
     appVersion: v2.0.0-beta.14
-    created: "2023-05-30T23:41:18.148970711Z"
+    created: "2023-06-22T22:11:39.259772326Z"
     dependencies:
     - name: mongodb
       repository: https://charts.bitnami.com/bitnami
@@ -718,7 +740,7 @@ entries:
     version: 2.0.0-beta.14
   - apiVersion: v2
     appVersion: v2.0.0-beta.13
-    created: "2023-05-30T23:41:18.122734508Z"
+    created: "2023-06-22T22:11:39.237665292Z"
     dependencies:
     - name: mongodb
       repository: https://charts.bitnami.com/bitnami
@@ -742,7 +764,7 @@ entries:
     version: 2.0.0-beta.13
   - apiVersion: v2
     appVersion: v2.0.0-beta.12
-    created: "2023-05-30T23:41:18.098301292Z"
+    created: "2023-06-22T22:11:39.216406567Z"
     dependencies:
     - name: mongodb
       repository: https://charts.bitnami.com/bitnami
@@ -766,7 +788,7 @@ entries:
     version: 2.0.0-beta.12
   - apiVersion: v2
     appVersion: v2.0.0-beta.11
-    created: "2023-05-30T23:41:18.070305203Z"
+    created: "2023-06-22T22:11:39.194589435Z"
     dependencies:
     - name: mongodb
       repository: https://charts.bitnami.com/bitnami
@@ -790,7 +812,7 @@ entries:
     version: 2.0.0-beta.11
   - apiVersion: v2
     appVersion: v2.0.0-beta.10
-    created: "2023-05-30T23:41:18.041785918Z"
+    created: "2023-06-22T22:11:39.174692625Z"
     dependencies:
     - name: mongodb
       repository: https://charts.bitnami.com/bitnami
@@ -814,7 +836,7 @@ entries:
     version: 2.0.0-beta.10
   - apiVersion: v2
     appVersion: v2.0.0-beta.9
-    created: "2023-05-30T23:41:18.403526992Z"
+    created: "2023-06-22T22:11:39.478081938Z"
     dependencies:
     - name: mongodb
       repository: https://charts.bitnami.com/bitnami
@@ -838,7 +860,7 @@ entries:
     version: 2.0.0-beta.9
   - apiVersion: v2
     appVersion: v2.0.0-beta.8
-    created: "2023-05-30T23:41:18.375735601Z"
+    created: "2023-06-22T22:11:39.457069716Z"
     dependencies:
     - name: mongodb
       repository: https://charts.bitnami.com/bitnami
@@ -862,7 +884,7 @@ entries:
     version: 2.0.0-beta.8
   - apiVersion: v2
     appVersion: v2.0.0-beta.7
-    created: "2023-05-30T23:41:18.350322193Z"
+    created: "2023-06-22T22:11:39.433707468Z"
     dependencies:
     - name: mongodb
       repository: https://charts.bitnami.com/bitnami
@@ -886,7 +908,7 @@ entries:
     version: 2.0.0-beta.7
   - apiVersion: v2
     appVersion: v2.0.0-beta.6
-    created: "2023-05-30T23:41:18.326182475Z"
+    created: "2023-06-22T22:11:39.411912538Z"
     dependencies:
     - name: mongodb
       repository: https://charts.bitnami.com/bitnami
@@ -910,7 +932,7 @@ entries:
     version: 2.0.0-beta.6
   - apiVersion: v2
     appVersion: v2.0.0-beta.5
-    created: "2023-05-30T23:41:18.300905065Z"
+    created: "2023-06-22T22:11:39.389708902Z"
     dependencies:
     - name: mongodb
       repository: https://charts.bitnami.com/bitnami
@@ -934,7 +956,7 @@ entries:
     version: 2.0.0-beta.5
   - apiVersion: v2
     appVersion: v2.0.0-beta.3
-    created: "2023-05-30T23:41:18.277296543Z"
+    created: "2023-06-22T22:11:39.368830381Z"
     dependencies:
     - name: mongodb
       repository: https://charts.bitnami.com/bitnami
@@ -958,7 +980,7 @@ entries:
     version: 2.0.0-beta.3
   - apiVersion: v2
     appVersion: v2.0.0-beta.0
-    created: "2023-05-30T23:41:18.012458539Z"
+    created: "2023-06-22T22:11:39.152670391Z"
     dependencies:
     - name: mongodb
       repository: https://charts.bitnami.com/bitnami
@@ -985,7 +1007,7 @@ entries:
     version: 2.0.0-beta.0
   - apiVersion: v2
     appVersion: v2.0.0-alpha.4
-    created: "2023-05-30T23:41:17.972115644Z"
+    created: "2023-06-22T22:11:39.125807007Z"
     dependencies:
     - name: mongodb
       repository: https://charts.bitnami.com/bitnami
@@ -1012,7 +1034,7 @@ entries:
     version: 2.0.0-alpha.4
   - apiVersion: v2
     appVersion: v2.0.0-alpha.3
-    created: "2023-05-30T23:41:17.941027878Z"
+    created: "2023-06-22T22:11:39.100197536Z"
     dependencies:
     - name: mongodb
       repository: https://charts.bitnami.com/bitnami
@@ -1039,7 +1061,7 @@ entries:
     version: 2.0.0-alpha.3
   - apiVersion: v2
     appVersion: v2.0.0-alpha.2
-    created: "2023-05-30T23:41:17.907343732Z"
+    created: "2023-06-22T22:11:39.075347672Z"
     dependencies:
     - name: mongodb
       repository: https://charts.bitnami.com/bitnami
@@ -1066,7 +1088,7 @@ entries:
     version: 2.0.0-alpha.2
   - apiVersion: v2
     appVersion: v2.0.0-alpha.1
-    created: "2023-05-30T23:41:17.877541056Z"
+    created: "2023-06-22T22:11:39.049119195Z"
     dependencies:
     - name: mongodb
       repository: https://charts.bitnami.com/bitnami
@@ -1093,7 +1115,7 @@ entries:
     version: 2.0.0-alpha.1
   - apiVersion: v2
     appVersion: v0.21.0-rc.4
-    created: "2023-05-30T23:41:17.839174545Z"
+    created: "2023-06-22T22:11:39.023021918Z"
     dependencies:
     - name: mongodb
       repository: https://charts.bitnami.com/bitnami
@@ -1120,7 +1142,7 @@ entries:
     version: 0.21.0-rc.4
   - apiVersion: v2
     appVersion: v0.21.0-rc.2
-    created: "2023-05-30T23:41:17.806887489Z"
+    created: "2023-06-22T22:11:38.997768351Z"
     dependencies:
     - name: mongodb
       repository: https://charts.bitnami.com/bitnami
@@ -1147,7 +1169,7 @@ entries:
     version: 0.21.0-rc.2
   - apiVersion: v2
     appVersion: v0.20.21
-    created: "2023-05-30T23:41:17.587607742Z"
+    created: "2023-06-22T22:11:38.829556069Z"
     dependencies:
     - name: mongodb
       repository: https://charts.bitnami.com/bitnami
@@ -1174,7 +1196,7 @@ entries:
     version: 0.20.21
   - apiVersion: v2
     appVersion: v0.20.20
-    created: "2023-05-30T23:41:17.556725874Z"
+    created: "2023-06-22T22:11:38.80604272Z"
     dependencies:
     - name: mongodb
       repository: https://charts.bitnami.com/bitnami
@@ -1201,7 +1223,7 @@ entries:
     version: 0.20.20
   - apiVersion: v2
     appVersion: v0.20.19
-    created: "2023-05-30T23:41:17.49496334Z"
+    created: "2023-06-22T22:11:38.758274914Z"
     dependencies:
     - name: mongodb
       repository: https://charts.bitnami.com/bitnami
@@ -1228,7 +1250,7 @@ entries:
     version: 0.20.19
   - apiVersion: v2
     appVersion: v0.20.18
-    created: "2023-05-30T23:41:17.465982639Z"
+    created: "2023-06-22T22:11:38.735963877Z"
     dependencies:
     - name: mongodb
       repository: https://charts.bitnami.com/bitnami
@@ -1255,7 +1277,7 @@ entries:
     version: 0.20.18
   - apiVersion: v2
     appVersion: v0.20.17
-    created: "2023-05-30T23:41:17.434934708Z"
+    created: "2023-06-22T22:11:38.711543519Z"
     dependencies:
     - name: mongodb
       repository: https://charts.bitnami.com/bitnami
@@ -1282,7 +1304,7 @@ entries:
     version: 0.20.17
   - apiVersion: v2
     appVersion: v0.20.16
-    created: "2023-05-30T23:41:17.40512177Z"
+    created: "2023-06-22T22:11:38.685735845Z"
     dependencies:
     - name: mongodb
       repository: https://charts.bitnami.com/bitnami
@@ -1309,7 +1331,7 @@ entries:
     version: 0.20.16
   - apiVersion: v2
     appVersion: v0.20.15
-    created: "2023-05-30T23:41:17.373454843Z"
+    created: "2023-06-22T22:11:38.647812244Z"
     dependencies:
     - name: mongodb
       repository: https://charts.bitnami.com/bitnami
@@ -1336,7 +1358,7 @@ entries:
     version: 0.20.15
   - apiVersion: v2
     appVersion: v0.20.14
-    created: "2023-05-30T23:41:17.342356912Z"
+    created: "2023-06-22T22:11:38.60499899Z"
     dependencies:
     - name: mongodb
       repository: https://charts.bitnami.com/bitnami
@@ -1363,7 +1385,7 @@ entries:
     version: 0.20.14
   - apiVersion: v2
     appVersion: v0.20.13
-    created: "2023-05-30T23:41:17.310877983Z"
+    created: "2023-06-22T22:11:38.574103263Z"
     dependencies:
     - name: mongodb
       repository: https://charts.bitnami.com/bitnami
@@ -1390,7 +1412,7 @@ entries:
     version: 0.20.13
   - apiVersion: v2
     appVersion: v0.20.12
-    created: "2023-05-30T23:41:17.28012385Z"
+    created: "2023-06-22T22:11:38.539767099Z"
     dependencies:
     - name: mongodb
       repository: https://charts.bitnami.com/bitnami
@@ -1417,7 +1439,7 @@ entries:
     version: 0.20.12
   - apiVersion: v2
     appVersion: v0.20.11
-    created: "2023-05-30T23:41:17.249855915Z"
+    created: "2023-06-22T22:11:38.511203497Z"
     dependencies:
     - name: mongodb
       repository: https://charts.bitnami.com/bitnami
@@ -1444,7 +1466,7 @@ entries:
     version: 0.20.11
   - apiVersion: v2
     appVersion: v0.20.10
-    created: "2023-05-30T23:41:17.217303892Z"
+    created: "2023-06-22T22:11:38.485280222Z"
     dependencies:
     - name: mongodb
       repository: https://charts.bitnami.com/bitnami
@@ -1471,7 +1493,7 @@ entries:
     version: 0.20.10
   - apiVersion: v2
     appVersion: v0.20.9
-    created: "2023-05-30T23:41:17.774080036Z"
+    created: "2023-06-22T22:11:38.973873298Z"
     dependencies:
     - name: mongodb
       repository: https://charts.bitnami.com/bitnami
@@ -1498,7 +1520,7 @@ entries:
     version: 0.20.9
   - apiVersion: v2
     appVersion: v0.20.8
-    created: "2023-05-30T23:41:17.742889971Z"
+    created: "2023-06-22T22:11:38.950033845Z"
     dependencies:
     - name: mongodb
       repository: https://charts.bitnami.com/bitnami
@@ -1525,7 +1547,7 @@ entries:
     version: 0.20.8
   - apiVersion: v2
     appVersion: v0.20.6
-    created: "2023-05-30T23:41:17.712392001Z"
+    created: "2023-06-22T22:11:38.926050091Z"
     dependencies:
     - name: mongodb
       repository: https://charts.bitnami.com/bitnami
@@ -1552,7 +1574,7 @@ entries:
     version: 0.20.6
   - apiVersion: v2
     appVersion: v0.20.5
-    created: "2023-05-30T23:41:17.683091022Z"
+    created: "2023-06-22T22:11:38.902608543Z"
     dependencies:
     - name: mongodb
       repository: https://charts.bitnami.com/bitnami
@@ -1579,7 +1601,7 @@ entries:
     version: 0.20.5
   - apiVersion: v2
     appVersion: v0.20.4
-    created: "2023-05-30T23:41:17.652398053Z"
+    created: "2023-06-22T22:11:38.877975082Z"
     dependencies:
     - name: mongodb
       repository: https://charts.bitnami.com/bitnami
@@ -1606,7 +1628,7 @@ entries:
     version: 0.20.4
   - apiVersion: v2
     appVersion: v0.20.3
-    created: "2023-05-30T23:41:17.620459594Z"
+    created: "2023-06-22T22:11:38.853558523Z"
     dependencies:
     - name: mongodb
       repository: https://charts.bitnami.com/bitnami
@@ -1633,7 +1655,7 @@ entries:
     version: 0.20.3
   - apiVersion: v2
     appVersion: v0.20.2
-    created: "2023-05-30T23:41:17.5268163Z"
+    created: "2023-06-22T22:11:38.781672562Z"
     dependencies:
     - name: mongodb
       repository: https://charts.bitnami.com/bitnami
@@ -1660,7 +1682,7 @@ entries:
     version: 0.20.2
   - apiVersion: v2
     appVersion: v0.20.0
-    created: "2023-05-30T23:41:17.182491281Z"
+    created: "2023-06-22T22:11:38.458567139Z"
     dependencies:
     - name: mongodb
       repository: https://charts.bitnami.com/bitnami
@@ -1687,7 +1709,7 @@ entries:
     version: 0.20.0
   - apiVersion: v2
     appVersion: v0.20.0-rc.10
-    created: "2023-05-30T23:41:16.968582545Z"
+    created: "2023-06-22T22:11:38.301700477Z"
     dependencies:
     - name: mongodb
       repository: https://charts.bitnami.com/bitnami
@@ -1714,7 +1736,7 @@ entries:
     version: 0.20.0-rc.10
   - apiVersion: v2
     appVersion: v0.20.0-rc.9
-    created: "2023-05-30T23:41:17.152633544Z"
+    created: "2023-06-22T22:11:38.433922178Z"
     dependencies:
     - name: mongodb
       repository: https://charts.bitnami.com/bitnami
@@ -1738,7 +1760,7 @@ entries:
     version: 0.20.0-rc.9
   - apiVersion: v2
     appVersion: v0.20.0-rc.7
-    created: "2023-05-30T23:41:17.127308782Z"
+    created: "2023-06-22T22:11:38.41525498Z"
     dependencies:
     - name: mongodb
       repository: https://charts.bitnami.com/bitnami
@@ -1762,7 +1784,7 @@ entries:
     version: 0.20.0-rc.7
   - apiVersion: v2
     appVersion: v0.20.0-rc.6
-    created: "2023-05-30T23:41:17.102696815Z"
+    created: "2023-06-22T22:11:38.396525782Z"
     dependencies:
     - name: mongodb
       repository: https://charts.bitnami.com/bitnami
@@ -1789,7 +1811,7 @@ entries:
     version: 0.20.0-rc.6
   - apiVersion: v2
     appVersion: v0.20.0-rc.5
-    created: "2023-05-30T23:41:17.068534701Z"
+    created: "2023-06-22T22:11:38.373792641Z"
     dependencies:
     - name: mongodb
       repository: https://charts.bitnami.com/bitnami
@@ -1816,7 +1838,7 @@ entries:
     version: 0.20.0-rc.5
   - apiVersion: v2
     appVersion: v0.20.0-rc.4
-    created: "2023-05-30T23:41:17.030499008Z"
+    created: "2023-06-22T22:11:38.349860488Z"
     dependencies:
     - name: mongodb
       repository: https://charts.bitnami.com/bitnami
@@ -1843,7 +1865,7 @@ entries:
     version: 0.20.0-rc.4
   - apiVersion: v2
     appVersion: v0.20.0-rc.2
-    created: "2023-05-30T23:41:16.999696976Z"
+    created: "2023-06-22T22:11:38.32556633Z"
     dependencies:
     - name: mongodb
       repository: https://charts.bitnami.com/bitnami
@@ -1870,7 +1892,7 @@ entries:
     version: 0.20.0-rc.2
   - apiVersion: v2
     appVersion: v0.20.0-rc.0
-    created: "2023-05-30T23:41:16.938455009Z"
+    created: "2023-06-22T22:11:38.27460629Z"
     dependencies:
     - name: mongodb
       repository: https://charts.bitnami.com/bitnami
@@ -1897,7 +1919,7 @@ entries:
     version: 0.20.0-rc.0
   - apiVersion: v2
     appVersion: v0.19.7
-    created: "2023-05-30T23:41:16.906251184Z"
+    created: "2023-06-22T22:11:38.245523282Z"
     dependencies:
     - name: mongodb
       repository: https://charts.bitnami.com/bitnami
@@ -1924,7 +1946,7 @@ entries:
     version: 0.19.7
   - apiVersion: v2
     appVersion: v0.19.5
-    created: "2023-05-30T23:41:16.873717161Z"
+    created: "2023-06-22T22:11:38.221928832Z"
     dependencies:
     - name: mongodb
       repository: https://charts.bitnami.com/bitnami
@@ -1951,7 +1973,7 @@ entries:
     version: 0.19.5
   - apiVersion: v2
     appVersion: v0.19.5-rc.3
-    created: "2023-05-30T23:41:16.843425326Z"
+    created: "2023-06-22T22:11:38.191621711Z"
     dependencies:
     - name: mongodb
       repository: https://charts.bitnami.com/bitnami
@@ -1978,7 +2000,7 @@ entries:
     version: 0.19.5-rc.3
   - apiVersion: v2
     appVersion: v0.19.1
-    created: "2023-05-30T23:41:16.812557294Z"
+    created: "2023-06-22T22:11:38.166146942Z"
     dependencies:
     - name: mongodb
       repository: https://charts.bitnami.com/bitnami
@@ -2005,7 +2027,7 @@ entries:
     version: 0.19.1
   - apiVersion: v2
     appVersion: v0.19.0
-    created: "2023-05-30T23:41:16.78198066Z"
+    created: "2023-06-22T22:11:38.14145478Z"
     dependencies:
     - name: mongodb
       repository: https://charts.bitnami.com/bitnami
@@ -2032,7 +2054,7 @@ entries:
     version: 0.19.0
   - apiVersion: v2
     appVersion: v0.19.0-rc.9
-    created: "2023-05-30T23:41:16.75080993Z"
+    created: "2023-06-22T22:11:38.117905831Z"
     dependencies:
     - name: mongodb
       repository: https://charts.bitnami.com/bitnami
@@ -2059,7 +2081,7 @@ entries:
     version: 0.19.0-rc.9
   - apiVersion: v2
     appVersion: v0.19.0-rc.7
-    created: "2023-05-30T23:41:16.720070597Z"
+    created: "2023-06-22T22:11:38.077151399Z"
     dependencies:
     - name: mongodb
       repository: https://charts.bitnami.com/bitnami
@@ -2086,7 +2108,7 @@ entries:
     version: 0.19.0-rc.7
   - apiVersion: v2
     appVersion: v0.19.0-rc.6
-    created: "2023-05-30T23:41:16.68829077Z"
+    created: "2023-06-22T22:11:38.033355535Z"
     dependencies:
     - name: mongodb
       repository: https://charts.bitnami.com/bitnami
@@ -2113,7 +2135,7 @@ entries:
     version: 0.19.0-rc.6
   - apiVersion: v2
     appVersion: v0.19.0-rc.5
-    created: "2023-05-30T23:41:16.65893933Z"
+    created: "2023-06-22T22:11:38.004811533Z"
     dependencies:
     - name: mongodb
       repository: https://charts.bitnami.com/bitnami
@@ -2140,7 +2162,7 @@ entries:
     version: 0.19.0-rc.5
   - apiVersion: v2
     appVersion: v0.19.0-rc.4
-    created: "2023-05-30T23:41:16.619917442Z"
+    created: "2023-06-22T22:11:37.964861609Z"
     dependencies:
     - name: mongodb
       repository: https://charts.bitnami.com/bitnami
@@ -2167,7 +2189,7 @@ entries:
     version: 0.19.0-rc.4
   - apiVersion: v2
     appVersion: v0.19.0-rc.2
-    created: "2023-05-30T23:41:16.589726406Z"
+    created: "2023-06-22T22:11:37.939919245Z"
     dependencies:
     - name: mongodb
       repository: https://charts.bitnami.com/bitnami
@@ -2191,7 +2213,7 @@ entries:
     version: 0.19.0-rc.2
   - apiVersion: v2
     appVersion: v0.19.0-rc.1
-    created: "2023-05-30T23:41:16.559724769Z"
+    created: "2023-06-22T22:11:37.918350317Z"
     dependencies:
     - name: mongodb
       repository: https://charts.bitnami.com/bitnami
@@ -2215,7 +2237,7 @@ entries:
     version: 0.19.0-rc.1
   - apiVersion: v2
     appVersion: v0.18.6
-    created: "2023-05-30T23:41:16.530057131Z"
+    created: "2023-06-22T22:11:37.896127981Z"
     dependencies:
     - name: mongodb
       repository: https://charts.bitnami.com/bitnami
@@ -2239,7 +2261,7 @@ entries:
     version: 0.18.6
   - apiVersion: v2
     appVersion: v0.18.5
-    created: "2023-05-30T23:41:16.503589275Z"
+    created: "2023-06-22T22:11:37.87519786Z"
     dependencies:
     - name: mongodb
       repository: https://charts.bitnami.com/bitnami
@@ -2263,7 +2285,7 @@ entries:
     version: 0.18.5
   - apiVersion: v2
     appVersion: v0.18.4
-    created: "2023-05-30T23:41:16.475397328Z"
+    created: "2023-06-22T22:11:37.855205148Z"
     dependencies:
     - name: mongodb
       repository: https://charts.bitnami.com/bitnami
@@ -2287,7 +2309,7 @@ entries:
     version: 0.18.4
   - apiVersion: v2
     appVersion: v0.18.3
-    created: "2023-05-30T23:41:16.44741838Z"
+    created: "2023-06-22T22:11:37.834806832Z"
     dependencies:
     - name: mongodb
       repository: https://charts.bitnami.com/bitnami
@@ -2311,7 +2333,7 @@ entries:
     version: 0.18.3
   - apiVersion: v2
     appVersion: v0.18.2
-    created: "2023-05-30T23:41:16.420951324Z"
+    created: "2023-06-22T22:11:37.813425605Z"
     dependencies:
     - name: mongodb
       repository: https://charts.bitnami.com/bitnami
@@ -2335,7 +2357,7 @@ entries:
     version: 0.18.2
   - apiVersion: v2
     appVersion: v0.18.1
-    created: "2023-05-30T23:41:16.393217675Z"
+    created: "2023-06-22T22:11:37.792395783Z"
     dependencies:
     - name: mongodb
       repository: https://charts.bitnami.com/bitnami
@@ -2359,7 +2381,7 @@ entries:
     version: 0.18.1
   - apiVersion: v2
     appVersion: v0.18.0
-    created: "2023-05-30T23:41:16.365401026Z"
+    created: "2023-06-22T22:11:37.772578573Z"
     dependencies:
     - name: mongodb
       repository: https://charts.bitnami.com/bitnami
@@ -2383,7 +2405,7 @@ entries:
     version: 0.18.0
   - apiVersion: v2
     appVersion: v0.18.0-rc.7
-    created: "2023-05-30T23:41:16.339451868Z"
+    created: "2023-06-22T22:11:37.750725641Z"
     dependencies:
     - name: mongodb
       repository: https://charts.bitnami.com/bitnami
@@ -2407,7 +2429,7 @@ entries:
     version: 0.18.0-rc.7
   - apiVersion: v2
     appVersion: v0.18.0-rc.6
-    created: "2023-05-30T23:41:16.312510514Z"
+    created: "2023-06-22T22:11:37.728496606Z"
     dependencies:
     - name: mongodb
       repository: https://charts.bitnami.com/bitnami
@@ -2431,7 +2453,7 @@ entries:
     version: 0.18.0-rc.6
   - apiVersion: v2
     appVersion: v0.18.0-rc.3
-    created: "2023-05-30T23:41:16.287292451Z"
+    created: "2023-06-22T22:11:37.707128879Z"
     dependencies:
     - name: mongodb
       repository: https://charts.bitnami.com/bitnami
@@ -2455,7 +2477,7 @@ entries:
     version: 0.18.0-rc.3
   - apiVersion: v2
     appVersion: v0.17.5
-    created: "2023-05-30T23:41:16.256806317Z"
+    created: "2023-06-22T22:11:37.686011456Z"
     dependencies:
     - name: mongodb
       repository: https://charts.bitnami.com/bitnami
@@ -2479,7 +2501,7 @@ entries:
     version: 0.17.5
   - apiVersion: v2
     appVersion: v0.17.3
-    created: "2023-05-30T23:41:16.223313499Z"
+    created: "2023-06-22T22:11:37.663683719Z"
     dependencies:
     - name: mongodb
       repository: https://charts.bitnami.com/bitnami
@@ -2503,7 +2525,7 @@ entries:
     version: 0.17.3
   - apiVersion: v2
     appVersion: v0.17.2
-    created: "2023-05-30T23:41:16.196330346Z"
+    created: "2023-06-22T22:11:37.643202502Z"
     dependencies:
     - name: mongodb
       repository: https://charts.bitnami.com/bitnami
@@ -2527,7 +2549,7 @@ entries:
     version: 0.17.2
   - apiVersion: v2
     appVersion: v0.17.1
-    created: "2023-05-30T23:41:16.169776191Z"
+    created: "2023-06-22T22:11:37.625270712Z"
     dependencies:
     - name: mongodb
       repository: https://charts.bitnami.com/bitnami
@@ -2551,7 +2573,7 @@ entries:
     version: 0.17.1
   - apiVersion: v2
     appVersion: v0.16.14
-    created: "2023-05-30T23:41:16.093575205Z"
+    created: "2023-06-22T22:11:37.571299041Z"
     dependencies:
     - name: mongodb
       repository: https://charts.bitnami.com/bitnami
@@ -2579,7 +2601,7 @@ entries:
     version: 0.16.14
   - apiVersion: v2
     appVersion: v0.16.11
-    created: "2023-05-30T23:41:16.069166538Z"
+    created: "2023-06-22T22:11:37.553702154Z"
     dependencies:
     - name: mongodb
       repository: https://charts.bitnami.com/bitnami
@@ -2607,7 +2629,7 @@ entries:
     version: 0.16.11
   - apiVersion: v2
     appVersion: v0.16.10
-    created: "2023-05-30T23:41:16.043355378Z"
+    created: "2023-06-22T22:11:37.536173669Z"
     dependencies:
     - name: mongodb
       repository: https://charts.bitnami.com/bitnami
@@ -2635,7 +2657,7 @@ entries:
     version: 0.16.10
   - apiVersion: v2
     appVersion: v0.16.9
-    created: "2023-05-30T23:41:16.138963958Z"
+    created: "2023-06-22T22:11:37.607827528Z"
     dependencies:
     - name: mongodb
       repository: https://charts.bitnami.com/bitnami
@@ -2663,7 +2685,7 @@ entries:
     version: 0.16.9
   - apiVersion: v2
     appVersion: v0.16.7
-    created: "2023-05-30T23:41:16.116847278Z"
+    created: "2023-06-22T22:11:37.589324732Z"
     dependencies:
     - name: mongodb
       repository: https://charts.bitnami.com/bitnami
@@ -2691,7 +2713,7 @@ entries:
     version: 0.16.7
   - apiVersion: v2
     appVersion: v0.15.4
-    created: "2023-05-30T23:41:16.018736112Z"
+    created: "2023-06-22T22:11:37.518746484Z"
     dependencies:
     - name: mongodb
       repository: https://charts.bitnami.com/bitnami
@@ -2719,8 +2741,20 @@ entries:
     version: 0.15.4
   rime-agent:
   - apiVersion: v2
+    appVersion: v2.1.0-rc.7
+    created: "2023-06-22T22:11:39.991165973Z"
+    description: A Helm chart for the Robust Intelligence Platform Agent, part of
+      the Data Plane.
+    digest: e5f8fb9e7aa6745957c985203b8ab73e4f08ce1e855a432a1249ffd03a95df14
+    kubeVersion: '>=1.20.0-0'
+    name: rime-agent
+    type: application
+    urls:
+    - https://robustintelligence.github.io/helm/chart-releases/rime-agent-2.1.0-rc.7.tgz
+    version: 2.1.0-rc.7
+  - apiVersion: v2
     appVersion: v2.1.0-rc.5
-    created: "2023-05-30T23:41:19.063417019Z"
+    created: "2023-06-22T22:11:39.98990686Z"
     description: A Helm chart for the Robust Intelligence Platform Agent, part of
       the Data Plane.
     digest: a3227d4fd1c3278e7cda30f094016a60cd0e7242fff35ccb71ae8170ce7be39c
@@ -2732,7 +2766,7 @@ entries:
     version: 2.1.0-rc.5
   - apiVersion: v2
     appVersion: v2.1.0-rc.4
-    created: "2023-05-30T23:41:19.060317542Z"
+    created: "2023-06-22T22:11:39.988802748Z"
     description: A Helm chart for the Robust Intelligence Platform Agent, part of
       the Data Plane.
     digest: ff4dd827ad8196c9658e9e9959a816ea685cdb08777513dcd7e8bd42b0555a98
@@ -2744,7 +2778,7 @@ entries:
     version: 2.1.0-rc.4
   - apiVersion: v2
     appVersion: v2.1.0-rc.1
-    created: "2023-05-30T23:41:19.058480556Z"
+    created: "2023-06-22T22:11:39.987637836Z"
     description: A Helm chart for the Robust Intelligence Platform Agent, part of
       the Data Plane.
     digest: f89331987c0f1c9b37d1a3fc271d2f8bf43c3c55f9a1a36a17504b222be01e65
@@ -2756,7 +2790,7 @@ entries:
     version: 2.1.0-rc.1
   - apiVersion: v2
     appVersion: v2.1.0-rc.0
-    created: "2023-05-30T23:41:19.056668769Z"
+    created: "2023-06-22T22:11:39.98609392Z"
     description: A Helm chart for the Robust Intelligence Platform Agent, part of
       the Data Plane.
     digest: 475964a5b6d5ff4351656cd93d832c9ab60777df9b1ac1a7ac78628134d15a12
@@ -2768,7 +2802,7 @@ entries:
     version: 2.1.0-rc.0
   - apiVersion: v2
     appVersion: v2.0.14
-    created: "2023-05-30T23:41:19.045307655Z"
+    created: "2023-06-22T22:11:39.978021534Z"
     description: A Helm chart for the Robust Intelligence Platform Agent, part of
       the Data Plane.
     digest: f0e0bb5354062de43157a137e93067c7ad061f3735992588cdff3ea44f9c75d1
@@ -2780,7 +2814,7 @@ entries:
     version: 2.0.14
   - apiVersion: v2
     appVersion: v2.0.12
-    created: "2023-05-30T23:41:19.044107964Z"
+    created: "2023-06-22T22:11:39.977168625Z"
     description: A Helm chart for the Robust Intelligence Platform Agent, part of
       the Data Plane.
     digest: 30534de3e56b0cdac6b2c360712b5a00e57f8dcd0b387ea967ad717ac309e243
@@ -2792,7 +2826,7 @@ entries:
     version: 2.0.12
   - apiVersion: v2
     appVersion: v2.0.11
-    created: "2023-05-30T23:41:19.043048472Z"
+    created: "2023-06-22T22:11:39.976267315Z"
     description: A Helm chart for the Robust Intelligence Platform Agent, part of
       the Data Plane.
     digest: ae11a91ca882aaee695bac9deb4f91b376ee75cd1359e72bdce61009158f6eae
@@ -2804,7 +2838,7 @@ entries:
     version: 2.0.11
   - apiVersion: v2
     appVersion: v2.0.10
-    created: "2023-05-30T23:41:19.04195638Z"
+    created: "2023-06-22T22:11:39.9747972Z"
     description: A Helm chart for the Robust Intelligence Platform Agent, part of
       the Data Plane.
     digest: 1a09852bebeba9f56611f14217f3cbb8528f2745dc3e24dceaeca02c117abbaa
@@ -2816,7 +2850,7 @@ entries:
     version: 2.0.10
   - apiVersion: v2
     appVersion: v2.0.9
-    created: "2023-05-30T23:41:19.05531418Z"
+    created: "2023-06-22T22:11:39.984666504Z"
     description: A Helm chart for the Robust Intelligence Platform Agent, part of
       the Data Plane.
     digest: 93a39b92b2b100febc18c8ef703eb6c4dac91b8f46fa07c97fe3cbff14001c30
@@ -2828,7 +2862,7 @@ entries:
     version: 2.0.9
   - apiVersion: v2
     appVersion: v2.0.8
-    created: "2023-05-30T23:41:19.054018189Z"
+    created: "2023-06-22T22:11:39.983510092Z"
     description: A Helm chart for the Robust Intelligence Platform Agent, part of
       the Data Plane.
     digest: 7fd5b29a116ff3a909710c450e378c33cf1b48737f7faa0aacf1a62cc9c2a02c
@@ -2840,7 +2874,7 @@ entries:
     version: 2.0.8
   - apiVersion: v2
     appVersion: v2.0.7
-    created: "2023-05-30T23:41:19.052891498Z"
+    created: "2023-06-22T22:11:39.982672283Z"
     description: A Helm chart for the Robust Intelligence Platform Agent, part of
       the Data Plane.
     digest: 02b1f272832a37f39f3923d824ad170993d00c12d4639ee0febdcfeecb1e96f0
@@ -2852,7 +2886,7 @@ entries:
     version: 2.0.7
   - apiVersion: v2
     appVersion: v2.0.6
-    created: "2023-05-30T23:41:19.051420009Z"
+    created: "2023-06-22T22:11:39.981751674Z"
     description: A Helm chart for the Robust Intelligence Platform Agent, part of
       the Data Plane.
     digest: a43a54477ad70da9d3b85ad9338e5dbb7b7d4eb2d29c94f48776e5e2e4146c3e
@@ -2864,7 +2898,7 @@ entries:
     version: 2.0.6
   - apiVersion: v2
     appVersion: v2.0.5
-    created: "2023-05-30T23:41:19.050225818Z"
+    created: "2023-06-22T22:11:39.980888164Z"
     description: A Helm chart for the Robust Intelligence Platform Agent, part of
       the Data Plane.
     digest: 5aedb0f9dc979f9413ab11d3f2acdae2497143c38e3013cea6102e004adb5358
@@ -2876,7 +2910,7 @@ entries:
     version: 2.0.5
   - apiVersion: v2
     appVersion: v2.0.4
-    created: "2023-05-30T23:41:19.048096334Z"
+    created: "2023-06-22T22:11:39.980059856Z"
     description: A Helm chart for the Robust Intelligence Platform Agent, part of
       the Data Plane.
     digest: 464ed1ea490faa8e4f3b94381397ffd00275840200c8df94ea795ca40d82485d
@@ -2888,7 +2922,7 @@ entries:
     version: 2.0.4
   - apiVersion: v2
     appVersion: v2.0.3
-    created: "2023-05-30T23:41:19.046457846Z"
+    created: "2023-06-22T22:11:39.979205547Z"
     description: A Helm chart for the Robust Intelligence Platform Agent, part of
       the Data Plane.
     digest: ef4168ec17ed23bb82823f4bf9f07353e3285c91303231476f018c78c0e0d96f
@@ -2900,7 +2934,7 @@ entries:
     version: 2.0.3
   - apiVersion: v2
     appVersion: v2.0.1
-    created: "2023-05-30T23:41:19.040799689Z"
+    created: "2023-06-22T22:11:39.973580687Z"
     description: A Helm chart for the Robust Intelligence Platform Agent, part of
       the Data Plane.
     digest: 6a5179f2a88d067ae6fd9741e91194110b0ead7b122b51e55da62dc915851176
@@ -2912,7 +2946,7 @@ entries:
     version: 2.0.1
   - apiVersion: v2
     appVersion: v2.0.0
-    created: "2023-05-30T23:41:19.039549798Z"
+    created: "2023-06-22T22:11:39.972380374Z"
     description: A Helm chart for the Robust Intelligence Platform Agent, part of
       the Data Plane.
     digest: 63eb398fed434bd3f64d2089b525e3ca49f90f6432956f99352393db7247a58f
@@ -2924,7 +2958,7 @@ entries:
     version: 2.0.0
   - apiVersion: v2
     appVersion: v2.0.0-rc.14
-    created: "2023-05-30T23:41:19.029837472Z"
+    created: "2023-06-22T22:11:39.965804505Z"
     description: A Helm chart for the Robust Intelligence Platform Agent, part of
       the Data Plane.
     digest: ee8b65fa246b8d714e1241df3ca32eab27e7083c0787d5d40d9bb9f07db29f5a
@@ -2936,7 +2970,7 @@ entries:
     version: 2.0.0-rc.14
   - apiVersion: v2
     appVersion: v2.0.0-rc.13
-    created: "2023-05-30T23:41:19.028570081Z"
+    created: "2023-06-22T22:11:39.964746493Z"
     description: A Helm chart for the Robust Intelligence Platform Agent, part of
       the Data Plane.
     digest: 6cf1ff8724074963c5d94bdda8282efe10b92f7a27150be9a004fc31fe1c871c
@@ -2948,7 +2982,7 @@ entries:
     version: 2.0.0-rc.13
   - apiVersion: v2
     appVersion: v2.0.0-rc.11
-    created: "2023-05-30T23:41:19.027585789Z"
+    created: "2023-06-22T22:11:39.963929685Z"
     description: A Helm chart for the Robust Intelligence Platform Agent, part of
       the Data Plane.
     digest: 9ebd47aade8b339a43a0bf6b1227e10679a3b02a974f9aabe5d972fa77202f35
@@ -2960,7 +2994,7 @@ entries:
     version: 2.0.0-rc.11
   - apiVersion: v2
     appVersion: v2.0.0-rc.10
-    created: "2023-05-30T23:41:19.026599996Z"
+    created: "2023-06-22T22:11:39.963158377Z"
     description: A Helm chart for the Robust Intelligence Platform Agent, part of
       the Data Plane.
     digest: 59faee921f2d75e8a8feb265dacd92c2fc66e2ea8190a88128f5b1b96292eb5a
@@ -2972,7 +3006,7 @@ entries:
     version: 2.0.0-rc.10
   - apiVersion: v2
     appVersion: v2.0.0-rc.7
-    created: "2023-05-30T23:41:19.037898611Z"
+    created: "2023-06-22T22:11:39.971235262Z"
     description: A Helm chart for the Robust Intelligence Platform Agent, part of
       the Data Plane.
     digest: 261b12a48d978d16f2410fd4f696b53207a496e484d356015b563a4d02031230
@@ -2984,7 +3018,7 @@ entries:
     version: 2.0.0-rc.7
   - apiVersion: v2
     appVersion: v2.0.0-rc.6
-    created: "2023-05-30T23:41:19.03667042Z"
+    created: "2023-06-22T22:11:39.969423043Z"
     description: A Helm chart for the Robust Intelligence Platform Agent, part of
       the Data Plane.
     digest: c982d81e2da57f937d6146d359a287d0580e384a135e23cc0611de253bbfd36c
@@ -2996,7 +3030,7 @@ entries:
     version: 2.0.0-rc.6
   - apiVersion: v2
     appVersion: v2.0.0-rc.5
-    created: "2023-05-30T23:41:19.035250131Z"
+    created: "2023-06-22T22:11:39.968585134Z"
     description: A Helm chart for the Robust Intelligence Platform Agent, part of
       the Data Plane.
     digest: 8eab741f258434aa5fb8d6c4cfe4b22e6bb24aa0691602b914d0de50f069afe4
@@ -3008,7 +3042,7 @@ entries:
     version: 2.0.0-rc.5
   - apiVersion: v2
     appVersion: v2.0.0-rc.4
-    created: "2023-05-30T23:41:19.033821242Z"
+    created: "2023-06-22T22:11:39.967522923Z"
     description: A Helm chart for the Robust Intelligence Platform Agent, part of
       the Data Plane.
     digest: e56f491feadf782fa1f8f4b84e1d1480275c9a5afdabae9d54d990dd8bafca94
@@ -3020,7 +3054,7 @@ entries:
     version: 2.0.0-rc.4
   - apiVersion: v2
     appVersion: v2.0.0-rc.3
-    created: "2023-05-30T23:41:19.031553259Z"
+    created: "2023-06-22T22:11:39.966685614Z"
     description: A Helm chart for the Robust Intelligence Platform Agent, part of
       the Data Plane.
     digest: 81b33c602036b277864b56599e5249de3826dc8cf0a044f1c2b76fcdbea58515
@@ -3032,7 +3066,7 @@ entries:
     version: 2.0.0-rc.3
   - apiVersion: v2
     appVersion: v2.0.0-rc.1
-    created: "2023-05-30T23:41:19.025609103Z"
+    created: "2023-06-22T22:11:39.962344768Z"
     description: A Helm chart for the Robust Intelligence Platform Agent, part of
       the Data Plane.
     digest: 20f83a21b77070ab8bb2239deb823981fe722df969b9a2472ca6d1485b74bd80
@@ -3044,7 +3078,7 @@ entries:
     version: 2.0.0-rc.1
   - apiVersion: v2
     appVersion: v2.0.0-beta.19
-    created: "2023-05-30T23:41:19.017243367Z"
+    created: "2023-06-22T22:11:39.956031101Z"
     description: A Helm chart for the Robust Intelligence Platform Agent, part of
       the Data Plane.
     digest: 3496d57936651d5c7909593d46b4959cbf5ab01017357e3168d28b6c4643abfd
@@ -3056,7 +3090,7 @@ entries:
     version: 2.0.0-beta.19
   - apiVersion: v2
     appVersion: v2.0.0-beta.18
-    created: "2023-05-30T23:41:19.016144375Z"
+    created: "2023-06-22T22:11:39.954883889Z"
     description: A Helm chart for the Robust Intelligence Platform Agent, part of
       the Data Plane.
     digest: e59bb6b3e1cb79192c48546a8c9e963e9861d67d0e58bb9397a9630bf701602a
@@ -3068,7 +3102,7 @@ entries:
     version: 2.0.0-beta.18
   - apiVersion: v2
     appVersion: v2.0.0-beta.16
-    created: "2023-05-30T23:41:19.015103483Z"
+    created: "2023-06-22T22:11:39.954097581Z"
     description: A Helm chart for the Robust Intelligence Platform Agent, part of
       the Data Plane.
     digest: 19e4158c8ca3a68ba176a3dcb8d74045405a25c8b43a04f9080fe15b5640ed81
@@ -3080,7 +3114,7 @@ entries:
     version: 2.0.0-beta.16
   - apiVersion: v2
     appVersion: v2.0.0-beta.15
-    created: "2023-05-30T23:41:19.013836092Z"
+    created: "2023-06-22T22:11:39.953334673Z"
     description: A Helm chart for the Robust Intelligence Platform Agent, part of
       the Data Plane.
     digest: 613f4fd8be130d19ffddfec7d3be86743206f7c1c78798f37a3e4d3a49ead9c3
@@ -3092,7 +3126,7 @@ entries:
     version: 2.0.0-beta.15
   - apiVersion: v2
     appVersion: v2.0.0-beta.14
-    created: "2023-05-30T23:41:19.012720801Z"
+    created: "2023-06-22T22:11:39.952489664Z"
     description: A Helm chart for the Robust Intelligence Platform Agent, part of
       the Data Plane.
     digest: a64e0266272a4a6062ed0a2577a1d5bb0996758a4c3430388629f6b8d664fcdb
@@ -3104,7 +3138,7 @@ entries:
     version: 2.0.0-beta.14
   - apiVersion: v2
     appVersion: v2.0.0-beta.13
-    created: "2023-05-30T23:41:19.011661209Z"
+    created: "2023-06-22T22:11:39.951487953Z"
     description: A Helm chart for the Robust Intelligence Platform Agent, part of
       the Data Plane.
     digest: 65be78df99d5982d046cd4a494b6e902f2ce6e1b6fc51e5af61491a676cfe610
@@ -3116,7 +3150,7 @@ entries:
     version: 2.0.0-beta.13
   - apiVersion: v2
     appVersion: v2.0.0-beta.12
-    created: "2023-05-30T23:41:19.010741716Z"
+    created: "2023-06-22T22:11:39.950196639Z"
     description: A Helm chart for the Robust Intelligence Platform Agent, part of
       the Data Plane.
     digest: 26447667b8c0b81f674d40171abde2583c45ceac56e99a243a781e602e10a271
@@ -3128,7 +3162,7 @@ entries:
     version: 2.0.0-beta.12
   - apiVersion: v2
     appVersion: v2.0.0-beta.11
-    created: "2023-05-30T23:41:19.009699823Z"
+    created: "2023-06-22T22:11:39.948768324Z"
     description: A Helm chart for the Robust Intelligence Platform Agent, part of
       the Data Plane.
     digest: 92abc44334d66fb70cbbbd9c5f501f0f10c52f78526939b922f57031606650ef
@@ -3140,7 +3174,7 @@ entries:
     version: 2.0.0-beta.11
   - apiVersion: v2
     appVersion: v2.0.0-beta.10
-    created: "2023-05-30T23:41:19.008683631Z"
+    created: "2023-06-22T22:11:39.947941015Z"
     description: A Helm chart for the Robust Intelligence Platform Agent, part of
       the Data Plane.
     digest: 4fa6f22d29609bb7334cb931550756c587f6d51080fd6646592790f3c36aa7c5
@@ -3152,7 +3186,7 @@ entries:
     version: 2.0.0-beta.10
   - apiVersion: v2
     appVersion: v2.0.0-beta.9
-    created: "2023-05-30T23:41:19.024526012Z"
+    created: "2023-06-22T22:11:39.96156266Z"
     description: A Helm chart for the Robust Intelligence Platform Agent, part of
       the Data Plane.
     digest: 3a6777baa5c86ceca8c6c3b2f7c57bf362f650a36347d5c3ebb475fcac413ca5
@@ -3164,7 +3198,7 @@ entries:
     version: 2.0.0-beta.9
   - apiVersion: v2
     appVersion: v2.0.0-beta.8
-    created: "2023-05-30T23:41:19.023514419Z"
+    created: "2023-06-22T22:11:39.960771851Z"
     description: A Helm chart for the Robust Intelligence Platform Agent, part of
       the Data Plane.
     digest: ce57a58a69b730aca9dba15e930d9655adafa46aed10cd0fd878a9ce05424d91
@@ -3176,7 +3210,7 @@ entries:
     version: 2.0.0-beta.8
   - apiVersion: v2
     appVersion: v2.0.0-beta.7
-    created: "2023-05-30T23:41:19.022447027Z"
+    created: "2023-06-22T22:11:39.959048733Z"
     description: A Helm chart for the Robust Intelligence Platform Agent, part of
       the Data Plane.
     digest: 4afba0b68a4479092f43db6f46b96adae6a9ada43bd51dc13c5d0b6be5375b48
@@ -3188,7 +3222,7 @@ entries:
     version: 2.0.0-beta.7
   - apiVersion: v2
     appVersion: v2.0.0-beta.6
-    created: "2023-05-30T23:41:19.021485835Z"
+    created: "2023-06-22T22:11:39.958297325Z"
     description: A Helm chart for the Robust Intelligence Platform Agent, part of
       the Data Plane.
     digest: e5d05695924b62db2d53a0eb43a0c2813ab82ac8f4d2702e3dfb417a182d5009
@@ -3200,7 +3234,7 @@ entries:
     version: 2.0.0-beta.6
   - apiVersion: v2
     appVersion: v2.0.0-beta.5
-    created: "2023-05-30T23:41:19.020610641Z"
+    created: "2023-06-22T22:11:39.957537017Z"
     description: A Helm chart for the Robust Intelligence Platform Agent, part of
       the Data Plane.
     digest: b7211c62da53ea5a5c12a11b3682f6477c251482161330ef38e0444d3240c7bd
@@ -3212,7 +3246,7 @@ entries:
     version: 2.0.0-beta.5
   - apiVersion: v2
     appVersion: v2.0.0-beta.3
-    created: "2023-05-30T23:41:19.019223552Z"
+    created: "2023-06-22T22:11:39.956786109Z"
     description: A Helm chart for the Robust Intelligence Platform Agent, part of
       the Data Plane.
     digest: 2b22dce6d743615883a515ef93aa2eb30ed8c4ee4bfa1d7fa9da0e015508d701
@@ -3224,7 +3258,7 @@ entries:
     version: 2.0.0-beta.3
   - apiVersion: v2
     appVersion: v2.0.0-beta.0
-    created: "2023-05-30T23:41:19.007619739Z"
+    created: "2023-06-22T22:11:39.947135707Z"
     description: A Helm chart for the Robust Intelligence Platform Agent, part of
       the Data Plane.
     digest: f1b3ad69867ff8aaf93ef9ca070c27daadf77508044837eaf8b64b50051067d9
@@ -3236,7 +3270,7 @@ entries:
     version: 2.0.0-beta.0
   - apiVersion: v2
     appVersion: v2.0.0-alpha.4
-    created: "2023-05-30T23:41:19.006752546Z"
+    created: "2023-06-22T22:11:39.9465254Z"
     description: A Helm chart for the Robust Intelligence Platform Agent, part of
       the Data Plane.
     digest: 0f85f35d72a46a0c7f6463d0d6feb855528a663dcb960e1c81b445acd4db7d1d
@@ -3248,7 +3282,7 @@ entries:
     version: 2.0.0-alpha.4
   - apiVersion: v2
     appVersion: v2.0.0-alpha.3
-    created: "2023-05-30T23:41:19.005488155Z"
+    created: "2023-06-22T22:11:39.945902894Z"
     description: A Helm chart for the Robust Intelligence Platform Agent, part of
       the Data Plane.
     digest: 7bb7b7b7398e8a70e6348ac8114c19bc3665719489f9481c370ae535118d479c
@@ -3260,7 +3294,7 @@ entries:
     version: 2.0.0-alpha.3
   - apiVersion: v2
     appVersion: v2.0.0-alpha.2
-    created: "2023-05-30T23:41:19.004401163Z"
+    created: "2023-06-22T22:11:39.945033485Z"
     description: A Helm chart for the Robust Intelligence Platform Agent, part of
       the Data Plane.
     digest: 2d95574603fb192c4a34f5cf8f33f6e0acfaa168947071de8b556c009e9ed969
@@ -3272,7 +3306,7 @@ entries:
     version: 2.0.0-alpha.2
   - apiVersion: v2
     appVersion: v2.0.0-alpha.1
-    created: "2023-05-30T23:41:19.003061973Z"
+    created: "2023-06-22T22:11:39.944463679Z"
     description: A Helm chart for the Robust Intelligence Platform Agent, part of
       the Data Plane.
     digest: f00adec225f90b9ae649a8be1c39b78a73c73387e46bd7f2c76154b0cd96adfb
@@ -3284,7 +3318,7 @@ entries:
     version: 2.0.0-alpha.1
   - apiVersion: v2
     appVersion: v0.21.0-rc.4
-    created: "2023-05-30T23:41:19.00223448Z"
+    created: "2023-06-22T22:11:39.943892773Z"
     description: A Helm chart for the Robust Intelligence Platform Agent, part of
       the Data Plane.
     digest: 68ba79bdc2be9943463eb6c6b73706d53161c3a52e5dcca8cac22bdbf5b21d79
@@ -3296,7 +3330,7 @@ entries:
     version: 0.21.0-rc.4
   - apiVersion: v2
     appVersion: v0.21.0-rc.2
-    created: "2023-05-30T23:41:19.001533185Z"
+    created: "2023-06-22T22:11:39.943313066Z"
     description: A Helm chart for the Robust Intelligence Platform Agent, part of
       the Data Plane.
     digest: 75741d00a968ea570beff9ed9ddc26a0ef85d2233a78af2d86faf4d8da4e498b
@@ -3308,7 +3342,7 @@ entries:
     version: 0.21.0-rc.2
   - apiVersion: v2
     appVersion: v0.20.21
-    created: "2023-05-30T23:41:18.996490523Z"
+    created: "2023-06-22T22:11:39.93798801Z"
     description: A Helm chart for the Robust Intelligence Platform Agent, part of
       the Data Plane.
     digest: 72034340225fadd5bdf0c5cbae257f6a76580db987a6e836ba11b7f5e18d6ef4
@@ -3320,7 +3354,7 @@ entries:
     version: 0.20.21
   - apiVersion: v2
     appVersion: v0.20.20
-    created: "2023-05-30T23:41:18.995776028Z"
+    created: "2023-06-22T22:11:39.937366603Z"
     description: A Helm chart for the Robust Intelligence Platform Agent, part of
       the Data Plane.
     digest: 511d20bb75b2e26bd77901ca8d28bf2db0a11c6b2c831208a04f50c3bad53be9
@@ -3332,7 +3366,7 @@ entries:
     version: 0.20.20
   - apiVersion: v2
     appVersion: v0.20.19
-    created: "2023-05-30T23:41:18.994363539Z"
+    created: "2023-06-22T22:11:39.93607189Z"
     description: A Helm chart for the Robust Intelligence Platform Agent, part of
       the Data Plane.
     digest: 0e65ab9d94ccbb673bbb77865ac390b1cd8ef3dcc3dd84104e13f04d008a66f2
@@ -3344,7 +3378,7 @@ entries:
     version: 0.20.19
   - apiVersion: v2
     appVersion: v0.20.18
-    created: "2023-05-30T23:41:18.993418846Z"
+    created: "2023-06-22T22:11:39.935274481Z"
     description: A Helm chart for the Robust Intelligence Platform Agent, part of
       the Data Plane.
     digest: 01369a18fcbe61589b4db7c8c109431df75e5ca5d2d8bdaad6d25128030769c6
@@ -3356,7 +3390,7 @@ entries:
     version: 0.20.18
   - apiVersion: v2
     appVersion: v0.20.17
-    created: "2023-05-30T23:41:18.992574352Z"
+    created: "2023-06-22T22:11:39.934473673Z"
     description: A Helm chart for the Robust Intelligence Platform Agent, part of
       the Data Plane.
     digest: 200128307dc14cd123f6f4dadf06df7e40016077072074447c9975233d64deea
@@ -3368,7 +3402,7 @@ entries:
     version: 0.20.17
   - apiVersion: v2
     appVersion: v0.20.16
-    created: "2023-05-30T23:41:18.991360862Z"
+    created: "2023-06-22T22:11:39.933877466Z"
     description: A Helm chart for the Robust Intelligence Platform Agent, part of
       the Data Plane.
     digest: ccc1d6525bf71ace161c726fd51aeee1c04e105437d65492f8662c1bfaec12f9
@@ -3380,7 +3414,7 @@ entries:
     version: 0.20.16
   - apiVersion: v2
     appVersion: v0.20.15
-    created: "2023-05-30T23:41:18.990064271Z"
+    created: "2023-06-22T22:11:39.93331076Z"
     description: A Helm chart for the Robust Intelligence Platform Agent, part of
       the Data Plane.
     digest: 12ca185ba4bc6430977170e2d99a960c9bb37783ce6bc9fe3e507425e8bf7407
@@ -3392,7 +3426,7 @@ entries:
     version: 0.20.15
   - apiVersion: v2
     appVersion: v0.20.14
-    created: "2023-05-30T23:41:18.989304477Z"
+    created: "2023-06-22T22:11:39.932738054Z"
     description: A Helm chart for the Robust Intelligence Platform Agent, part of
       the Data Plane.
     digest: bb8bdf5ad393f73a12a43abd9cf79f4f33272ab34cabde1933157ac42f5ff3c4
@@ -3404,7 +3438,7 @@ entries:
     version: 0.20.14
   - apiVersion: v2
     appVersion: v0.20.13
-    created: "2023-05-30T23:41:18.988408584Z"
+    created: "2023-06-22T22:11:39.932169648Z"
     description: A Helm chart for the Robust Intelligence Platform Agent, part of
       the Data Plane.
     digest: 09a5b12fe960ae880c7e44d03a115358a9a9d4b4dcd6db5e4e3eb9598ced34be
@@ -3416,7 +3450,7 @@ entries:
     version: 0.20.13
   - apiVersion: v2
     appVersion: v0.20.12
-    created: "2023-05-30T23:41:18.98764779Z"
+    created: "2023-06-22T22:11:39.931602542Z"
     description: A Helm chart for the Robust Intelligence Platform Agent, part of
       the Data Plane.
     digest: 1f124e32384e00d8911b91919c0c957c1918909f0bedfcab8d8a7170c76f8fb6
@@ -3428,7 +3462,7 @@ entries:
     version: 0.20.12
   - apiVersion: v2
     appVersion: v0.20.11
-    created: "2023-05-30T23:41:18.986965595Z"
+    created: "2023-06-22T22:11:39.931035136Z"
     description: A Helm chart for the Robust Intelligence Platform Agent, part of
       the Data Plane.
     digest: 3e96617671563235ee091c8f7281b72e3be4d7079b8f1e98a7a5730b913ce869
@@ -3440,7 +3474,7 @@ entries:
     version: 0.20.11
   - apiVersion: v2
     appVersion: v0.20.10
-    created: "2023-05-30T23:41:18.9862405Z"
+    created: "2023-06-22T22:11:39.93040433Z"
     description: A Helm chart for the Robust Intelligence Platform Agent, part of
       the Data Plane.
     digest: 61ae6f3c751a19310a234c07151e9f750c515c26c4d3bbecdb6ff9f6fc8f017b
@@ -3452,7 +3486,7 @@ entries:
     version: 0.20.10
   - apiVersion: v2
     appVersion: v0.20.9
-    created: "2023-05-30T23:41:19.00082389Z"
+    created: "2023-06-22T22:11:39.94271036Z"
     description: A Helm chart for the Robust Intelligence Platform Agent, part of
       the Data Plane.
     digest: 72631be9652833f93ca2acad591ab6c8b04caf3bd5c81667b5e420cbf0cd6af0
@@ -3464,7 +3498,7 @@ entries:
     version: 0.20.9
   - apiVersion: v2
     appVersion: v0.20.8
-    created: "2023-05-30T23:41:19.000141495Z"
+    created: "2023-06-22T22:11:39.942050653Z"
     description: A Helm chart for the Robust Intelligence Platform Agent, part of
       the Data Plane.
     digest: 54b94f45448adc0f19e1274cd0b816366e46c5bed784c641f7ef2419091e2431
@@ -3476,7 +3510,7 @@ entries:
     version: 0.20.8
   - apiVersion: v2
     appVersion: v0.20.6
-    created: "2023-05-30T23:41:18.9994666Z"
+    created: "2023-06-22T22:11:39.941433847Z"
     description: A Helm chart for the Robust Intelligence Platform Agent, part of
       the Data Plane.
     digest: ac9d9c3ed3aff36ad32fdff19cabb500440d1503fe1fae026802e527b288c093
@@ -3488,7 +3522,7 @@ entries:
     version: 0.20.6
   - apiVersion: v2
     appVersion: v0.20.5
-    created: "2023-05-30T23:41:18.998732606Z"
+    created: "2023-06-22T22:11:39.94080984Z"
     description: A Helm chart for the Robust Intelligence Platform Agent, part of
       the Data Plane.
     digest: 3fb9fe5bb01469c1179104c71300cb72d2f77c6cd023b334cef816d7019a3146
@@ -3500,7 +3534,7 @@ entries:
     version: 0.20.5
   - apiVersion: v2
     appVersion: v0.20.4
-    created: "2023-05-30T23:41:18.998065011Z"
+    created: "2023-06-22T22:11:39.93989073Z"
     description: A Helm chart for the Robust Intelligence Platform Agent, part of
       the Data Plane.
     digest: 0a5136d779c3e2d0475169e044d857161d6e7375c800013c65e2a7158adacc37
@@ -3512,7 +3546,7 @@ entries:
     version: 0.20.4
   - apiVersion: v2
     appVersion: v0.20.3
-    created: "2023-05-30T23:41:18.997201718Z"
+    created: "2023-06-22T22:11:39.93897402Z"
     description: A Helm chart for the Robust Intelligence Platform Agent, part of
       the Data Plane.
     digest: 7617d74eb40d336bdb23836c5a48d4b58c7e4774f87defab84bc2d2daaa80509
@@ -3524,7 +3558,7 @@ entries:
     version: 0.20.3
   - apiVersion: v2
     appVersion: v0.20.2
-    created: "2023-05-30T23:41:18.995071134Z"
+    created: "2023-06-22T22:11:39.936795497Z"
     description: A Helm chart for the Robust Intelligence Platform Agent, part of
       the Data Plane.
     digest: 032077b6e303f47e2bdcae424995a846a6d4d0499a2838634bba375511064fca
@@ -3536,7 +3570,7 @@ entries:
     version: 0.20.2
   - apiVersion: v2
     appVersion: v0.20.0
-    created: "2023-05-30T23:41:18.985562105Z"
+    created: "2023-06-22T22:11:39.929801023Z"
     description: A Helm chart for the Robust Intelligence Platform Agent, part of
       the Data Plane.
     digest: 12206f9a5d2a7ba2d678af54e84aff2c8726f9b790fc794384387bbb277cdabc
@@ -3548,7 +3582,7 @@ entries:
     version: 0.20.0
   - apiVersion: v2
     appVersion: v0.20.0-rc.10
-    created: "2023-05-30T23:41:18.980180346Z"
+    created: "2023-06-22T22:11:39.924226264Z"
     description: A Helm chart for the Robust Intelligence Platform Agent, part of
       the Data Plane.
     digest: a2c19fe21d4bc8921c5b9cd750c58570fb5f97f5fff625b54c411cbce01b1bda
@@ -3560,7 +3594,7 @@ entries:
     version: 0.20.0-rc.10
   - apiVersion: v2
     appVersion: v0.20.0-rc.9
-    created: "2023-05-30T23:41:18.984829011Z"
+    created: "2023-06-22T22:11:39.928731212Z"
     description: A Helm chart for the Robust Intelligence Platform Agent, part of
       the Data Plane.
     digest: bb17fe3006d98f64753ff92885c401f05fb13d155bc5a8a6349b92135a39edf1
@@ -3572,7 +3606,7 @@ entries:
     version: 0.20.0-rc.9
   - apiVersion: v2
     appVersion: v0.20.0-rc.7
-    created: "2023-05-30T23:41:18.984155416Z"
+    created: "2023-06-22T22:11:39.927671301Z"
     description: A Helm chart for the Robust Intelligence Platform Agent, part of
       the Data Plane.
     digest: 1136927d091d860afd6d7e2f732dcc600b9ba806c27f4aded9116a6370b01901
@@ -3584,7 +3618,7 @@ entries:
     version: 0.20.0-rc.7
   - apiVersion: v2
     appVersion: v0.20.0-rc.6
-    created: "2023-05-30T23:41:18.983324322Z"
+    created: "2023-06-22T22:11:39.927081194Z"
     description: A Helm chart for the Robust Intelligence Platform Agent, part of
       the Data Plane.
     digest: 2b7b3b549940c2e29816090d11234e4709528733fe49aa22bafed22ddbfbd8dc
@@ -3596,7 +3630,7 @@ entries:
     version: 0.20.0-rc.6
   - apiVersion: v2
     appVersion: v0.20.0-rc.5
-    created: "2023-05-30T23:41:18.982630127Z"
+    created: "2023-06-22T22:11:39.926506688Z"
     description: A Helm chart for the Robust Intelligence Platform Agent, part of
       the Data Plane.
     digest: 5a5118449e572bc76c57547fa366d06d95dee1910ed16722c8633176170faabd
@@ -3608,7 +3642,7 @@ entries:
     version: 0.20.0-rc.5
   - apiVersion: v2
     appVersion: v0.20.0-rc.4
-    created: "2023-05-30T23:41:18.981801334Z"
+    created: "2023-06-22T22:11:39.92569168Z"
     description: A Helm chart for the Robust Intelligence Platform Agent, part of
       the Data Plane.
     digest: 2d41420351635cf9540ea6dff2f8f26869c85a6339641df668d799ca7e70a917
@@ -3620,7 +3654,7 @@ entries:
     version: 0.20.0-rc.4
   - apiVersion: v2
     appVersion: v0.20.0-rc.2
-    created: "2023-05-30T23:41:18.98095494Z"
+    created: "2023-06-22T22:11:39.92480227Z"
     description: A Helm chart for the Robust Intelligence Platform Agent, part of
       the Data Plane.
     digest: ef6200552a6dd94e83969ceee129ccb86c9110269b5850b775a789460e553588
@@ -3632,7 +3666,7 @@ entries:
     version: 0.20.0-rc.2
   - apiVersion: v2
     appVersion: v0.20.0-rc.0
-    created: "2023-05-30T23:41:18.979379052Z"
+    created: "2023-06-22T22:11:39.923644758Z"
     description: A Helm chart for the Robust Intelligence Platform Agent, part of
       the Data Plane.
     digest: 6c1bf2236ceb5d933f37b6ea7a4057ab404db0d8640ca6bfc751010542d6324b
@@ -3644,7 +3678,7 @@ entries:
     version: 0.20.0-rc.0
   - apiVersion: v2
     appVersion: v0.19.7
-    created: "2023-05-30T23:41:18.97825656Z"
+    created: "2023-06-22T22:11:39.923080552Z"
     description: A Helm chart for the Robust Intelligence Platform Agent, part of
       the Data Plane.
     digest: 739ef945beb3219ca4f646f12308ab3ddeaaab56cf47b58ee873b75572f3d2aa
@@ -3656,7 +3690,7 @@ entries:
     version: 0.19.7
   - apiVersion: v2
     appVersion: v0.19.5
-    created: "2023-05-30T23:41:18.977289668Z"
+    created: "2023-06-22T22:11:39.922513046Z"
     description: A Helm chart for the Robust Intelligence Platform Agent, part of
       the Data Plane.
     digest: 5ef9de591bd8ac579c35ef993ac16bc8ce7e908529544c58639c4b4259b28baa
@@ -3668,7 +3702,7 @@ entries:
     version: 0.19.5
   - apiVersion: v2
     appVersion: v0.19.5-rc.3
-    created: "2023-05-30T23:41:18.97569668Z"
+    created: "2023-06-22T22:11:39.921866339Z"
     description: A Helm chart for the Robust Intelligence Platform Agent, part of
       the Data Plane.
     digest: ca4b12c414790cb4453a4c07bba803c433c984324cd90b9d172cc214a65cd8b2
@@ -3680,7 +3714,7 @@ entries:
     version: 0.19.5-rc.3
   - apiVersion: v2
     appVersion: v0.19.1
-    created: "2023-05-30T23:41:18.974126691Z"
+    created: "2023-06-22T22:11:39.921255233Z"
     description: A Helm chart for the Robust Intelligence Platform Agent, part of
       the Data Plane.
     digest: 262691abde52f30b385ed14ede0b66f416c1c6371f1c6dcc9d75f02930ec9e39
@@ -3692,7 +3726,7 @@ entries:
     version: 0.19.1
   - apiVersion: v2
     appVersion: v0.19.0
-    created: "2023-05-30T23:41:18.973246398Z"
+    created: "2023-06-22T22:11:39.920687727Z"
     description: A Helm chart for the Robust Intelligence Platform Agent, part of
       the Data Plane.
     digest: 55fbb17db66f9a74b36b01c6ed66f46225efee82c6a95c7f633c369b4f5df12f
@@ -3704,7 +3738,7 @@ entries:
     version: 0.19.0
   - apiVersion: v2
     appVersion: v0.19.0-rc.9
-    created: "2023-05-30T23:41:18.972496904Z"
+    created: "2023-06-22T22:11:39.919884118Z"
     description: A Helm chart for the Robust Intelligence Platform Agent, part of
       the Data Plane.
     digest: ffab419e59729c651451e665d7fa48d58e37ab49050c7a068f2af3de4323ccef
@@ -3716,7 +3750,7 @@ entries:
     version: 0.19.0-rc.9
   - apiVersion: v2
     appVersion: v0.19.0-rc.7
-    created: "2023-05-30T23:41:18.971794909Z"
+    created: "2023-06-22T22:11:39.919308312Z"
     description: A Helm chart for the Robust Intelligence Platform Agent, part of
       the Data Plane.
     digest: b819d51fec40b2a82b39bb367be3c804bf80bda9ce763b7429e92fca2d579a9e
@@ -3728,7 +3762,7 @@ entries:
     version: 0.19.0-rc.7
   - apiVersion: v2
     appVersion: v0.19.0-rc.6
-    created: "2023-05-30T23:41:18.971133514Z"
+    created: "2023-06-22T22:11:39.918718806Z"
     description: A Helm chart for the Robust Intelligence Platform Agent, part of
       the Data Plane.
     digest: da42f3629168b53b26749037002185746ae843efd3d7a9b3af98926da694f93f
@@ -3740,7 +3774,7 @@ entries:
     version: 0.19.0-rc.6
   - apiVersion: v2
     appVersion: v0.19.0-rc.5
-    created: "2023-05-30T23:41:18.970422019Z"
+    created: "2023-06-22T22:11:39.917739096Z"
     description: A Helm chart for the Robust Intelligence Platform Agent, part of
       the Data Plane.
     digest: 1dfab3a5f08cd1a628a07d9513ad56391879328ef9b28d3c576d713ceb513959
@@ -3752,7 +3786,7 @@ entries:
     version: 0.19.0-rc.5
   - apiVersion: v2
     appVersion: v0.19.0-rc.4
-    created: "2023-05-30T23:41:18.969769524Z"
+    created: "2023-06-22T22:11:39.916756285Z"
     description: A Helm chart for the Robust Intelligence Platform Agent, part of
       the Data Plane.
     digest: baa15ef93fb98f52d106ecd9eeb1ae8199db146f025781a8d1bace8ad75249e2
@@ -3764,7 +3798,7 @@ entries:
     version: 0.19.0-rc.4
   - apiVersion: v2
     appVersion: v0.19.0-rc.2
-    created: "2023-05-30T23:41:18.96906033Z"
+    created: "2023-06-22T22:11:39.916189979Z"
     description: A Helm chart for the Robust Intelligence Platform Agent, part of
       the Data Plane.
     digest: ad9330434e34ccda32d82f53d16b78c16ef9237abedd73cde0a2468fcecb59e3
@@ -3776,7 +3810,7 @@ entries:
     version: 0.19.0-rc.2
   - apiVersion: v2
     appVersion: v0.19.0-rc.1
-    created: "2023-05-30T23:41:18.968391535Z"
+    created: "2023-06-22T22:11:39.915639473Z"
     description: A Helm chart for the Robust Intelligence Platform Agent, part of
       the Data Plane.
     digest: bc9f10f5f2578a443c3b1d4b1b0668009d17e30b7854de468862ef6471f429ad
@@ -3788,7 +3822,7 @@ entries:
     version: 0.19.0-rc.1
   - apiVersion: v2
     appVersion: v0.18.6
-    created: "2023-05-30T23:41:18.96767354Z"
+    created: "2023-06-22T22:11:39.914912066Z"
     description: A Helm chart for the Robust Intelligence Platform Agent, part of
       the Data Plane.
     digest: dae75b1c62a9a3d11ef9da52fc8c0f6be6ad5554f76038c6a344244af2c19bb7
@@ -3800,7 +3834,7 @@ entries:
     version: 0.18.6
   - apiVersion: v2
     appVersion: v0.18.5
-    created: "2023-05-30T23:41:18.966984145Z"
+    created: "2023-06-22T22:11:39.914241758Z"
     description: A Helm chart for the Robust Intelligence Platform Agent, part of
       the Data Plane.
     digest: bd729fee4897125ff611d9fd285cb17ab17161e7a2507c2f31a8a3c4c508c1ae
@@ -3812,7 +3846,7 @@ entries:
     version: 0.18.5
   - apiVersion: v2
     appVersion: v0.18.4
-    created: "2023-05-30T23:41:18.966201451Z"
+    created: "2023-06-22T22:11:39.913647952Z"
     description: A Helm chart for the Robust Intelligence Platform Agent, part of
       the Data Plane.
     digest: 50aa8b56b586b1889af4e5fccff5e385e60a7b075adc0b9728d33289855dd4c2
@@ -3824,7 +3858,7 @@ entries:
     version: 0.18.4
   - apiVersion: v2
     appVersion: v0.18.3
-    created: "2023-05-30T23:41:18.96508616Z"
+    created: "2023-06-22T22:11:39.913012545Z"
     description: A Helm chart for the Robust Intelligence Platform Agent, part of
       the Data Plane.
     digest: 2e1d396072ffdfd09c40c591c979ccc6ae46c7511b1787063e4772d2e22ead9c
@@ -3836,7 +3870,7 @@ entries:
     version: 0.18.3
   - apiVersion: v2
     appVersion: v0.18.2
-    created: "2023-05-30T23:41:18.963483172Z"
+    created: "2023-06-22T22:11:39.91245284Z"
     description: A Helm chart for the Robust Intelligence Platform Agent, part of
       the Data Plane.
     digest: b1ea2737fbe5a931d77582d9a7b7bf03a6c06c3aa7e5ad806bc579d2e73cd1be
@@ -3848,7 +3882,7 @@ entries:
     version: 0.18.2
   - apiVersion: v2
     appVersion: v0.18.1
-    created: "2023-05-30T23:41:18.962245681Z"
+    created: "2023-06-22T22:11:39.911913434Z"
     description: A Helm chart for the Robust Intelligence Platform Agent, part of
       the Data Plane.
     digest: 7ddd3d64eff5f6d66589a53f2f767ef92059a4937e05a04a01e5664e25a258c4
@@ -3860,7 +3894,7 @@ entries:
     version: 0.18.1
   - apiVersion: v2
     appVersion: v0.18.0
-    created: "2023-05-30T23:41:18.961166589Z"
+    created: "2023-06-22T22:11:39.911369828Z"
     description: A Helm chart for the Robust Intelligence Platform Agent, part of
       the Data Plane.
     digest: 28a7015f8e8879a60a42fc8da2906980b8cce15c08f172c9947020978f47e50e
@@ -3872,7 +3906,7 @@ entries:
     version: 0.18.0
   - apiVersion: v2
     appVersion: v0.18.0-rc.7
-    created: "2023-05-30T23:41:18.960182997Z"
+    created: "2023-06-22T22:11:39.910823622Z"
     description: A Helm chart for the Robust Intelligence Platform Agent, part of
       the Data Plane.
     digest: fd55c6a520de9c151bee67c514e2acf1ae6f466d18202f1445138919785091ee
@@ -3884,7 +3918,7 @@ entries:
     version: 0.18.0-rc.7
   - apiVersion: v2
     appVersion: v0.18.0-rc.6
-    created: "2023-05-30T23:41:18.959238204Z"
+    created: "2023-06-22T22:11:39.910237116Z"
     description: A Helm chart for the Robust Intelligence Platform Agent, part of
       the Data Plane.
     digest: e9e76f68fbd8ff2f845c00fd484d0e5331667309cc8446f7376f038ce259d9aa
@@ -3896,7 +3930,7 @@ entries:
     version: 0.18.0-rc.6
   - apiVersion: v2
     appVersion: v0.18.0-rc.3
-    created: "2023-05-30T23:41:18.958555709Z"
+    created: "2023-06-22T22:11:39.90968641Z"
     description: A Helm chart for the Robust Intelligence Platform Agent, part of
       the Data Plane.
     digest: fcc506dd58bf440b0b2eea911dd8e4435d8fb0ddfecf43cbdd99b2ce067682fe
@@ -3908,7 +3942,7 @@ entries:
     version: 0.18.0-rc.3
   - apiVersion: v2
     appVersion: v0.17.5
-    created: "2023-05-30T23:41:18.957701915Z"
+    created: "2023-06-22T22:11:39.909119204Z"
     description: A Helm chart for the RIME dataplane agent
     digest: ebe7e7e90942adeb747f7100adb3a369b37cd0472b6f84c525b645c47cd40a37
     kubeVersion: '>=1.20.0-0'
@@ -3919,7 +3953,7 @@ entries:
     version: 0.17.5
   - apiVersion: v2
     appVersion: v0.17.3
-    created: "2023-05-30T23:41:18.95708432Z"
+    created: "2023-06-22T22:11:39.9087005Z"
     description: A Helm chart for the RIME dataplane agent
     digest: f63c71f7ab75f6739f1626cd91d4925ec65badc732329308c51f4c4515ca12aa
     kubeVersion: '>=1.20.0-0'
@@ -3930,7 +3964,7 @@ entries:
     version: 0.17.3
   - apiVersion: v2
     appVersion: v0.17.2
-    created: "2023-05-30T23:41:18.956572424Z"
+    created: "2023-06-22T22:11:39.908243295Z"
     description: A Helm chart for the RIME dataplane agent
     digest: 95a2893465e64ea5e5b75bdce5b21b247ef249abf605cb8d149447ae8824712c
     kubeVersion: '>=1.20.0-0'
@@ -3941,7 +3975,7 @@ entries:
     version: 0.17.2
   - apiVersion: v2
     appVersion: v0.17.1
-    created: "2023-05-30T23:41:18.956014228Z"
+    created: "2023-06-22T22:11:39.90781769Z"
     description: A Helm chart for the RIME dataplane agent
     digest: 9070fab9e15a1f64f3b8cf3a917cc72f3e990881392df467c49508d0136cc247
     kubeVersion: '>=1.20.0-0'
@@ -3952,8 +3986,27 @@ entries:
     version: 0.17.1
   rime-extras:
   - apiVersion: v2
+    appVersion: v2.1.0-rc.7
+    created: "2023-06-22T22:11:41.286908099Z"
+    dependencies:
+    - condition: rimeExtras.datadog
+      name: datadog
+      repository: https://helm.datadoghq.com
+      version: 2.20.3
+    - condition: rimeExtras.velero
+      name: velero
+      repository: https://vmware-tanzu.github.io/helm-charts
+      version: 2.23.6
+    description: A Helm chart for RIME's extra resources
+    digest: 0b248613dbe7fdd021c75e42deac434d2f1143fb8c77a659c94df2b49cd6a36c
+    name: rime-extras
+    type: application
+    urls:
+    - https://robustintelligence.github.io/helm/chart-releases/rime-extras-2.1.0-rc.7.tgz
+    version: 2.1.0-rc.7
+  - apiVersion: v2
     appVersion: v2.1.0-rc.5
-    created: "2023-05-30T23:41:20.720862327Z"
+    created: "2023-06-22T22:11:41.273477256Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -3972,7 +4025,7 @@ entries:
     version: 2.1.0-rc.5
   - apiVersion: v2
     appVersion: v2.1.0-rc.4
-    created: "2023-05-30T23:41:20.706475935Z"
+    created: "2023-06-22T22:11:41.262234437Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -3991,7 +4044,7 @@ entries:
     version: 2.1.0-rc.4
   - apiVersion: v2
     appVersion: v2.1.0-rc.1
-    created: "2023-05-30T23:41:20.691626347Z"
+    created: "2023-06-22T22:11:41.249588003Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -4010,7 +4063,7 @@ entries:
     version: 2.1.0-rc.1
   - apiVersion: v2
     appVersion: v2.1.0-rc.0
-    created: "2023-05-30T23:41:20.677428754Z"
+    created: "2023-06-22T22:11:41.236621166Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -4029,7 +4082,7 @@ entries:
     version: 2.1.0-rc.0
   - apiVersion: v2
     appVersion: v2.0.14
-    created: "2023-05-30T23:41:20.563475613Z"
+    created: "2023-06-22T22:11:41.140780451Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -4048,7 +4101,7 @@ entries:
     version: 2.0.14
   - apiVersion: v2
     appVersion: v2.0.12
-    created: "2023-05-30T23:41:20.549742616Z"
+    created: "2023-06-22T22:11:41.130118238Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -4067,7 +4120,7 @@ entries:
     version: 2.0.12
   - apiVersion: v2
     appVersion: v2.0.11
-    created: "2023-05-30T23:41:20.535577323Z"
+    created: "2023-06-22T22:11:41.118106811Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -4086,7 +4139,7 @@ entries:
     version: 2.0.11
   - apiVersion: v2
     appVersion: v2.0.10
-    created: "2023-05-30T23:41:20.517836757Z"
+    created: "2023-06-22T22:11:41.105721179Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -4105,7 +4158,7 @@ entries:
     version: 2.0.10
   - apiVersion: v2
     appVersion: v2.0.9
-    created: "2023-05-30T23:41:20.662708265Z"
+    created: "2023-06-22T22:11:41.224412337Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -4124,7 +4177,7 @@ entries:
     version: 2.0.9
   - apiVersion: v2
     appVersion: v2.0.8
-    created: "2023-05-30T23:41:20.649015468Z"
+    created: "2023-06-22T22:11:41.210647891Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -4143,7 +4196,7 @@ entries:
     version: 2.0.8
   - apiVersion: v2
     appVersion: v2.0.7
-    created: "2023-05-30T23:41:20.635317871Z"
+    created: "2023-06-22T22:11:41.198750665Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -4162,7 +4215,7 @@ entries:
     version: 2.0.7
   - apiVersion: v2
     appVersion: v2.0.6
-    created: "2023-05-30T23:41:20.619439291Z"
+    created: "2023-06-22T22:11:41.187764648Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -4181,7 +4234,7 @@ entries:
     version: 2.0.6
   - apiVersion: v2
     appVersion: v2.0.5
-    created: "2023-05-30T23:41:20.604720002Z"
+    created: "2023-06-22T22:11:41.175338117Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -4200,7 +4253,7 @@ entries:
     version: 2.0.5
   - apiVersion: v2
     appVersion: v2.0.4
-    created: "2023-05-30T23:41:20.590897906Z"
+    created: "2023-06-22T22:11:41.163946196Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -4219,7 +4272,7 @@ entries:
     version: 2.0.4
   - apiVersion: v2
     appVersion: v2.0.3
-    created: "2023-05-30T23:41:20.577438807Z"
+    created: "2023-06-22T22:11:41.153208882Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -4238,7 +4291,7 @@ entries:
     version: 2.0.3
   - apiVersion: v2
     appVersion: v2.0.1
-    created: "2023-05-30T23:41:20.503608664Z"
+    created: "2023-06-22T22:11:41.095065866Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -4257,7 +4310,7 @@ entries:
     version: 2.0.1
   - apiVersion: v2
     appVersion: v2.0.0
-    created: "2023-05-30T23:41:20.489063174Z"
+    created: "2023-06-22T22:11:41.083566345Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -4276,7 +4329,7 @@ entries:
     version: 2.0.0
   - apiVersion: v2
     appVersion: v2.0.0-rc.14
-    created: "2023-05-30T23:41:20.400179143Z"
+    created: "2023-06-22T22:11:41.011135177Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -4295,7 +4348,7 @@ entries:
     version: 2.0.0-rc.14
   - apiVersion: v2
     appVersion: v2.0.0-rc.13
-    created: "2023-05-30T23:41:20.386464147Z"
+    created: "2023-06-22T22:11:40.998662145Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -4314,7 +4367,7 @@ entries:
     version: 2.0.0-rc.13
   - apiVersion: v2
     appVersion: v2.0.0-rc.11
-    created: "2023-05-30T23:41:20.370465967Z"
+    created: "2023-06-22T22:11:40.987530527Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -4333,7 +4386,7 @@ entries:
     version: 2.0.0-rc.11
   - apiVersion: v2
     appVersion: v2.0.0-rc.10
-    created: "2023-05-30T23:41:20.355670079Z"
+    created: "2023-06-22T22:11:40.974152986Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -4352,7 +4405,7 @@ entries:
     version: 2.0.0-rc.10
   - apiVersion: v2
     appVersion: v2.0.0-rc.7
-    created: "2023-05-30T23:41:20.472189001Z"
+    created: "2023-06-22T22:11:41.071035412Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -4371,7 +4424,7 @@ entries:
     version: 2.0.0-rc.7
   - apiVersion: v2
     appVersion: v2.0.0-rc.6
-    created: "2023-05-30T23:41:20.459223598Z"
+    created: "2023-06-22T22:11:41.058924984Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -4390,7 +4443,7 @@ entries:
     version: 2.0.0-rc.6
   - apiVersion: v2
     appVersion: v2.0.0-rc.5
-    created: "2023-05-30T23:41:20.443664216Z"
+    created: "2023-06-22T22:11:41.046369351Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -4409,7 +4462,7 @@ entries:
     version: 2.0.0-rc.5
   - apiVersion: v2
     appVersion: v2.0.0-rc.4
-    created: "2023-05-30T23:41:20.429386823Z"
+    created: "2023-06-22T22:11:41.03501523Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -4428,7 +4481,7 @@ entries:
     version: 2.0.0-rc.4
   - apiVersion: v2
     appVersion: v2.0.0-rc.3
-    created: "2023-05-30T23:41:20.415167031Z"
+    created: "2023-06-22T22:11:41.022408997Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -4447,7 +4500,7 @@ entries:
     version: 2.0.0-rc.3
   - apiVersion: v2
     appVersion: v2.0.0-rc.1
-    created: "2023-05-30T23:41:20.338462909Z"
+    created: "2023-06-22T22:11:40.961930356Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -4466,7 +4519,7 @@ entries:
     version: 2.0.0-rc.1
   - apiVersion: v2
     appVersion: v2.0.0-beta.19
-    created: "2023-05-30T23:41:20.228582137Z"
+    created: "2023-06-22T22:11:40.878662574Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -4485,7 +4538,7 @@ entries:
     version: 2.0.0-beta.19
   - apiVersion: v2
     appVersion: v2.0.0-beta.18
-    created: "2023-05-30T23:41:20.212034562Z"
+    created: "2023-06-22T22:11:40.867665858Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -4504,7 +4557,7 @@ entries:
     version: 2.0.0-beta.18
   - apiVersion: v2
     appVersion: v2.0.0-beta.16
-    created: "2023-05-30T23:41:20.197967268Z"
+    created: "2023-06-22T22:11:40.855758532Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -4523,7 +4576,7 @@ entries:
     version: 2.0.0-beta.16
   - apiVersion: v2
     appVersion: v2.0.0-beta.15
-    created: "2023-05-30T23:41:20.181214894Z"
+    created: "2023-06-22T22:11:40.845029018Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -4542,7 +4595,7 @@ entries:
     version: 2.0.0-beta.15
   - apiVersion: v2
     appVersion: v2.0.0-beta.14
-    created: "2023-05-30T23:41:20.166697903Z"
+    created: "2023-06-22T22:11:40.831429074Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -4561,7 +4614,7 @@ entries:
     version: 2.0.0-beta.14
   - apiVersion: v2
     appVersion: v2.0.0-beta.13
-    created: "2023-05-30T23:41:20.149429333Z"
+    created: "2023-06-22T22:11:40.820547759Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -4580,7 +4633,7 @@ entries:
     version: 2.0.0-beta.13
   - apiVersion: v2
     appVersion: v2.0.0-beta.12
-    created: "2023-05-30T23:41:20.135122941Z"
+    created: "2023-06-22T22:11:40.80744532Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -4599,7 +4652,7 @@ entries:
     version: 2.0.0-beta.12
   - apiVersion: v2
     appVersion: v2.0.0-beta.11
-    created: "2023-05-30T23:41:20.117638173Z"
+    created: "2023-06-22T22:11:40.795029588Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -4618,7 +4671,7 @@ entries:
     version: 2.0.0-beta.11
   - apiVersion: v2
     appVersion: v2.0.0-beta.10
-    created: "2023-05-30T23:41:20.102579086Z"
+    created: "2023-06-22T22:11:40.783675968Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -4637,7 +4690,7 @@ entries:
     version: 2.0.0-beta.10
   - apiVersion: v2
     appVersion: v2.0.0-beta.9
-    created: "2023-05-30T23:41:20.323001125Z"
+    created: "2023-06-22T22:11:40.949767827Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -4656,7 +4709,7 @@ entries:
     version: 2.0.0-beta.9
   - apiVersion: v2
     appVersion: v2.0.0-beta.8
-    created: "2023-05-30T23:41:20.305756055Z"
+    created: "2023-06-22T22:11:40.938211905Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -4675,7 +4728,7 @@ entries:
     version: 2.0.0-beta.8
   - apiVersion: v2
     appVersion: v2.0.0-beta.7
-    created: "2023-05-30T23:41:20.289737076Z"
+    created: "2023-06-22T22:11:40.924871864Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -4694,7 +4747,7 @@ entries:
     version: 2.0.0-beta.7
   - apiVersion: v2
     appVersion: v2.0.0-beta.6
-    created: "2023-05-30T23:41:20.275617182Z"
+    created: "2023-06-22T22:11:40.913843047Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -4713,7 +4766,7 @@ entries:
     version: 2.0.0-beta.6
   - apiVersion: v2
     appVersion: v2.0.0-beta.5
-    created: "2023-05-30T23:41:20.259883701Z"
+    created: "2023-06-22T22:11:40.901422815Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -4732,7 +4785,7 @@ entries:
     version: 2.0.0-beta.5
   - apiVersion: v2
     appVersion: v2.0.0-beta.3
-    created: "2023-05-30T23:41:20.243589824Z"
+    created: "2023-06-22T22:11:40.890879004Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -4751,7 +4804,7 @@ entries:
     version: 2.0.0-beta.3
   - apiVersion: v2
     appVersion: v2.0.0-beta.0
-    created: "2023-05-30T23:41:20.084199325Z"
+    created: "2023-06-22T22:11:40.772745152Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -4770,7 +4823,7 @@ entries:
     version: 2.0.0-beta.0
   - apiVersion: v2
     appVersion: v2.0.0-alpha.4
-    created: "2023-05-30T23:41:20.059131714Z"
+    created: "2023-06-22T22:11:40.761881637Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -4789,7 +4842,7 @@ entries:
     version: 2.0.0-alpha.4
   - apiVersion: v2
     appVersion: v2.0.0-alpha.3
-    created: "2023-05-30T23:41:20.03840557Z"
+    created: "2023-06-22T22:11:40.749645308Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -4808,7 +4861,7 @@ entries:
     version: 2.0.0-alpha.3
   - apiVersion: v2
     appVersion: v2.0.0-alpha.2
-    created: "2023-05-30T23:41:20.023347284Z"
+    created: "2023-06-22T22:11:40.73854599Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -4827,7 +4880,7 @@ entries:
     version: 2.0.0-alpha.2
   - apiVersion: v2
     appVersion: v2.0.0-alpha.1
-    created: "2023-05-30T23:41:20.005383919Z"
+    created: "2023-06-22T22:11:40.726337561Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -4846,7 +4899,7 @@ entries:
     version: 2.0.0-alpha.1
   - apiVersion: v2
     appVersion: v0.21.0-rc.4
-    created: "2023-05-30T23:41:19.990099134Z"
+    created: "2023-06-22T22:11:40.715159842Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -4865,7 +4918,7 @@ entries:
     version: 0.21.0-rc.4
   - apiVersion: v2
     appVersion: v0.21.0-rc.2
-    created: "2023-05-30T23:41:19.975766342Z"
+    created: "2023-06-22T22:11:40.704076625Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -4884,7 +4937,7 @@ entries:
     version: 0.21.0-rc.2
   - apiVersion: v2
     appVersion: v0.20.21
-    created: "2023-05-30T23:41:19.871463828Z"
+    created: "2023-06-22T22:11:40.620783043Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -4903,7 +4956,7 @@ entries:
     version: 0.20.21
   - apiVersion: v2
     appVersion: v0.20.20
-    created: "2023-05-30T23:41:19.852457772Z"
+    created: "2023-06-22T22:11:40.610081629Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -4922,7 +4975,7 @@ entries:
     version: 0.20.20
   - apiVersion: v2
     appVersion: v0.20.19
-    created: "2023-05-30T23:41:19.82346269Z"
+    created: "2023-06-22T22:11:40.585863473Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -4941,7 +4994,7 @@ entries:
     version: 0.20.19
   - apiVersion: v2
     appVersion: v0.20.18
-    created: "2023-05-30T23:41:19.807327012Z"
+    created: "2023-06-22T22:11:40.574972957Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -4960,7 +5013,7 @@ entries:
     version: 0.20.18
   - apiVersion: v2
     appVersion: v0.20.17
-    created: "2023-05-30T23:41:19.792127626Z"
+    created: "2023-06-22T22:11:40.562193622Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -4979,7 +5032,7 @@ entries:
     version: 0.20.17
   - apiVersion: v2
     appVersion: v0.20.16
-    created: "2023-05-30T23:41:19.778127532Z"
+    created: "2023-06-22T22:11:40.551115905Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -4998,7 +5051,7 @@ entries:
     version: 0.20.16
   - apiVersion: v2
     appVersion: v0.20.15
-    created: "2023-05-30T23:41:19.763021846Z"
+    created: "2023-06-22T22:11:40.538648073Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -5017,7 +5070,7 @@ entries:
     version: 0.20.15
   - apiVersion: v2
     appVersion: v0.20.14
-    created: "2023-05-30T23:41:19.748133558Z"
+    created: "2023-06-22T22:11:40.526949849Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -5036,7 +5089,7 @@ entries:
     version: 0.20.14
   - apiVersion: v2
     appVersion: v0.20.13
-    created: "2023-05-30T23:41:19.734788458Z"
+    created: "2023-06-22T22:11:40.516138334Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -5055,7 +5108,7 @@ entries:
     version: 0.20.13
   - apiVersion: v2
     appVersion: v0.20.12
-    created: "2023-05-30T23:41:19.71996547Z"
+    created: "2023-06-22T22:11:40.503898304Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -5074,7 +5127,7 @@ entries:
     version: 0.20.12
   - apiVersion: v2
     appVersion: v0.20.11
-    created: "2023-05-30T23:41:19.706196574Z"
+    created: "2023-06-22T22:11:40.492869488Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -5093,7 +5146,7 @@ entries:
     version: 0.20.11
   - apiVersion: v2
     appVersion: v0.20.10
-    created: "2023-05-30T23:41:19.691044788Z"
+    created: "2023-06-22T22:11:40.482335476Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -5112,7 +5165,7 @@ entries:
     version: 0.20.10
   - apiVersion: v2
     appVersion: v0.20.9
-    created: "2023-05-30T23:41:19.960614256Z"
+    created: "2023-06-22T22:11:40.69040298Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -5131,7 +5184,7 @@ entries:
     version: 0.20.9
   - apiVersion: v2
     appVersion: v0.20.8
-    created: "2023-05-30T23:41:19.946209865Z"
+    created: "2023-06-22T22:11:40.679697767Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -5150,7 +5203,7 @@ entries:
     version: 0.20.8
   - apiVersion: v2
     appVersion: v0.20.6
-    created: "2023-05-30T23:41:19.931685474Z"
+    created: "2023-06-22T22:11:40.667622239Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -5169,7 +5222,7 @@ entries:
     version: 0.20.6
   - apiVersion: v2
     appVersion: v0.20.5
-    created: "2023-05-30T23:41:19.916174091Z"
+    created: "2023-06-22T22:11:40.656463421Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -5188,7 +5241,7 @@ entries:
     version: 0.20.5
   - apiVersion: v2
     appVersion: v0.20.4
-    created: "2023-05-30T23:41:19.902407995Z"
+    created: "2023-06-22T22:11:40.644504494Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -5207,7 +5260,7 @@ entries:
     version: 0.20.4
   - apiVersion: v2
     appVersion: v0.20.3
-    created: "2023-05-30T23:41:19.886418516Z"
+    created: "2023-06-22T22:11:40.63279937Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -5226,7 +5279,7 @@ entries:
     version: 0.20.3
   - apiVersion: v2
     appVersion: v0.20.2
-    created: "2023-05-30T23:41:19.838660176Z"
+    created: "2023-06-22T22:11:40.597611897Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -5245,7 +5298,7 @@ entries:
     version: 0.20.2
   - apiVersion: v2
     appVersion: v0.20.0
-    created: "2023-05-30T23:41:19.677024994Z"
+    created: "2023-06-22T22:11:40.468049225Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -5264,7 +5317,7 @@ entries:
     version: 0.20.0
   - apiVersion: v2
     appVersion: v0.20.0-rc.10
-    created: "2023-05-30T23:41:19.573632573Z"
+    created: "2023-06-22T22:11:40.38830118Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -5283,7 +5336,7 @@ entries:
     version: 0.20.0-rc.10
   - apiVersion: v2
     appVersion: v0.20.0-rc.9
-    created: "2023-05-30T23:41:19.663920993Z"
+    created: "2023-06-22T22:11:40.456899207Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -5302,7 +5355,7 @@ entries:
     version: 0.20.0-rc.9
   - apiVersion: v2
     appVersion: v0.20.0-rc.7
-    created: "2023-05-30T23:41:19.649088904Z"
+    created: "2023-06-22T22:11:40.445392285Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -5321,7 +5374,7 @@ entries:
     version: 0.20.0-rc.7
   - apiVersion: v2
     appVersion: v0.20.0-rc.6
-    created: "2023-05-30T23:41:19.633497322Z"
+    created: "2023-06-22T22:11:40.434010664Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -5340,7 +5393,7 @@ entries:
     version: 0.20.0-rc.6
   - apiVersion: v2
     appVersion: v0.20.0-rc.5
-    created: "2023-05-30T23:41:19.618943732Z"
+    created: "2023-06-22T22:11:40.422903547Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -5359,7 +5412,7 @@ entries:
     version: 0.20.0-rc.5
   - apiVersion: v2
     appVersion: v0.20.0-rc.4
-    created: "2023-05-30T23:41:19.603379549Z"
+    created: "2023-06-22T22:11:40.411999731Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -5378,7 +5431,7 @@ entries:
     version: 0.20.0-rc.4
   - apiVersion: v2
     appVersion: v0.20.0-rc.2
-    created: "2023-05-30T23:41:19.588410562Z"
+    created: "2023-06-22T22:11:40.400409708Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -5397,7 +5450,7 @@ entries:
     version: 0.20.0-rc.2
   - apiVersion: v2
     appVersion: v0.20.0-rc.0
-    created: "2023-05-30T23:41:19.559895577Z"
+    created: "2023-06-22T22:11:40.377697768Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -5416,7 +5469,7 @@ entries:
     version: 0.20.0-rc.0
   - apiVersion: v2
     appVersion: v0.19.7
-    created: "2023-05-30T23:41:19.545997381Z"
+    created: "2023-06-22T22:11:40.366062044Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -5435,7 +5488,7 @@ entries:
     version: 0.19.7
   - apiVersion: v2
     appVersion: v0.19.5
-    created: "2023-05-30T23:41:19.530393999Z"
+    created: "2023-06-22T22:11:40.355044828Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -5454,7 +5507,7 @@ entries:
     version: 0.19.5
   - apiVersion: v2
     appVersion: v0.19.5-rc.3
-    created: "2023-05-30T23:41:19.517249098Z"
+    created: "2023-06-22T22:11:40.343338704Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -5473,7 +5526,7 @@ entries:
     version: 0.19.5-rc.3
   - apiVersion: v2
     appVersion: v0.19.1
-    created: "2023-05-30T23:41:19.5036752Z"
+    created: "2023-06-22T22:11:40.33169318Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -5492,7 +5545,7 @@ entries:
     version: 0.19.1
   - apiVersion: v2
     appVersion: v0.19.0
-    created: "2023-05-30T23:41:19.488883512Z"
+    created: "2023-06-22T22:11:40.321139969Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -5511,7 +5564,7 @@ entries:
     version: 0.19.0
   - apiVersion: v2
     appVersion: v0.19.0-rc.9
-    created: "2023-05-30T23:41:19.475196815Z"
+    created: "2023-06-22T22:11:40.308645136Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -5530,7 +5583,7 @@ entries:
     version: 0.19.0-rc.9
   - apiVersion: v2
     appVersion: v0.19.0-rc.7
-    created: "2023-05-30T23:41:19.460985022Z"
+    created: "2023-06-22T22:11:40.297576219Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -5549,7 +5602,7 @@ entries:
     version: 0.19.0-rc.7
   - apiVersion: v2
     appVersion: v0.19.0-rc.6
-    created: "2023-05-30T23:41:19.447207026Z"
+    created: "2023-06-22T22:11:40.284297078Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -5568,7 +5621,7 @@ entries:
     version: 0.19.0-rc.6
   - apiVersion: v2
     appVersion: v0.19.0-rc.5
-    created: "2023-05-30T23:41:19.433506629Z"
+    created: "2023-06-22T22:11:40.273449563Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -5587,7 +5640,7 @@ entries:
     version: 0.19.0-rc.5
   - apiVersion: v2
     appVersion: v0.19.0-rc.4
-    created: "2023-05-30T23:41:19.416952654Z"
+    created: "2023-06-22T22:11:40.261282135Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -5606,7 +5659,7 @@ entries:
     version: 0.19.0-rc.4
   - apiVersion: v2
     appVersion: v0.19.0-rc.2
-    created: "2023-05-30T23:41:19.40284316Z"
+    created: "2023-06-22T22:11:40.247729291Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -5625,7 +5678,7 @@ entries:
     version: 0.19.0-rc.2
   - apiVersion: v2
     appVersion: v0.19.0-rc.1
-    created: "2023-05-30T23:41:19.385876888Z"
+    created: "2023-06-22T22:11:40.236102568Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -5644,7 +5697,7 @@ entries:
     version: 0.19.0-rc.1
   - apiVersion: v2
     appVersion: v0.18.6
-    created: "2023-05-30T23:41:19.371159399Z"
+    created: "2023-06-22T22:11:40.223326532Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -5663,7 +5716,7 @@ entries:
     version: 0.18.6
   - apiVersion: v2
     appVersion: v0.18.5
-    created: "2023-05-30T23:41:19.353626831Z"
+    created: "2023-06-22T22:11:40.210358595Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -5682,7 +5735,7 @@ entries:
     version: 0.18.5
   - apiVersion: v2
     appVersion: v0.18.4
-    created: "2023-05-30T23:41:19.338748443Z"
+    created: "2023-06-22T22:11:40.19666155Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -5701,7 +5754,7 @@ entries:
     version: 0.18.4
   - apiVersion: v2
     appVersion: v0.18.3
-    created: "2023-05-30T23:41:19.322787464Z"
+    created: "2023-06-22T22:11:40.186004237Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -5720,7 +5773,7 @@ entries:
     version: 0.18.3
   - apiVersion: v2
     appVersion: v0.18.2
-    created: "2023-05-30T23:41:19.306960883Z"
+    created: "2023-06-22T22:11:40.17403091Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -5739,7 +5792,7 @@ entries:
     version: 0.18.2
   - apiVersion: v2
     appVersion: v0.18.1
-    created: "2023-05-30T23:41:19.292554092Z"
+    created: "2023-06-22T22:11:40.162960593Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -5758,7 +5811,7 @@ entries:
     version: 0.18.1
   - apiVersion: v2
     appVersion: v0.18.0
-    created: "2023-05-30T23:41:19.277113908Z"
+    created: "2023-06-22T22:11:40.152484482Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -5777,7 +5830,7 @@ entries:
     version: 0.18.0
   - apiVersion: v2
     appVersion: v0.18.0-rc.7
-    created: "2023-05-30T23:41:19.263106713Z"
+    created: "2023-06-22T22:11:40.140757458Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -5796,7 +5849,7 @@ entries:
     version: 0.18.0-rc.7
   - apiVersion: v2
     appVersion: v0.18.0-rc.6
-    created: "2023-05-30T23:41:19.246080242Z"
+    created: "2023-06-22T22:11:40.129349537Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -5815,7 +5868,7 @@ entries:
     version: 0.18.0-rc.6
   - apiVersion: v2
     appVersion: v0.18.0-rc.3
-    created: "2023-05-30T23:41:19.230744557Z"
+    created: "2023-06-22T22:11:40.118553323Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -5834,7 +5887,7 @@ entries:
     version: 0.18.0-rc.3
   - apiVersion: v2
     appVersion: v0.17.5
-    created: "2023-05-30T23:41:19.214975676Z"
+    created: "2023-06-22T22:11:40.107458005Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -5853,7 +5906,7 @@ entries:
     version: 0.17.5
   - apiVersion: v2
     appVersion: v0.17.3
-    created: "2023-05-30T23:41:19.199636792Z"
+    created: "2023-06-22T22:11:40.096795092Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -5872,7 +5925,7 @@ entries:
     version: 0.17.3
   - apiVersion: v2
     appVersion: v0.17.2
-    created: "2023-05-30T23:41:19.184725104Z"
+    created: "2023-06-22T22:11:40.083858855Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -5891,7 +5944,7 @@ entries:
     version: 0.17.2
   - apiVersion: v2
     appVersion: v0.17.1
-    created: "2023-05-30T23:41:19.169917816Z"
+    created: "2023-06-22T22:11:40.072377934Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -5910,7 +5963,7 @@ entries:
     version: 0.17.1
   - apiVersion: v2
     appVersion: v0.16.14
-    created: "2023-05-30T23:41:19.12289257Z"
+    created: "2023-06-22T22:11:40.035451842Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -5929,7 +5982,7 @@ entries:
     version: 0.16.14
   - apiVersion: v2
     appVersion: v0.16.11
-    created: "2023-05-30T23:41:19.109369372Z"
+    created: "2023-06-22T22:11:40.025215334Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -5948,7 +6001,7 @@ entries:
     version: 0.16.11
   - apiVersion: v2
     appVersion: v0.16.10
-    created: "2023-05-30T23:41:19.094054688Z"
+    created: "2023-06-22T22:11:40.014074716Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -5967,7 +6020,7 @@ entries:
     version: 0.16.10
   - apiVersion: v2
     appVersion: v0.16.9
-    created: "2023-05-30T23:41:19.153849537Z"
+    created: "2023-06-22T22:11:40.059946202Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -5986,7 +6039,7 @@ entries:
     version: 0.16.9
   - apiVersion: v2
     appVersion: v0.16.7
-    created: "2023-05-30T23:41:19.138088956Z"
+    created: "2023-06-22T22:11:40.048218678Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -6005,7 +6058,7 @@ entries:
     version: 0.16.7
   - apiVersion: v2
     appVersion: v0.15.4
-    created: "2023-05-30T23:41:19.079919494Z"
+    created: "2023-06-22T22:11:40.002822897Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -6024,8 +6077,40 @@ entries:
     version: 0.15.4
   rime-kube-system:
   - apiVersion: v2
+    appVersion: v2.1.0-rc.7
+    created: "2023-06-22T22:11:42.225944445Z"
+    dependencies:
+    - condition: rimeSystem.clusterAutoscaler
+      name: cluster-autoscaler
+      repository: https://kubernetes.github.io/autoscaler
+      version: 9.28.0
+    - condition: rimeSystem.externalDns
+      name: external-dns
+      repository: https://kubernetes-sigs.github.io/external-dns/
+      version: 1.10.1
+    - condition: rimeSystem.awsLoadBalancerController
+      name: aws-load-balancer-controller
+      repository: https://aws.github.io/eks-charts
+      version: 1.4.2
+    - condition: rimeSystem.metricsServer
+      name: metrics-server
+      repository: https://kubernetes-sigs.github.io/metrics-server/
+      version: 3.8.2
+    - condition: cert-manager.enabled
+      name: cert-manager
+      repository: https://charts.jetstack.io
+      version: v1.10.0
+    description: A Helm chart for RIME's kubesystem resources
+    digest: 602689c1d299fdee6d4016dd9b5be75df6fbca85f4f5004c8957e5ddb767ab06
+    kubeVersion: '>=1.20.0-0'
+    name: rime-kube-system
+    type: application
+    urls:
+    - https://robustintelligence.github.io/helm/chart-releases/rime-kube-system-2.1.0-rc.7.tgz
+    version: 2.1.0-rc.7
+  - apiVersion: v2
     appVersion: v2.1.0-rc.5
-    created: "2023-05-30T23:41:21.66770179Z"
+    created: "2023-06-22T22:11:42.21784626Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -6057,7 +6142,7 @@ entries:
     version: 2.1.0-rc.5
   - apiVersion: v2
     appVersion: v2.1.0-rc.4
-    created: "2023-05-30T23:41:21.657572767Z"
+    created: "2023-06-22T22:11:42.208112457Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -6089,7 +6174,7 @@ entries:
     version: 2.1.0-rc.4
   - apiVersion: v2
     appVersion: v2.1.0-rc.1
-    created: "2023-05-30T23:41:21.648968731Z"
+    created: "2023-06-22T22:11:42.198591956Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -6121,7 +6206,7 @@ entries:
     version: 2.1.0-rc.1
   - apiVersion: v2
     appVersion: v2.1.0-rc.0
-    created: "2023-05-30T23:41:21.638044414Z"
+    created: "2023-06-22T22:11:42.191213578Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -6153,7 +6238,7 @@ entries:
     version: 2.1.0-rc.0
   - apiVersion: v2
     appVersion: v2.0.14
-    created: "2023-05-30T23:41:21.560921695Z"
+    created: "2023-06-22T22:11:42.112365242Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -6185,7 +6270,7 @@ entries:
     version: 2.0.14
   - apiVersion: v2
     appVersion: v2.0.12
-    created: "2023-05-30T23:41:21.552466259Z"
+    created: "2023-06-22T22:11:42.10083722Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -6217,7 +6302,7 @@ entries:
     version: 2.0.12
   - apiVersion: v2
     appVersion: v2.0.11
-    created: "2023-05-30T23:41:21.542220836Z"
+    created: "2023-06-22T22:11:42.09042381Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -6249,7 +6334,7 @@ entries:
     version: 2.0.11
   - apiVersion: v2
     appVersion: v2.0.10
-    created: "2023-05-30T23:41:21.532959606Z"
+    created: "2023-06-22T22:11:42.082635827Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -6281,7 +6366,7 @@ entries:
     version: 2.0.10
   - apiVersion: v2
     appVersion: v2.0.9
-    created: "2023-05-30T23:41:21.626956597Z"
+    created: "2023-06-22T22:11:42.182107181Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -6313,7 +6398,7 @@ entries:
     version: 2.0.9
   - apiVersion: v2
     appVersion: v2.0.8
-    created: "2023-05-30T23:41:21.619168556Z"
+    created: "2023-06-22T22:11:42.170411457Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -6345,7 +6430,7 @@ entries:
     version: 2.0.8
   - apiVersion: v2
     appVersion: v2.0.7
-    created: "2023-05-30T23:41:21.608581136Z"
+    created: "2023-06-22T22:11:42.16120636Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -6377,7 +6462,7 @@ entries:
     version: 2.0.7
   - apiVersion: v2
     appVersion: v2.0.6
-    created: "2023-05-30T23:41:21.599950001Z"
+    created: "2023-06-22T22:11:42.152430067Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -6409,7 +6494,7 @@ entries:
     version: 2.0.6
   - apiVersion: v2
     appVersion: v2.0.5
-    created: "2023-05-30T23:41:21.589911477Z"
+    created: "2023-06-22T22:11:42.14332967Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -6441,7 +6526,7 @@ entries:
     version: 2.0.5
   - apiVersion: v2
     appVersion: v2.0.4
-    created: "2023-05-30T23:41:21.580928944Z"
+    created: "2023-06-22T22:11:42.128807616Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -6473,7 +6558,7 @@ entries:
     version: 2.0.4
   - apiVersion: v2
     appVersion: v2.0.3
-    created: "2023-05-30T23:41:21.571217817Z"
+    created: "2023-06-22T22:11:42.121213336Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -6505,7 +6590,7 @@ entries:
     version: 2.0.3
   - apiVersion: v2
     appVersion: v2.0.1
-    created: "2023-05-30T23:41:21.519782905Z"
+    created: "2023-06-22T22:11:42.069735291Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -6537,7 +6622,7 @@ entries:
     version: 2.0.1
   - apiVersion: v2
     appVersion: v2.0.0
-    created: "2023-05-30T23:41:21.511728466Z"
+    created: "2023-06-22T22:11:42.057267459Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -6569,7 +6654,7 @@ entries:
     version: 2.0.0
   - apiVersion: v2
     appVersion: v2.0.0-rc.14
-    created: "2023-05-30T23:41:21.452872409Z"
+    created: "2023-06-22T22:11:42.010002458Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -6601,7 +6686,7 @@ entries:
     version: 2.0.0-rc.14
   - apiVersion: v2
     appVersion: v2.0.0-rc.13
-    created: "2023-05-30T23:41:21.441489095Z"
+    created: "2023-06-22T22:11:42.001340266Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -6633,7 +6718,7 @@ entries:
     version: 2.0.0-rc.13
   - apiVersion: v2
     appVersion: v2.0.0-rc.11
-    created: "2023-05-30T23:41:21.432316364Z"
+    created: "2023-06-22T22:11:41.993276981Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -6665,7 +6750,7 @@ entries:
     version: 2.0.0-rc.11
   - apiVersion: v2
     appVersion: v2.0.0-rc.10
-    created: "2023-05-30T23:41:21.421230148Z"
+    created: "2023-06-22T22:11:41.985037894Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -6697,7 +6782,7 @@ entries:
     version: 2.0.0-rc.10
   - apiVersion: v2
     appVersion: v2.0.0-rc.7
-    created: "2023-05-30T23:41:21.500851748Z"
+    created: "2023-06-22T22:11:42.047628857Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -6729,7 +6814,7 @@ entries:
     version: 2.0.0-rc.7
   - apiVersion: v2
     appVersion: v2.0.0-rc.6
-    created: "2023-05-30T23:41:21.490286027Z"
+    created: "2023-06-22T22:11:42.040005876Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -6761,7 +6846,7 @@ entries:
     version: 2.0.0-rc.6
   - apiVersion: v2
     appVersion: v2.0.0-rc.5
-    created: "2023-05-30T23:41:21.482158089Z"
+    created: "2023-06-22T22:11:42.033202404Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -6793,7 +6878,7 @@ entries:
     version: 2.0.0-rc.5
   - apiVersion: v2
     appVersion: v2.0.0-rc.4
-    created: "2023-05-30T23:41:21.472342363Z"
+    created: "2023-06-22T22:11:42.025176919Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -6825,7 +6910,7 @@ entries:
     version: 2.0.0-rc.4
   - apiVersion: v2
     appVersion: v2.0.0-rc.3
-    created: "2023-05-30T23:41:21.463874427Z"
+    created: "2023-06-22T22:11:42.017105933Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -6857,7 +6942,7 @@ entries:
     version: 2.0.0-rc.3
   - apiVersion: v2
     appVersion: v2.0.0-rc.1
-    created: "2023-05-30T23:41:21.412186116Z"
+    created: "2023-06-22T22:11:41.971963755Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -6889,7 +6974,7 @@ entries:
     version: 2.0.0-rc.1
   - apiVersion: v2
     appVersion: v2.0.0-beta.19
-    created: "2023-05-30T23:41:21.34129565Z"
+    created: "2023-06-22T22:11:41.916120964Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -6921,7 +7006,7 @@ entries:
     version: 2.0.0-beta.19
   - apiVersion: v2
     appVersion: v2.0.0-beta.18
-    created: "2023-05-30T23:41:21.332412517Z"
+    created: "2023-06-22T22:11:41.906808865Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -6953,7 +7038,7 @@ entries:
     version: 2.0.0-beta.18
   - apiVersion: v2
     appVersion: v2.0.0-beta.16
-    created: "2023-05-30T23:41:21.322277594Z"
+    created: "2023-06-22T22:11:41.899862391Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -6985,7 +7070,7 @@ entries:
     version: 2.0.0-beta.16
   - apiVersion: v2
     appVersion: v2.0.0-beta.15
-    created: "2023-05-30T23:41:21.312022371Z"
+    created: "2023-06-22T22:11:41.887822664Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -7017,7 +7102,7 @@ entries:
     version: 2.0.0-beta.15
   - apiVersion: v2
     appVersion: v2.0.0-beta.14
-    created: "2023-05-30T23:41:21.303752733Z"
+    created: "2023-06-22T22:11:41.874694425Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -7049,7 +7134,7 @@ entries:
     version: 2.0.0-beta.14
   - apiVersion: v2
     appVersion: v2.0.0-beta.13
-    created: "2023-05-30T23:41:21.29361391Z"
+    created: "2023-06-22T22:11:41.867378647Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -7081,7 +7166,7 @@ entries:
     version: 2.0.0-beta.13
   - apiVersion: v2
     appVersion: v2.0.0-beta.12
-    created: "2023-05-30T23:41:21.284807476Z"
+    created: "2023-06-22T22:11:41.85631243Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -7113,7 +7198,7 @@ entries:
     version: 2.0.0-beta.12
   - apiVersion: v2
     appVersion: v2.0.0-beta.11
-    created: "2023-05-30T23:41:21.274094357Z"
+    created: "2023-06-22T22:11:41.848119843Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -7145,7 +7230,7 @@ entries:
     version: 2.0.0-beta.11
   - apiVersion: v2
     appVersion: v2.0.0-beta.10
-    created: "2023-05-30T23:41:21.263429237Z"
+    created: "2023-06-22T22:11:41.839692354Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -7177,7 +7262,7 @@ entries:
     version: 2.0.0-beta.10
   - apiVersion: v2
     appVersion: v2.0.0-beta.9
-    created: "2023-05-30T23:41:21.401286598Z"
+    created: "2023-06-22T22:11:41.964283774Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -7209,7 +7294,7 @@ entries:
     version: 2.0.0-beta.9
   - apiVersion: v2
     appVersion: v2.0.0-beta.8
-    created: "2023-05-30T23:41:21.390786177Z"
+    created: "2023-06-22T22:11:41.956585692Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -7241,7 +7326,7 @@ entries:
     version: 2.0.0-beta.8
   - apiVersion: v2
     appVersion: v2.0.0-beta.7
-    created: "2023-05-30T23:41:21.382166842Z"
+    created: "2023-06-22T22:11:41.945198072Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -7273,7 +7358,7 @@ entries:
     version: 2.0.0-beta.7
   - apiVersion: v2
     appVersion: v2.0.0-beta.6
-    created: "2023-05-30T23:41:21.371428723Z"
+    created: "2023-06-22T22:11:41.9384352Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -7305,7 +7390,7 @@ entries:
     version: 2.0.0-beta.6
   - apiVersion: v2
     appVersion: v2.0.0-beta.5
-    created: "2023-05-30T23:41:21.36254809Z"
+    created: "2023-06-22T22:11:41.930650417Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -7337,7 +7422,7 @@ entries:
     version: 2.0.0-beta.5
   - apiVersion: v2
     appVersion: v2.0.0-beta.3
-    created: "2023-05-30T23:41:21.351476974Z"
+    created: "2023-06-22T22:11:41.923766645Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -7369,7 +7454,7 @@ entries:
     version: 2.0.0-beta.3
   - apiVersion: v2
     appVersion: v2.0.0-beta.0
-    created: "2023-05-30T23:41:21.254220707Z"
+    created: "2023-06-22T22:11:41.831333765Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -7401,7 +7486,7 @@ entries:
     version: 2.0.0-beta.0
   - apiVersion: v2
     appVersion: v2.0.0-alpha.4
-    created: "2023-05-30T23:41:21.243548087Z"
+    created: "2023-06-22T22:11:41.816158505Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -7433,7 +7518,7 @@ entries:
     version: 2.0.0-alpha.4
   - apiVersion: v2
     appVersion: v2.0.0-alpha.3
-    created: "2023-05-30T23:41:21.233599062Z"
+    created: "2023-06-22T22:11:41.808780827Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -7465,7 +7550,7 @@ entries:
     version: 2.0.0-alpha.3
   - apiVersion: v2
     appVersion: v2.0.0-alpha.2
-    created: "2023-05-30T23:41:21.225100426Z"
+    created: "2023-06-22T22:11:41.795515386Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -7497,7 +7582,7 @@ entries:
     version: 2.0.0-alpha.2
   - apiVersion: v2
     appVersion: v2.0.0-alpha.1
-    created: "2023-05-30T23:41:21.213580413Z"
+    created: "2023-06-22T22:11:41.788793215Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -7529,7 +7614,7 @@ entries:
     version: 2.0.0-alpha.1
   - apiVersion: v2
     appVersion: v0.21.0-rc.4
-    created: "2023-05-30T23:41:21.20466538Z"
+    created: "2023-06-22T22:11:41.780458827Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -7561,7 +7646,7 @@ entries:
     version: 0.21.0-rc.4
   - apiVersion: v2
     appVersion: v0.21.0-rc.2
-    created: "2023-05-30T23:41:21.194366058Z"
+    created: "2023-06-22T22:11:41.773886957Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -7593,7 +7678,7 @@ entries:
     version: 0.21.0-rc.2
   - apiVersion: v2
     appVersion: v0.20.21
-    created: "2023-05-30T23:41:21.129452847Z"
+    created: "2023-06-22T22:11:41.696958142Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -7625,7 +7710,7 @@ entries:
     version: 0.20.21
   - apiVersion: v2
     appVersion: v0.20.20
-    created: "2023-05-30T23:41:21.120135817Z"
+    created: "2023-06-22T22:11:41.688819856Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -7657,7 +7742,7 @@ entries:
     version: 0.20.20
   - apiVersion: v2
     appVersion: v0.20.19
-    created: "2023-05-30T23:41:21.102170153Z"
+    created: "2023-06-22T22:11:41.667125926Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -7689,7 +7774,7 @@ entries:
     version: 0.20.19
   - apiVersion: v2
     appVersion: v0.20.18
-    created: "2023-05-30T23:41:21.091761731Z"
+    created: "2023-06-22T22:11:41.658412334Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -7721,7 +7806,7 @@ entries:
     version: 0.20.18
   - apiVersion: v2
     appVersion: v0.20.17
-    created: "2023-05-30T23:41:21.083151996Z"
+    created: "2023-06-22T22:11:41.648196926Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -7753,7 +7838,7 @@ entries:
     version: 0.20.17
   - apiVersion: v2
     appVersion: v0.20.16
-    created: "2023-05-30T23:41:21.072815874Z"
+    created: "2023-06-22T22:11:41.639758836Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -7785,7 +7870,7 @@ entries:
     version: 0.20.16
   - apiVersion: v2
     appVersion: v0.20.15
-    created: "2023-05-30T23:41:21.061318161Z"
+    created: "2023-06-22T22:11:41.63166385Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -7817,7 +7902,7 @@ entries:
     version: 0.20.15
   - apiVersion: v2
     appVersion: v0.20.14
-    created: "2023-05-30T23:41:21.05208893Z"
+    created: "2023-06-22T22:11:41.62033703Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -7849,7 +7934,7 @@ entries:
     version: 0.20.14
   - apiVersion: v2
     appVersion: v0.20.13
-    created: "2023-05-30T23:41:21.042556502Z"
+    created: "2023-06-22T22:11:41.60992212Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -7881,7 +7966,7 @@ entries:
     version: 0.20.13
   - apiVersion: v2
     appVersion: v0.20.12
-    created: "2023-05-30T23:41:21.034377864Z"
+    created: "2023-06-22T22:11:41.60140703Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -7913,7 +7998,7 @@ entries:
     version: 0.20.12
   - apiVersion: v2
     appVersion: v0.20.11
-    created: "2023-05-30T23:41:21.024588837Z"
+    created: "2023-06-22T22:11:41.592556436Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -7945,7 +8030,7 @@ entries:
     version: 0.20.11
   - apiVersion: v2
     appVersion: v0.20.10
-    created: "2023-05-30T23:41:21.015035409Z"
+    created: "2023-06-22T22:11:41.578418186Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -7977,7 +8062,7 @@ entries:
     version: 0.20.10
   - apiVersion: v2
     appVersion: v0.20.9
-    created: "2023-05-30T23:41:21.185517324Z"
+    created: "2023-06-22T22:11:41.764590858Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -8009,7 +8094,7 @@ entries:
     version: 0.20.9
   - apiVersion: v2
     appVersion: v0.20.8
-    created: "2023-05-30T23:41:21.175027404Z"
+    created: "2023-06-22T22:11:41.751895524Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -8041,7 +8126,7 @@ entries:
     version: 0.20.8
   - apiVersion: v2
     appVersion: v0.20.6
-    created: "2023-05-30T23:41:21.165540175Z"
+    created: "2023-06-22T22:11:41.745219353Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -8073,7 +8158,7 @@ entries:
     version: 0.20.6
   - apiVersion: v2
     appVersion: v0.20.5
-    created: "2023-05-30T23:41:21.157440436Z"
+    created: "2023-06-22T22:11:41.731619409Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -8105,7 +8190,7 @@ entries:
     version: 0.20.5
   - apiVersion: v2
     appVersion: v0.20.4
-    created: "2023-05-30T23:41:21.147214813Z"
+    created: "2023-06-22T22:11:41.724681436Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -8137,7 +8222,7 @@ entries:
     version: 0.20.4
   - apiVersion: v2
     appVersion: v0.20.3
-    created: "2023-05-30T23:41:21.137550086Z"
+    created: "2023-06-22T22:11:41.710728288Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -8169,7 +8254,7 @@ entries:
     version: 0.20.3
   - apiVersion: v2
     appVersion: v0.20.2
-    created: "2023-05-30T23:41:21.111933979Z"
+    created: "2023-06-22T22:11:41.674742307Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -8201,7 +8286,7 @@ entries:
     version: 0.20.2
   - apiVersion: v2
     appVersion: v0.20.0
-    created: "2023-05-30T23:41:21.006329275Z"
+    created: "2023-06-22T22:11:41.561881111Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -8233,7 +8318,7 @@ entries:
     version: 0.20.0
   - apiVersion: v2
     appVersion: v0.20.0-rc.10
-    created: "2023-05-30T23:41:20.937161796Z"
+    created: "2023-06-22T22:11:41.489889749Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -8265,7 +8350,7 @@ entries:
     version: 0.20.0-rc.10
   - apiVersion: v2
     appVersion: v0.20.0-rc.9
-    created: "2023-05-30T23:41:20.996026253Z"
+    created: "2023-06-22T22:11:41.553532023Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -8297,7 +8382,7 @@ entries:
     version: 0.20.0-rc.9
   - apiVersion: v2
     appVersion: v0.20.0-rc.7
-    created: "2023-05-30T23:41:20.986386625Z"
+    created: "2023-06-22T22:11:41.54380662Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -8329,7 +8414,7 @@ entries:
     version: 0.20.0-rc.7
   - apiVersion: v2
     appVersion: v0.20.0-rc.6
-    created: "2023-05-30T23:41:20.978384286Z"
+    created: "2023-06-22T22:11:41.535894136Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -8361,7 +8446,7 @@ entries:
     version: 0.20.0-rc.6
   - apiVersion: v2
     appVersion: v0.20.0-rc.5
-    created: "2023-05-30T23:41:20.967336369Z"
+    created: "2023-06-22T22:11:41.526531537Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -8393,7 +8478,7 @@ entries:
     version: 0.20.0-rc.5
   - apiVersion: v2
     appVersion: v0.20.0-rc.4
-    created: "2023-05-30T23:41:20.958763233Z"
+    created: "2023-06-22T22:11:41.511878882Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -8425,7 +8510,7 @@ entries:
     version: 0.20.0-rc.4
   - apiVersion: v2
     appVersion: v0.20.0-rc.2
-    created: "2023-05-30T23:41:20.948525111Z"
+    created: "2023-06-22T22:11:41.503999698Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -8457,7 +8542,7 @@ entries:
     version: 0.20.0-rc.2
   - apiVersion: v2
     appVersion: v0.20.0-rc.0
-    created: "2023-05-30T23:41:20.927817967Z"
+    created: "2023-06-22T22:11:41.481640761Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -8485,7 +8570,7 @@ entries:
     version: 0.20.0-rc.0
   - apiVersion: v2
     appVersion: v0.19.7
-    created: "2023-05-30T23:41:20.921652013Z"
+    created: "2023-06-22T22:11:41.471024749Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -8513,7 +8598,7 @@ entries:
     version: 0.19.7
   - apiVersion: v2
     appVersion: v0.19.5
-    created: "2023-05-30T23:41:20.916965949Z"
+    created: "2023-06-22T22:11:41.466729603Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -8541,7 +8626,7 @@ entries:
     version: 0.19.5
   - apiVersion: v2
     appVersion: v0.19.5-rc.3
-    created: "2023-05-30T23:41:20.912126485Z"
+    created: "2023-06-22T22:11:41.462186055Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -8569,7 +8654,7 @@ entries:
     version: 0.19.5-rc.3
   - apiVersion: v2
     appVersion: v0.19.1
-    created: "2023-05-30T23:41:20.905788733Z"
+    created: "2023-06-22T22:11:41.456729497Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -8597,7 +8682,7 @@ entries:
     version: 0.19.1
   - apiVersion: v2
     appVersion: v0.19.0
-    created: "2023-05-30T23:41:20.900943469Z"
+    created: "2023-06-22T22:11:41.452683355Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -8625,7 +8710,7 @@ entries:
     version: 0.19.0
   - apiVersion: v2
     appVersion: v0.19.0-rc.9
-    created: "2023-05-30T23:41:20.896057706Z"
+    created: "2023-06-22T22:11:41.448191507Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -8653,7 +8738,7 @@ entries:
     version: 0.19.0-rc.9
   - apiVersion: v2
     appVersion: v0.19.0-rc.7
-    created: "2023-05-30T23:41:20.889841353Z"
+    created: "2023-06-22T22:11:41.442000941Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -8681,7 +8766,7 @@ entries:
     version: 0.19.0-rc.7
   - apiVersion: v2
     appVersion: v0.19.0-rc.6
-    created: "2023-05-30T23:41:20.88487219Z"
+    created: "2023-06-22T22:11:41.437637795Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -8709,7 +8794,7 @@ entries:
     version: 0.19.0-rc.6
   - apiVersion: v2
     appVersion: v0.19.0-rc.5
-    created: "2023-05-30T23:41:20.880032027Z"
+    created: "2023-06-22T22:11:41.43336405Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -8737,7 +8822,7 @@ entries:
     version: 0.19.0-rc.5
   - apiVersion: v2
     appVersion: v0.19.0-rc.4
-    created: "2023-05-30T23:41:20.873634175Z"
+    created: "2023-06-22T22:11:41.427329486Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -8765,7 +8850,7 @@ entries:
     version: 0.19.0-rc.4
   - apiVersion: v2
     appVersion: v0.19.0-rc.2
-    created: "2023-05-30T23:41:20.868800012Z"
+    created: "2023-06-22T22:11:41.423409444Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -8793,7 +8878,7 @@ entries:
     version: 0.19.0-rc.2
   - apiVersion: v2
     appVersion: v0.19.0-rc.1
-    created: "2023-05-30T23:41:20.864240146Z"
+    created: "2023-06-22T22:11:41.418959897Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -8821,7 +8906,7 @@ entries:
     version: 0.19.0-rc.1
   - apiVersion: v2
     appVersion: v0.18.6
-    created: "2023-05-30T23:41:20.858185492Z"
+    created: "2023-06-22T22:11:41.413078035Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -8849,7 +8934,7 @@ entries:
     version: 0.18.6
   - apiVersion: v2
     appVersion: v0.18.5
-    created: "2023-05-30T23:41:20.853836824Z"
+    created: "2023-06-22T22:11:41.40882039Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -8877,7 +8962,7 @@ entries:
     version: 0.18.5
   - apiVersion: v2
     appVersion: v0.18.4
-    created: "2023-05-30T23:41:20.84914236Z"
+    created: "2023-06-22T22:11:41.404478244Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -8905,7 +8990,7 @@ entries:
     version: 0.18.4
   - apiVersion: v2
     appVersion: v0.18.3
-    created: "2023-05-30T23:41:20.842824607Z"
+    created: "2023-06-22T22:11:41.399311889Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -8933,7 +9018,7 @@ entries:
     version: 0.18.3
   - apiVersion: v2
     appVersion: v0.18.2
-    created: "2023-05-30T23:41:20.838251742Z"
+    created: "2023-06-22T22:11:41.393471527Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -8961,7 +9046,7 @@ entries:
     version: 0.18.2
   - apiVersion: v2
     appVersion: v0.18.1
-    created: "2023-05-30T23:41:20.833853675Z"
+    created: "2023-06-22T22:11:41.386768356Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -8989,7 +9074,7 @@ entries:
     version: 0.18.1
   - apiVersion: v2
     appVersion: v0.18.0
-    created: "2023-05-30T23:41:20.827634922Z"
+    created: "2023-06-22T22:11:41.382749214Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -9017,7 +9102,7 @@ entries:
     version: 0.18.0
   - apiVersion: v2
     appVersion: v0.18.0-rc.7
-    created: "2023-05-30T23:41:20.822856458Z"
+    created: "2023-06-22T22:11:41.378086464Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -9045,7 +9130,7 @@ entries:
     version: 0.18.0-rc.7
   - apiVersion: v2
     appVersion: v0.18.0-rc.6
-    created: "2023-05-30T23:41:20.817747096Z"
+    created: "2023-06-22T22:11:41.367371051Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -9073,7 +9158,7 @@ entries:
     version: 0.18.0-rc.6
   - apiVersion: v2
     appVersion: v0.18.0-rc.3
-    created: "2023-05-30T23:41:20.810214853Z"
+    created: "2023-06-22T22:11:41.363689712Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -9101,7 +9186,7 @@ entries:
     version: 0.18.0-rc.3
   - apiVersion: v2
     appVersion: v0.17.5
-    created: "2023-05-30T23:41:20.804869893Z"
+    created: "2023-06-22T22:11:41.359804871Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -9129,7 +9214,7 @@ entries:
     version: 0.17.5
   - apiVersion: v2
     appVersion: v0.17.3
-    created: "2023-05-30T23:41:20.799429634Z"
+    created: "2023-06-22T22:11:41.355295923Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -9157,7 +9242,7 @@ entries:
     version: 0.17.3
   - apiVersion: v2
     appVersion: v0.17.2
-    created: "2023-05-30T23:41:20.793465379Z"
+    created: "2023-06-22T22:11:41.343813001Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -9185,7 +9270,7 @@ entries:
     version: 0.17.2
   - apiVersion: v2
     appVersion: v0.17.1
-    created: "2023-05-30T23:41:20.78537964Z"
+    created: "2023-06-22T22:11:41.337344733Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -9213,7 +9298,7 @@ entries:
     version: 0.17.1
   - apiVersion: v2
     appVersion: v0.16.14
-    created: "2023-05-30T23:41:20.756830655Z"
+    created: "2023-06-22T22:11:41.315116597Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -9241,7 +9326,7 @@ entries:
     version: 0.16.14
   - apiVersion: v2
     appVersion: v0.16.11
-    created: "2023-05-30T23:41:20.748861315Z"
+    created: "2023-06-22T22:11:41.308591028Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -9269,7 +9354,7 @@ entries:
     version: 0.16.11
   - apiVersion: v2
     appVersion: v0.16.10
-    created: "2023-05-30T23:41:20.738118396Z"
+    created: "2023-06-22T22:11:41.300714645Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -9297,7 +9382,7 @@ entries:
     version: 0.16.10
   - apiVersion: v2
     appVersion: v0.16.9
-    created: "2023-05-30T23:41:20.775662414Z"
+    created: "2023-06-22T22:11:41.329026645Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -9325,7 +9410,7 @@ entries:
     version: 0.16.9
   - apiVersion: v2
     appVersion: v0.16.7
-    created: "2023-05-30T23:41:20.766479183Z"
+    created: "2023-06-22T22:11:41.32291958Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -9353,7 +9438,7 @@ entries:
     version: 0.16.7
   - apiVersion: v2
     appVersion: v0.15.4
-    created: "2023-05-30T23:41:20.729069065Z"
+    created: "2023-06-22T22:11:41.293596369Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -9379,4 +9464,4 @@ entries:
     urls:
     - https://robustintelligence.github.io/helm/chart-releases/rime-kube-system-0.15.4.tgz
     version: 0.15.4
-generated: "2023-05-30T23:41:15.990217567Z"
+generated: "2023-06-22T22:11:37.498611771Z"
