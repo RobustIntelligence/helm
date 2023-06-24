@@ -1,0 +1,95 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "rime-agent.fullname" . }}-{{ .Values.rimeAgent.rimeCrossPlaneServer.name }}
+  labels:
+    app: {{ .Values.rimeAgent.rimeCrossPlaneServer.name }}
+    {{- include "rime-agent.labels" . | nindent 4 }}
+    {{- with .Values.rimeAgent.rimeCrossPlaneServer.deployment.labels }}
+    {{- toYaml . | indent 4 }}
+    {{- end }}
+  annotations:
+    {{- include "rime-agent.annotations" . | nindent 4 }}
+    {{- with .Values.rimeAgent.rimeCrossPlaneServer.deployment.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Values.rimeAgent.rimeCrossPlaneServer.name }}
+      {{- include "rime-agent.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.rimeAgent.rimeCrossPlaneServer.name }}
+        {{- include "rime-agent.labels" . | nindent 8 }}
+        {{- with .Values.rimeAgent.rimeCrossPlaneServer.deployment.labels }}
+        {{- toYaml . | indent 8 }}
+        {{- end }}
+      annotations:
+        {{- include "rime-agent.annotations" . | nindent 8 }}
+        {{- with .Values.rimeAgent.rimeCrossPlaneServer.deployment.annotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- include "rime-agent.monitoringAnnotations" (dict "monitoring" .Values.rimeAgent.monitoring "name" .Values.rimeAgent.rimeCrossPlaneServer.name ) | nindent 8 }}
+    spec:
+      {{- include "rime-agent.imagePullSecretsYaml" .  | nindent 6 }}
+      {{- with .Values.rimeAgent.rimeCrossPlaneServer.deployment.securityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "rime-agent.rimeServer.serviceAccountName" . }}
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.rimeAgent.images.modelTestJobImage.registry }}/{{ .Values.rimeAgent.images.modelTestJobImage.name }}"
+          imagePullPolicy: {{ .Values.rimeAgent.images.modelTestJobImage.pullPolicy }}
+          resources:
+            {{- toYaml .Values.rimeAgent.rimeCrossPlaneServer.deployment.resources | nindent 12 }}
+          env:
+            - name: RIME_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "rime-agent.secretName" .}}
+                  key: api-key
+                  optional: true
+            - name: RIME_CROSS_SERVICE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "rime-agent.generatedSecretsName" . }}
+                  key: crossServiceKey
+                  optional: true
+          {{- with.Values.rimeAgent.rimeCrossPlaneServer.deployment.extraEnv }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          ports:
+            - name: rime
+              containerPort: {{ .Values.rimeAgent.rimeCrossPlaneServer.port }}
+              protocol: TCP
+          command:
+            - "rime-servers"
+          args:
+            - "--port={{ .Values.rimeAgent.rimeCrossPlaneServer.port }}"
+            - "--api-key=$(RIME_API_KEY)"
+            - "--upload-endpoint={{ .Values.rimeAgent.connections.platformAddress | default .Values.rimeAgent.connections.uploadServerRestAddress }}"
+            - "--data-collector-endpoint={{ .Values.rimeAgent.connections.platformAddress | default .Values.rimeAgent.connections.dataCollectorRestAddress }}"
+          {{- with .Values.rimeAgent.rimeCrossPlaneServer.deployment.extraVolumeMounts }}
+          volumeMounts:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      {{- with .Values.rimeAgent.rimeCrossPlaneServer.deployment.extraVolumes }}
+      volumes:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.rimeAgent.rimeCrossPlaneServer.deployment.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.rimeAgent.rimeCrossPlaneServer.deployment.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.rimeAgent.rimeCrossPlaneServer.deployment.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
