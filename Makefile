@@ -15,15 +15,18 @@ VERSION ?= $(shell cat ${VERSION_FILE})
 APP_VERSION := v$(VERSION)
 REPO_URL=https://robustintelligence.github.io/helm
 
-OPERATOR_ROLE_FILE := rime-agent/templates/operator/role.yaml
+OPERATOR_ROLE_FILE := $(shell pwd)/rime-agent/templates/operator/role.yaml
+CRD_DIR := $(shell pwd)/rime-agent/crds
+CROSSPLANE_CRD_FILE_NAME := rbst.io_crossplanerpcjobs.yaml
+CROSSPLANE_CRD_FILE := $(CRD_DIR)/$(CROSSPLANE_CRD_FILE_NAME)
+RIMEJOB_CRD_FILE_NAME := rbst.io_rimejobs.yaml
+RIMEJOB_CRD_FILE := $(CRD_DIR)/$(RIMEJOB_CRD_FILE_NAME)
 
-.PHONY: clean .tmp-charts/rime  .tmp-charts/rime-agent  .tmp-charts/rime-extras .tmp-charts/rime-kube-system gen_operator_manifests
+.PHONY: clean .tmp-charts/rime  .tmp-charts/rime-agent  .tmp-charts/rime-extras .tmp-charts/rime-kube-system
 
 clean:
 	rm -rf .tmp-charts/
 	rm -rf .rime-releases/
-	rm -rf rime-agent/crds
-	rm -rf $(OPERATOR_ROLE_FILE)
 
 # Rule to copy a file to .tmp-charts/
 .tmp-charts/%: %
@@ -38,8 +41,7 @@ clean:
 
 .tmp-charts/rime-agent: .tmp-charts/rime-agent/Chart.yaml .tmp-charts/rime-agent/values.yaml $(patsubst %, .tmp-charts/%, $(wildcard rime-agent/templates/*.*)) $(patsubst %, .tmp-charts/%, $(wildcard rime-agent/templates/operator/*.*)) $(patsubst %, .tmp-charts/%, $(wildcard rime-agent/crds/*.*))
 	( \
-		cp -rf "rime-agent/crds" ".tmp-charts/rime-agent/." && \
-		cp "$(OPERATOR_ROLE_FILE)" ".tmp-charts/rime-agent/templates/operator/." \
+		cp -rf "rime-agent/templates/." ".tmp-charts/rime-agent/templates/." \
 	)
 
 .tmp-charts/rime-extras: .tmp-charts/rime-extras/Chart.yaml .tmp-charts/rime-extras/Chart.lock .tmp-charts/rime-extras/values.yaml $(patsubst %, .tmp-charts/%, $(wildcard rime-extras/charts/*.tgz))
@@ -57,7 +59,7 @@ clean:
 		popd \
 	)
 
-.rime-releases/rime-agent-$(VERSION).tgz: gen_operator_manifests .tmp-charts/rime-agent
+.rime-releases/rime-agent-$(VERSION).tgz: .tmp-charts/rime-agent
 	( \
 		$(call check_defined, APP_VERSION VERSION, helm chart version) \
 		mkdir -p .rime-releases && \
@@ -97,24 +99,43 @@ clean:
 create_rime_charts_release: clean .rime-releases/index.yaml
 
 ### Operator manfiest files for rime-agent helm chart ###
-gen_operator_manifests: rime-agent/crds/rimejob-crd.yaml $(OPERATOR_ROLE_FILE)
+gen_operator_manifests: $(CROSSPLANE_CRD_FILE) $(RIMEJOB_CRD_FILE) $(OPERATOR_ROLE_FILE)
 
-rime-agent/crds/rimejob-crd.yaml: rime-agent/crds ../../go/dataplane/operator/api/v1/rimejob.go ../../go/dataplane/operator/api/v1/groupversion_info.go
-	# TODO: make gen_go_protos a prereq instead
+define generate_crds
 	cd ../.. && make gen_go_protos
 	cd ../../go/dataplane/operator && \
-	controller-gen crd paths="./..." output:crd:stdout > ../../../deployments/helm/rime-agent/crds/rimejob-crd.yaml
+	controller-gen crd paths="./..." output:crd:stdout output:crd:dir=$(1)
+endef
+
+$(CROSSPLANE_CRD_FILE) $(RIMEJOB_CRD_FILE): $(CRD_DIR) ../../go/dataplane/operator/api/v1/rimejob.go ../../go/dataplane/operator/api/v1/crossplanerpcjob.go ../../go/dataplane/operator/api/v1/groupversion_info.go
+	$(call generate_crds,$(CRD_DIR))
+
+crd_diff_check:
+	$(eval $@_TMP := $(shell mktemp -d /tmp/crd-XXXXXXXXXXXXXXX))
+	$(call generate_crds,$($@_TMP))
+	diff $(CROSSPLANE_CRD_FILE) $($@_TMP)/$(CROSSPLANE_CRD_FILE_NAME) || (echo 'ERROR: Cross Plane CRD needs update' && rm -rf $($@_TMP) && exit 1)
+	diff $(RIMEJOB_CRD_FILE) $($@_TMP)/$(RIMEJOB_CRD_FILE_NAME) || (echo 'ERROR: Rime Job CRD needs update' && rm -rf $($@_TMP) && exit 1)
+	rm -rf $($@_TMP)
 
 # CRD is generated into a subdirectory called 'crds' so that helm will skip if already installed
 # as CRDs are cluster scope.
 # https://helm.sh/docs/chart_best_practices/custom_resource_definitions/
-rime-agent/crds:
+$(CRD_DIR):
 	mkdir -p $@
 
-$(OPERATOR_ROLE_FILE): ../../go/dataplane/operator/controllers/rimejob_controller.go
-	# TODO: make gen_go_protos a prereq instead
+define generate_operator_role
 	cd ../.. && make gen_go_protos
 	cd ../../go/dataplane/operator && \
-	controller-gen rbac:roleName="PLACEHOLDER_ROLE_NAME" paths="./..." output:rbac:stdout | sed 's/PLACEHOLDER_ROLE_NAME/{{ include "rime-agent.fullname" . }}-{{ .Values.rimeAgent.operator.name }}-role/1' > ../../../deployments/helm/$(OPERATOR_ROLE_FILE)
-	echo '{{- if .Values.rimeAgent.operator.serviceAccount.create -}}' | cat - $(OPERATOR_ROLE_FILE) > temp.yaml && mv temp.yaml $(OPERATOR_ROLE_FILE) && \
-	echo '{{- end }}' >> $(OPERATOR_ROLE_FILE)
+	controller-gen rbac:roleName="PLACEHOLDER_ROLE_NAME" paths="./..." output:rbac:stdout | sed 's/PLACEHOLDER_ROLE_NAME/{{ include "rime-agent.fullname" . }}-{{ .Values.rimeAgent.operator.name }}-role/1' > $(1)
+	echo '{{- if .Values.rimeAgent.operator.serviceAccount.create -}}' | cat - $(1) > temp.yaml && mv temp.yaml $(1) && \
+	echo '{{- end }}' >> $(1)
+endef
+
+$(OPERATOR_ROLE_FILE): ../../go/dataplane/operator/controllers/rimejob_controller.go
+	$(call generate_operator_role,$(OPERATOR_ROLE_FILE))
+
+operator_role_diff_check:
+	$(eval $@_TMP := $(shell mktemp /tmp/operator-role-XXXXXXXXXXXXXXX))
+	$(call generate_operator_role,$($@_TMP))
+	diff $(OPERATOR_ROLE_FILE) $($@_TMP) || (echo 'ERROR: Operator role needs update' && rm -rf $($@_TMP) && exit 1)
+	rm -rf $($@_TMP)
