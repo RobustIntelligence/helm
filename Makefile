@@ -17,7 +17,7 @@ REPO_URL=https://robustintelligence.github.io/helm
 
 OPERATOR_ROLE_FILE := rime-agent/templates/operator/role.yaml
 
-.PHONY: clean .tmp-charts/rime  .tmp-charts/rime-agent  .tmp-charts/rime-extras .tmp-charts/rime-kube-system gen_operator_manifests
+.PHONY: clean .tmp-charts/rime  .tmp-charts/rime-agent  .tmp-charts/rime-extras .tmp-charts/rime-kube-system
 
 clean:
 	rm -rf .tmp-charts/
@@ -38,8 +38,7 @@ clean:
 
 .tmp-charts/rime-agent: .tmp-charts/rime-agent/Chart.yaml .tmp-charts/rime-agent/values.yaml $(patsubst %, .tmp-charts/%, $(wildcard rime-agent/templates/*.*)) $(patsubst %, .tmp-charts/%, $(wildcard rime-agent/templates/operator/*.*)) $(patsubst %, .tmp-charts/%, $(wildcard rime-agent/crds/*.*))
 	( \
-		cp -rf "rime-agent/crds" ".tmp-charts/rime-agent/." && \
-		cp "$(OPERATOR_ROLE_FILE)" ".tmp-charts/rime-agent/templates/operator/." \
+		cp -rf "rime-agent/templates/." ".tmp-charts/rime-agent/templates/." \
 	)
 
 .tmp-charts/rime-extras: .tmp-charts/rime-extras/Chart.yaml .tmp-charts/rime-extras/Chart.lock .tmp-charts/rime-extras/values.yaml $(patsubst %, .tmp-charts/%, $(wildcard rime-extras/charts/*.tgz))
@@ -57,7 +56,7 @@ clean:
 		popd \
 	)
 
-.rime-releases/rime-agent-$(VERSION).tgz: gen_operator_manifests .tmp-charts/rime-agent
+.rime-releases/rime-agent-$(VERSION).tgz: .tmp-charts/rime-agent
 	( \
 		$(call check_defined, APP_VERSION VERSION, helm chart version) \
 		mkdir -p .rime-releases && \
