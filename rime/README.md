@@ -19,7 +19,7 @@ Kubernetes: `>=1.20.0-0`
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | external.mongo | object | `{"databaseName":"","enabled":false,"replicaSetName":"","secretName":"","url":"","urlPrefix":""}` | Whether to use an external MongoDB instance |
-| external.vault | object | `{"enabled":false,"kvVersion":"","namespace":"","roleName":"","secretName":"","url":""}` | Whether to use an external Vault instance |
+| external.vault | object | `{"enabled":false,"kvVersion":"","mountPath":"","namespace":"","roleName":"","secretName":"","url":""}` | Whether to use an external Vault instance |
 | ingress-nginx | object | (see individual values in `values`.yaml) | Ingress-nginx controller sub-chart. See https://artifacthub.io/packages/helm/ingress-nginx/ingress-nginx for all parameters. |
 | ingress-nginx.controller.scope.namespace | string | `""` | K8s namespace for the ingress |
 | ingress-nginx.controller.service.annotations | object | `{"service.beta.kubernetes.io/aws-load-balancer-backend-protocol":"tcp","service.beta.kubernetes.io/aws-load-balancer-connection-idle-timeout":"3600","service.beta.kubernetes.io/aws-load-balancer-nlb-target-type":"ip","service.beta.kubernetes.io/aws-load-balancer-scheme":"internet-facing","service.beta.kubernetes.io/aws-load-balancer-ssl-cert":"","service.beta.kubernetes.io/aws-load-balancer-ssl-ports":"https","service.beta.kubernetes.io/aws-load-balancer-type":"external"}` | For full list of annotations, see https://kubernetes-sigs.github.io/aws-load-balancer-controller/v2.2/guide/service/annotations/ |

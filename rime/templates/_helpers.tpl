@@ -114,7 +114,11 @@ common:
         {{- else }}
         url: "{{ include "rime.fullname" . }}-vault-0.{{ include "rime.fullname" . }}-vault-internal:8200"
         {{- end }}
+        {{- if .Values.external.vault.mountPath }}
+        mountPath: {{ .Values.external.vault.mountPath }}
+        {{- else }}
         mountPath: "secret/"
+        {{- end }}
         {{- if .Values.external.vault.roleName }}
         roleName: {{ .Values.external.vault.roleName }}
         {{- end }}
