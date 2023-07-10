@@ -20,9 +20,12 @@ datadog:
       additionalConfigs:
         -
           autodiscovery:
-            kubernetes_container_names:
-              - rime
-              - rime-agent
+            kubernetes_annotations:
+              include:
+                prometheus.io/scrape: "true"
+                app.kubernetes.io/owned-by: "ri"
+              exclude:
+                prometheus.io/scrape: "false"
     # Ignore auto-configuration for `kubernetes_state` (because we disable kube-state-metrics) and `redisdb`
     # See https://docs.datadoghq.com/agent/guide/auto_conf/
     ignoreAutoConfig:
@@ -146,4 +149,4 @@ velero:
           - pv
         # -- At minimum, should include the RIME namespace(s) (all namespaces recommended)
         includedNamespaces:
-          - ""
+          - "*"
