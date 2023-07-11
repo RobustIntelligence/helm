@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "ri-firewall.fullname" . }}-{{ .Values.riFirewall.fileStorageServer.name }}
+  labels:
+    {{- with .Values.riFirewall.fileStorageServer.service.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  annotations:
+    {{- with .Values.riFirewall.fileStorageServer.service.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  type: {{ .Values.riFirewall.fileStorageServer.service.type }}
+  ports:
+    - port: {{ .Values.riFirewall.fileStorageServer.port }}
+      targetPort: {{ .Values.riFirewall.fileStorageServer.port }}
+      protocol: TCP
+      name: fs
+    - port: {{ .Values.riFirewall.fileStorageServer.restPort }}
+      targetPort: {{ .Values.riFirewall.fileStorageServer.restPort }}
+      protocol: TCP
+      name: fs-rest
+  selector:
+    app: {{ .Values.riFirewall.fileStorageServer.name }}
