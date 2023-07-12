@@ -1,0 +1,73 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "ri-firewall.fullname" . }}-{{ .Values.riFirewall.firewallServer.name }}
+  labels:
+    app: {{ .Values.riFirewall.firewallServer.name }}
+    {{- with .Values.riFirewall.firewallServer.deployment.labels }}
+    {{- toYaml . | indent 4 }}
+    {{- end }}
+  annotations:
+    {{- with .Values.riFirewall.firewallServer.deployment.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Values.riFirewall.firewallServer.name }}
+  replicas: {{ .Values.riFirewall.firewallServer.deployment.replicaCount }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.riFirewall.firewallServer.name }}
+        {{- with .Values.riFirewall.firewallServer.deployment.labels }}
+        {{- toYaml . | indent 8 }}
+        {{- end }}
+      annotations:
+        {{- with .Values.riFirewall.firewallServer.deployment.annotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.riFirewall.images.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        # gRPC-gateway is a sidecar container that proxies traffic from REST to gRPC.
+        - name: grpc-gateway-proxy
+          image: "{{ .Values.riFirewall.images.grpcGatewayProxyImage.registry}}/{{ .Values.riFirewall.images.grpcGatewayProxyImage.name }}"
+          imagePullPolicy: {{ .Values.riFirewall.images.grpcGatewayProxyImage.pullPolicy }}
+          ports:
+            - name: fw-proxy
+              containerPort: {{ .Values.riFirewall.firewallServer.proxyPort }}
+              protocol: TCP
+          resources:
+            {{- toYaml .Values.riFirewall.firewallServer.deployment.proxyResources | nindent 12 }}
+          command:
+            - "/rime/fwproxy"
+          args:
+            - "--proxy-addr=:{{ .Values.riFirewall.firewallServer.proxyPort }}"
+            # Use a local port of the other container.
+            # Containers can use the local network to communicate with each other.
+            - "--backend-addr=:{{ .Values.riFirewall.firewallServer.firewallServerLocalPort }}"
+        - name: firewall-server
+          image: "{{ .Values.riFirewall.images.firewallServerImage.registry}}/{{ .Values.riFirewall.images.firewallServerImage.name }}"
+          imagePullPolicy: "{{ .Values.riFirewall.images.firewallServerImage.pullPolicy }}"
+          env:
+            - name: FIREWALL_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "ri-firewall.generatedSecretsName" . }}
+                  key: apiKey
+            - name: OPENAI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.riFirewall.secrets.existingIntegrationSecretsName }}
+                  key: openaiAPIKey
+          resources:
+            {{- toYaml .Values.riFirewall.firewallServer.deployment.serverResources | nindent 12 }}
+          command:
+            - "rime-firewall"
+          args:
+            - "--port={{ .Values.riFirewall.firewallServer.firewallServerLocalPort }}"
+            - '--file-storage-server-endpoint={{ include "ri-firewall.fullname" . }}-{{ .Values.riFirewall.fileStorageServer.name }}.{{ .Release.Namespace }}:{{ .Values.riFirewall.fileStorageServer.restPort }}'

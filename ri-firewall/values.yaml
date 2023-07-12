@@ -1,0 +1,102 @@
+riFirewall:
+  # @ignored -- Override for the chart name. If used, this will be appended to the
+  # release name to form the fully qualified app name
+  # (e.g., `rime-${nameOverride}` instead of just `rime`)
+  nameOverride: ""
+
+  secrets:
+    existingIntegrationSecretsName: ""
+
+  # -- Image specification for the RI Firewall.
+  # @default -- (see individual values in `values.yaml`)
+  images:
+    imagePullSecrets:
+      - name: rimecreds
+    grpcGatewayProxyImage:
+      registry: "docker.io"
+      name: "robustintelligencehq/rime-backend:latest"
+      pullPolicy: "Always"
+    firewallServerImage:
+      registry: "docker.io"
+      name: "robustintelligencehq/rime-testing-engine-dev:latest"
+      pullPolicy: "Always"
+    fileStorageServerImage:
+      registry: "docker.io"
+      name: "robustintelligencehq/rime-backend:latest"
+      pullPolicy: "Always"
+
+  firewallServer:
+    name: "firewall-server"
+    proxyPort: 8081
+    firewallServerLocalPort: 50052
+    # Service for the firewall-server
+    service:
+      type: LoadBalancer
+      port: 443
+      annotations: {}
+      labels: {}
+    # Deployment for the firewall server.
+    deployment:
+      annotations: {}
+      labels: {}
+      # Replica count for the firewall-server: only use if HPA disabled.
+      replicaCount: 1
+      # Resources for the firewall server container.
+      serverResources:
+        limits:
+          memory: 4000Mi
+        requests:
+          cpu: 500m
+          memory: 4000Mi
+      # Resources for the gRPC-gateway proxy container.
+      proxyResources:
+        limits:
+          memory: 100Mi
+        requests:
+          cpu: 100m
+          memory: 100Mi
+
+  fileStorageServer:
+    name: "file-storage-server"
+    port: 5019
+    restPort: 15019
+    config:
+      # -- The bucket name of the S3 bucket used as the blob storage.
+      storageBucketName: ""
+      endpoint: "s3.amazonaws.com"
+      type: "s3"
+    # -- Account used by services that need access to blob storage.
+    serviceAccount:
+      name: ""
+      annotations: {
+        # -- Specify ARN of IRSA-enabled Blob Storage IAM role here
+        eks.amazonaws.com/role-arn: ""
+      }
+      labels: {}
+    service:
+      type: ClusterIP
+      annotations: {}
+      labels: {}
+    hpa:
+      annotations: {}
+      labels: {}
+      enabled: true
+      minReplicas: 1
+      maxReplicas: 10
+      metrics:
+        - type: Resource
+          resource:
+            name: cpu
+            target:
+              type: Utilization
+              averageUtilization: 60
+    deployment:
+      annotations: {}
+      labels: {}
+      replicaCount: 1
+      resources:
+        limits:
+          memory: 90Mi
+        requests:
+          cpu: 100m
+          memory: 90Mi
