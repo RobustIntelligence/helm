@@ -1,0 +1,40 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "ri-firewall.fullname" . }}-ingress
+  labels:
+    {{- with .Values.riFirewall.ingress.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    nginx.ingress.kubernetes.io/auth-url: http://{{ include "ri-firewall.fullname" . }}-{{ .Values.riFirewall.authServer.name }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.riFirewall.authServer.port}}/v1/validate
+    nginx.ingress.kubernetes.io/auth-method: POST
+    {{- with .Values.riFirewall.ingress.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  rules:
+    - http:
+        paths:
+          - path: "/v1-beta/firewall/validate"
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "ri-firewall.fullname" . }}-{{ .Values.riFirewall.firewallServer.name }}
+                port:
+                  number: {{ .Values.riFirewall.firewallServer.proxyPort }}
+          - path: "/v1-beta/firewall/config"
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "ri-firewall.fullname" . }}-{{ .Values.riFirewall.configServer.name }}
+                port:
+                  number: {{ .Values.riFirewall.configServer.restPort }}
+          - path: "/v1-beta/firewall/upload"
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "ri-firewall.fullname" . }}-{{ .Values.riFirewall.configServer.name }}
+                port:
+                  number: {{ .Values.riFirewall.configServer.restPort }}

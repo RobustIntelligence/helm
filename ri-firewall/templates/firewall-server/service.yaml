@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "ri-firewall.fullname" . }}-{{ .Values.riFirewall.firewallServer.name }}
+  labels:
+    {{- with .Values.riFirewall.firewallServer.service.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  annotations:
+    {{- with .Values.riFirewall.firewallServer.service.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  type: {{ .Values.riFirewall.firewallServer.service.type }}
+  ports:
+    - port: {{ .Values.riFirewall.firewallServer.proxyPort }}
+      targetPort: {{ .Values.riFirewall.firewallServer.proxyPort }}
+      protocol: TCP
+      name: fw-proxy
+  selector:
+    app: {{ .Values.riFirewall.firewallServer.name }}

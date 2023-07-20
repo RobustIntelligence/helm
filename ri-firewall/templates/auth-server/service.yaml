@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "ri-firewall.fullname" . }}-{{ .Values.riFirewall.authServer.name }}
+  labels:
+    {{- with .Values.riFirewall.authServer.service.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  annotations:
+    {{- with .Values.riFirewall.authServer.service.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  type: {{ .Values.riFirewall.authServer.service.type }}
+  ports:
+    - port: {{ .Values.riFirewall.authServer.port }}
+      targetPort: {{ .Values.riFirewall.authServer.port }}
+      protocol: TCP
+      name: auth
+  selector:
+    app: {{ .Values.riFirewall.authServer.name }}
