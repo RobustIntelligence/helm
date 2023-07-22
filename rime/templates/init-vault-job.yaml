@@ -1,0 +1,44 @@
+{{- if .Values.vaultBootstrap.enabled }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "rime.fullname" . }}-init-vault
+  annotations:
+    # This is what defines this resource as a hook. Without this line, the
+    # job is considered part of the release.
+    # NOTE: post-upgrade relies on the database-setup script being idempotent.
+    "helm.sh/hook": post-install,post-upgrade
+    # Hooks are sorted in ascending order.
+    "helm.sh/hook-weight": "4"
+    "helm.sh/hook-delete-policy": before-hook-creation
+spec:
+  template:
+    metadata:
+      labels:
+        tags.datadoghq.com/service: init-cluster-metadata
+      annotations:
+        {{- if .Values.rime.datadogTagPodAnnotation }}
+        ad.datadoghq.com/tags: '{{ .Values.rime.datadogTagPodAnnotation }}'
+        {{- end }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: rime-init-vault-job-service-account
+      containers:
+        - name: init-vault
+          image: "{{ .Values.backendImage.name }}"
+          imagePullPolicy: "{{ .Values.backendImage.pullPolicy }}"
+          command:
+            - "/rime/init-vault"
+          args:
+            - "--vault-addr=http://{{ include "rime.fullname" . }}-vault-0.{{ include "rime.fullname" . }}-vault-internal:8200"
+            # 4 minute timeout because the maximum execution time for a helm chart hook is 5 min.
+            - "-timeout=4m"
+            {{- if .Values.vaultBootstrap.debug }}
+            - "-debug"
+            {{- end }}
+      restartPolicy: OnFailure
+  backoffLimit: {{ .Values.vaultBootstrap.backoffLimit }}
+  {{- end }}

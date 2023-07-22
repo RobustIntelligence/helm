@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "rime.fullname" . }}-frontend
+  labels:
+    {{- include "rime.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.ports.frontend }}
+      targetPort: frontend
+      protocol: TCP
+      name: frontend
+  selector:
+    app: frontend
+    {{- include "rime.selectorLabels" . | nindent 4 }}

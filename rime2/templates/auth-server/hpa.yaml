@@ -1,0 +1,21 @@
+{{- if .Values.rime.authServer.hpa.enabled }}
+apiVersion: autoscaling/v2beta1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ include "rime.fullname" . }}-{{.Values.rime.authServer.name}}
+  labels:
+    app: {{.Values.rime.authServer.name}}
+    {{- include "rime.labels" . | nindent 4 }}
+    {{- with .Values.rime.authServer.hpa.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ include "rime.fullname" . }}{{.Values.rime.authServer.name}}
+  minReplicas: {{ .Values.rime.authServer.hpa.minReplicas }}
+  maxReplicas: {{ .Values.rime.authServer.hpa.maxReplicas }}
+  metrics:
+{{ toYaml .Values.rime.authServer.hpa.metrics | indent 4 }}
+{{- end }}

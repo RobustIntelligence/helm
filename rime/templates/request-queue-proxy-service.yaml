@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "rime.fullname" . }}-request-queue-proxy
+  labels:
+    {{- include "rime.labels" . | nindent 4 }}
+  annotations:
+    konghq.com/protocol: "grpc"
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.ports.requestQueueProxy }}
+      targetPort: rqproxy
+      protocol: TCP
+      name: rqproxy
+    - port: {{ .Values.ports.requestQueueProxyREST }}
+      targetPort: rqproxy-rest
+      protocol: TCP
+      name: rqproxy-rest
+  selector:
+    app: request-queue-proxy
+    {{- include "rime.selectorLabels" . | nindent 4 }}

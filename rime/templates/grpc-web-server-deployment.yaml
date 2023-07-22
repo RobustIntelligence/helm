@@ -1,0 +1,108 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "rime.fullname" . }}-grpc-web-server
+  labels:
+    app: grpc-web-server
+    {{- include "rime.labels" . | nindent 4 }}
+    tags.datadoghq.com/service: grpc-web-server
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      app: grpc-web-server
+      {{- include "rime.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        app: grpc-web-server
+        {{- include "rime.selectorLabels" . | nindent 8 }}
+        tags.datadoghq.com/service: grpc-web-server
+      annotations:
+        {{- include "prometheusScrapingAnnotations" . | nindent 8 }}
+        {{- if .Values.rime.datadogTagPodAnnotation }}
+        ad.datadoghq.com/tags: '{{ .Values.rime.datadogTagPodAnnotation }}'
+        {{- end }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "rime.fullname" . }}-grpc-web-server-service-account
+      containers:
+        - name: {{ .Chart.Name }}
+          env:
+            {{- include "rime.commonEnv" . | nindent 12 }}
+            {{- include "rime.webAppHostEnv" . | nindent 12 }}
+          image: "{{ .Values.backendImage.name }}"
+          imagePullPolicy: {{ .Values.backendImage.pullPolicy }}
+          ports:
+            - name: grpcweb
+              containerPort: {{ .Values.ports.grpcWebServer }}
+              protocol: TCP
+            - name: grpcweb-rest
+              containerPort: {{ .Values.ports.grpcWebREST }}
+              protocol: TCP
+            - name: grpcweb-debug
+              containerPort: 6060
+              protocol: TCP
+            - name: nativerestweb
+              containerPort: {{ .Values.ports.nativerestweb }}
+              protocol: TCP
+            {{- if .Values.prometheusMetricsExposition.enabled }}
+            - name: metrics
+              containerPort: {{ .Values.prometheusMetricsExposition.port }}
+              protocol: TCP
+            {{- end }}
+          livenessProbe:
+            exec:
+              command: ["/bin/grpc_health_probe", "-addr=:{{ .Values.ports.grpcWebServer }}"]
+            periodSeconds: 5
+          readinessProbe:
+            exec:
+              command: ["/bin/grpc_health_probe", "-addr=:{{ .Values.ports.grpcWebServer }}"]
+            periodSeconds: 5
+          startupProbe:
+            exec:
+              command: ["/bin/grpc_health_probe", "-addr=:{{ .Values.ports.grpcWebServer }}"]
+            failureThreshold: 60
+            periodSeconds: 5
+          resources:
+            {{- toYaml .Values.grpcWebServerResources | nindent 12 }}
+          command:
+            - "/rime/rime"
+          args:
+            - "start-grpc-web-server"
+            - "--server-config-path=/config/server.config"
+            - "--agent-manager-server-addr={{ include "rime.fullname" . }}-agent-manager-server:{{ .Values.ports.agentManagerServer}}"
+            - "--grpc-web-port={{ .Values.ports.grpcWebServer }}"
+            - "--native-rest-web-port={{ .Values.ports.nativerestweb }}"
+            - "--store-path={{ .Values.directory.storePath }}"
+            - "--database-url={{ include "rime.fullname" . }}-mongodb-headless/?tls=false"
+            - "--database-url-prefix=mongodb+srv://"
+            - "--replica-set-name={{ .Values.mongodb.replicaSetName }}"
+            - "--redis-addr={{ include "rime.fullname" . }}-redis-headless:6379"
+            - "--feature-flag-addr={{ include "rime.fullname" . }}-feature-flag-server:{{ .Values.ports.featureFlagServer }}"
+            - "--vault-addr=http://{{ include "rime.fullname" . }}-vault-0.{{ include "rime.fullname" . }}-vault-internal:8200"
+            - "--auth-server-addr={{ include "rime.fullname" . }}-auth-server:{{ .Values.ports.userServer }}"
+            {{- if .Values.rime.verbose }}
+            - "--verbose"
+            {{- end }}
+            {{- if .Values.prometheusMetricsExposition.enabled }}
+            - "--metrics-exposition-enabled=true"
+            - "--metrics-exposition-port={{ .Values.prometheusMetricsExposition.port }}"
+            {{- end }}
+          volumeMounts:
+          - name: {{ include "rime.fullname" . }}-grpc-web-config
+            mountPath: "/config"
+            readOnly: true
+      volumes:
+      # Volumes are defined at the Pod level, then mounted into containers within that Pod
+      - name: {{ include "rime.fullname" . }}-grpc-web-config
+        configMap:
+          name: {{ include "rime.fullname" . }}-grpc-web-conf
+          items:
+          - key: "server.config"
+            path: "server.config"

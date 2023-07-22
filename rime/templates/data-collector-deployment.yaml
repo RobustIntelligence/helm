@@ -1,0 +1,99 @@
+{{ if .Values.firewall.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "rime.fullname" . }}-data-collector-server
+  labels:
+    app: data-collector-server
+    {{- include "rime.labels" . | nindent 4 }}
+    tags.datadoghq.com/service: data-collector-server
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      app: data-collector-server
+      {{- include "rime.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        app: data-collector-server
+        {{- include "rime.selectorLabels" . | nindent 8 }}
+        tags.datadoghq.com/service: data-collector-server
+      annotations:
+        {{- include "prometheusScrapingAnnotations" . | nindent 8 }}
+        {{- if .Values.rime.datadogTagPodAnnotation }}
+        ad.datadoghq.com/tags: '{{ .Values.rime.datadogTagPodAnnotation }}'
+        {{- end }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: {{ .Chart.Name }}
+          env:
+            {{- include "rime.commonEnv" . | nindent 12 }}
+          image: "{{ .Values.backendImage.name }}"
+          imagePullPolicy: {{ .Values.backendImage.pullPolicy }}
+          ports:
+            - name: dc-server
+              containerPort: {{ .Values.ports.dataCollectorServer }}
+              protocol: TCP
+            - name: dc-rest
+              containerPort: {{ .Values.ports.dataCollectorREST }}
+              protocol: TCP
+            - name: dc-debug
+              containerPort: 6060
+              protocol: TCP
+            {{- if .Values.prometheusMetricsExposition.enabled }}
+            - name: metrics
+              containerPort: {{ .Values.prometheusMetricsExposition.port }}
+              protocol: TCP
+            {{- end }}
+          livenessProbe:
+            exec:
+              command: ["/bin/grpc_health_probe", "-addr=:{{ .Values.ports.dataCollectorServer }}"]
+            periodSeconds: 5
+          readinessProbe:
+            exec:
+              command: ["/bin/grpc_health_probe", "-addr=:{{ .Values.ports.dataCollectorServer }}"]
+            periodSeconds: 5
+          startupProbe:
+            exec:
+              command: ["/bin/grpc_health_probe", "-addr=:{{ .Values.ports.dataCollectorServer }}"]
+            failureThreshold: 60
+            periodSeconds: 5
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          command: 
+            - "/rime/rime"
+          args: 
+            - "start-data-collector-server"
+            - "--server-config-path=/config/server.config"
+            - "--data-collector-port={{ .Values.ports.dataCollectorServer }}"
+            - "--data-collector-rest-port={{ .Values.ports.dataCollectorREST }}"
+            - "--database-url={{ include "rime.fullname" . }}-mongodb-headless/?tls=false"
+            - "--database-url-prefix=mongodb+srv://"
+            - "--replica-set-name={{ .Values.mongodb.replicaSetName }}"
+            {{- if .Values.rime.verbose }}
+            - "--verbose"
+            {{- end }}
+            {{- if .Values.prometheusMetricsExposition.enabled }}
+            - "--metrics-exposition-enabled=true"
+            - "--metrics-exposition-port={{ .Values.prometheusMetricsExposition.port }}"
+            {{- end }}
+          volumeMounts:
+          - name: {{ include "rime.fullname" . }}-data-collector-config
+            mountPath: "/config"
+            readOnly: true
+      volumes:
+      # Volumes are defined at the Pod level, then mounted into containers within that Pod
+      - name: {{ include "rime.fullname" . }}-data-collector-config
+        configMap:
+          name: {{ include "rime.fullname" . }}-data-collector-conf
+          items:
+          - key: "server.config"
+            path: "server.config"
+{{ end }}

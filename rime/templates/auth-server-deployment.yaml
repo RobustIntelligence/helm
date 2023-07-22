@@ -1,0 +1,100 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "rime.fullname" . }}-auth-server
+  labels:
+    app: auth-server
+    {{- include "rime.labels" . | nindent 4 }}
+    tags.datadoghq.com/service: auth-server
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      app: auth-server
+      {{- include "rime.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        app: auth-server
+        {{- include "rime.selectorLabels" . | nindent 8 }}
+        tags.datadoghq.com/service: auth-server
+      annotations:
+        {{- include "prometheusScrapingAnnotations" . | nindent 8 }}
+        {{- if .Values.rime.datadogTagPodAnnotation }}
+        ad.datadoghq.com/tags: '{{ .Values.rime.datadogTagPodAnnotation }}'
+        {{- end }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: {{ .Chart.Name }}
+          env:
+            {{- include "rime.rimeJwtSecret" . | nindent 12 }}
+            {{- include "rime.commonEnv" . | nindent 12 }}
+          image: "{{ .Values.backendImage.name }}"
+          imagePullPolicy: {{ .Values.backendImage.pullPolicy }}
+          ports:
+            - name: auth-server
+              containerPort: {{ .Values.ports.authServer }}
+              protocol: TCP
+            - name: auth-debug
+              containerPort: 6060
+              protocol: TCP
+            - name: user-server
+              containerPort: {{ .Values.ports.userServer }}
+              protocol: TCP
+            - name: user-rest
+              containerPort: {{ .Values.ports.userServerREST }}
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /health-check
+              port: auth-server
+            periodSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /health-check
+              port: auth-server
+            periodSeconds: 5
+          startupProbe:
+            httpGet:
+              path: /health-check
+              port: auth-server
+            failureThreshold: 60
+            periodSeconds: 5
+          resources:
+            {{- toYaml .Values.authResources | nindent 12 }}
+          command:
+            - "/rime/rime"
+          args:
+            - "start-auth-server"
+            - "--server-config-path=/config/server.config"
+            - "--database-url={{ include "rime.fullname" . }}-mongodb-headless/?tls=false"
+            - "--database-url-prefix=mongodb+srv://"
+            - "--auth-port={{ .Values.ports.authServer }}"
+            - "--replica-set-name={{ .Values.mongodb.replicaSetName }}"
+            - "--feature-flag-addr={{ include "rime.fullname" . }}-feature-flag-server:{{ .Values.ports.featureFlagServer }}"
+            - "--auth-server-addr={{ include "rime.fullname" . }}-auth-server:{{ .Values.ports.userServer }}"
+            {{- if .Values.rime.verbose }}
+            - "--verbose"
+            {{- end }}
+            {{- if .Values.prometheusMetricsExposition.enabled }}
+            - "--metrics-exposition-enabled=true"
+            - "--metrics-exposition-port={{ .Values.prometheusMetricsExposition.port }}"
+            {{- end }}
+          volumeMounts:
+          - name: {{ include "rime.fullname" . }}-auth-config
+            mountPath: "/config"
+            readOnly: true
+      volumes:
+      # Volumes are defined at the Pod level, then mounted into containers within that Pod
+      - name: {{ include "rime.fullname" . }}-auth-config
+        configMap:
+          name: {{ include "rime.fullname" . }}-auth-conf
+          items:
+          - key: "server.config"
+            path: "server.config"

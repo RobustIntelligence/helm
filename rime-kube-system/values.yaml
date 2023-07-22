@@ -1,19 +1,49 @@
 rimeSystem:
-  # -- Whether to install the Kubernetes Autoscaler Helm chart.
-  # For full reference, see https://github.com/kubernetes/autoscaler/tree/cluster-autoscaler-1.21.0/cluster-autoscaler/cloudprovider
   clusterAutoscaler: false
-  # -- Whether to install the ExternalDNS Helm chart.
-  # For full reference, see https://github.com/kubernetes-sigs/external-dns/tree/v0.12.0/charts/external-dns
   externalDns: false
-  # -- Whether to install the AWS Load Balancer Controller Helm chart.
-  # For full reference, see https://github.com/kubernetes-sigs/aws-load-balancer-controller/tree/v2.4.2
   awsLoadBalancerController: false
-  # -- Whether to install the Kubernetes Metrics Server Helm chart.
-  # For full reference, see https://github.com/kubernetes-sigs/metrics-server/tree/v0.6.1
   metricsServer: false
 
-# -- For full reference, see https://github.com/cert-manager/cert-manager/tree/v1.10.0
-# @default -- (see individual values in `values`.yaml)
+aws-load-balancer-controller:
+  image:
+    repository: "docker.io/robustintelligencehq/aws-alb-ingress-controller"
+    tag: "v2.4.2"
+  clusterName: ""
+  serviceAccount:
+    create: true
+  region: ""
+
+cluster-autoscaler:
+  image:
+    repository: "docker.io/robustintelligencehq/cluster-autoscaler"
+    tag: "v1.21.0"
+  podAnnotations: {
+    cluster-autoscaler.kubernetes.io/safe-to-evict: "false"
+  }
+  cloudProvider: aws
+
+external-dns:
+  image:
+    repository: "docker.io/robustintelligencehq/external-dns"
+    tag: "v0.12.0"
+  provider: "aws"
+  policy: sync
+  registry: txt
+  txtOwnerId: "rime"
+  rbac:
+    create: true
+  serviceAccount:
+    name: external-dns
+    annotations:
+  logFormat: json
+
+metrics-server:
+  image:
+    repository: "docker.io/robustintelligencehq/metrics-server"
+    tag: "v0.6.1"
+  apiService:
+    create: true
+
 cert-manager:
   enabled: true
   installCRDs: true
@@ -23,84 +53,15 @@ cert-manager:
   image:
     registry: docker.io
     repository: robustintelligencehq/cert-manager-controller
-    tag: "v1.10.0"
   webhook:
     image:
       registry: docker.io
       repository: robustintelligencehq/cert-manager-webhook
-      tag: "v1.10.0"
   cainjector:
     image:
       registry: docker.io
       repository: robustintelligencehq/cert-manager-cainjector
-      tag: "v1.10.0"
   startupapicheck:
     image:
       registry: docker.io
       repository: robustintelligencehq/cert-manager-ctl
-      tag: "v1.10.0"
-
-# TODO CLD-1275 Incorporate these standard templates into an AWS example
-# # -- For full reference, see https://github.com/kubernetes-sigs/aws-load-balancer-controller/tree/v2.4.2
-# # @default -- (see individual values in `values`.yaml)
-# aws-load-balancer-controller:
-#   image:
-#     repository: "docker.io/robustintelligencehq/aws-alb-ingress-controller"
-#     tag: "v2.4.2"
-#   # -- EKS cluster name
-#   clusterName: ""
-#   serviceAccount:
-#     create: true
-#     annotations:
-#       # -- Specify ARN of IRSA-enabled Load Balancer Controller IAM role here
-#       eks.amazonaws.com/role-arn: ""
-#   # -- EKS cluster's AWS region
-#   region: ""
-
-# # -- For full reference, see https://github.com/kubernetes/autoscaler/tree/cluster-autoscaler-1.21.0/cluster-autoscaler/cloudprovider
-# # (follow the instructions for your cloud provider)
-# # @default -- (see individual values in `values`.yaml)
-# cluster-autoscaler:
-#   image:
-#     repository: "docker.io/robustintelligencehq/cluster-autoscaler"
-#     tag: "v1.21.0"
-#     pullSecrets:
-#       - rimecreds
-#   autoDiscovery:
-#     # -- EKS cluster name
-#     clusterName: ""
-#   # -- EKS cluster's AWS region
-#   cloudProvider: aws
-#   rbac:
-#     serviceAccount:
-#       annotations: {
-#         # -- Specify ARN of IRSA-enabled Cluster Autoscaler IAM role here
-#         eks.amazonaws.com/role-arn: ""
-#       }
-
-# # -- For full reference, see https://github.com/kubernetes-sigs/external-dns/tree/v0.12.0/charts/external-dns
-# # @default -- (see individual values in `values`.yaml)
-# external-dns:
-#   image:
-#     repository: "docker.io/robustintelligencehq/external-dns"
-#     tag: "v0.12.0"
-#   provider: "aws"
-#   policy: sync
-#   registry: txt
-#   txtOwnerId: "rime"
-#   logFormat: json
-#   rbac:
-#     create: true
-#   serviceAccount:
-#     annotations:
-#       # -- Specify ARN of IRSA-enabled Cluster Autoscaler IAM role here
-#       eks.amazonaws.com/role-arn: ""
-
-# # -- For full reference, see https://github.com/kubernetes-sigs/metrics-server/tree/v0.6.1
-# # @default -- (see individual values in `values`.yaml)
-# metrics-server:
-#   image:
-#     repository: "docker.io/robustintelligencehq/metrics-server"
-#     tag: "v0.6.1"
-#   imagePullSecrets:
-#     - rimecreds

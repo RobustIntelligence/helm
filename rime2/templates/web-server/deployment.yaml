@@ -1,0 +1,122 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "rime.fullname" . }}-{{.Values.rime.webServer.name}}
+  labels:
+    app: {{.Values.rime.webServer.name}}
+    {{- include "rime.labels" . | nindent 4 }}
+    {{- with .Values.rime.webServer.deployment.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  annotations:
+    {{- include "rime.annotations" . | nindent 4 }}
+    {{- with .Values.rime.webServer.deployment.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  selector:
+    matchLabels:
+      app: {{.Values.rime.webServer.name}}
+      {{- include "rime.selectorLabels" . | nindent 6 }}
+  {{- if not .Values.rime.webServer.hpa.enabled }}
+  replicas: {{ .Values.rime.webServer.deployment.replicaCount }}
+  {{- end }}
+  template:
+    metadata:
+      labels:
+        app: {{.Values.rime.webServer.name}}
+        {{- include "rime.labels" . | nindent 8 }}
+        {{- with .Values.rime.webServer.deployment.labels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      annotations:
+        {{- include "rime.annotations" . | nindent 8 }}
+        {{- with .Values.rime.webServer.deployment.annotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.rime.images.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: {{.Values.rime.webServer.name}}
+          env:
+            {{- include "rime.jwtEnv" . | nindent 12 }}
+            {{- include "rime.webAppHostEnv" . | nindent 12 }}
+          image: "{{.Values.rime.images.backendImage.registry}}/{{ .Values.rime.images.backendImage.name }}"
+          imagePullPolicy: {{ .Values.rime.images.backendImage.pullPolicy }}
+          ports:
+            - name: ws
+              containerPort: {{ .Values.rime.webServer.port }}
+              protocol: TCP
+            - name: ws-grpc
+              containerPort: {{ .Values.rime.webServer.grpcPort }}
+              protocol: TCP
+            - name: ws-grpc-rest
+              containerPort: {{ .Values.rime.webServer.grpcRestPort }}
+              protocol: TCP
+            - name: ws-debug
+              containerPort: 6060
+              protocol: TCP
+          livenessProbe:
+            exec:
+              command: ["/bin/grpc_health_probe", "-addr=:{{ .Values.rime.webServer.grpcPort }}"]
+            periodSeconds: 5
+          readinessProbe:
+            exec:
+              command: ["/bin/grpc_health_probe", "-addr=:{{ .Values.rime.webServer.grpcPort }}"]
+            periodSeconds: 5
+          startupProbe:
+            exec:
+              command: ["/bin/grpc_health_probe", "-addr=:{{ .Values.rime.webServer.grpcPort }}"]
+            failureThreshold: 60
+            periodSeconds: 5
+          resources:
+            {{- toYaml .Values.rime.webServer.deployment.resources | nindent 12 }}
+          command:
+            - "/rime/rime"
+          args:
+            - "start-grpc-web-server"
+            - "--server-config-path=/config/server.config"
+            - "--agent-manager-server-addr={{ include "rime.fullname" . }}-agent-manager-server:{{ .Values.rime.agentManagerServer.port}}"
+            - "--grpc-web-port={{ .Values.rime.webServer.grpcPort }}"
+            - "--native-rest-web-port={{ .Values.rime.webServer.port }}"
+            - "--database-url={{ include "rime.fullname" . }}-mongodb-headless/?tls=false"
+            - "--database-url-prefix=mongodb+srv://"
+            - "--replica-set-name={{ .Values.mongodb.replicaSetName }}"
+            - "--redis-addr={{ include "rime.fullname" . }}-redis-headless:6379"
+            - "--feature-flag-addr={{ include "rime.fullname" . }}-feature-flag-server:{{ .Values.rime.featureFlagServer.port }}"
+            - "--vault-addr=http://{{ include "rime.fullname" . }}-vault-0.{{ include "rime.fullname" . }}-vault-internal:8200"
+            - "--auth-server-addr={{ include "rime.fullname" . }}-auth-server:{{ .Values.rime.authServer.grpcPort }}"
+            {{- if .Values.rime.verbose }}
+            - "--verbose"
+            {{- end }}
+            {{- if .Values.rime.monitoring.enabled }}
+            - "--metrics-exposition-enabled=true"
+            - "--metrics-exposition-port={{ .Values.rime.monitoring.port }}"
+            {{- end }}
+          volumeMounts:
+            - name: {{ include "rime.fullname" . }}-{{ .Values.rime.webServer.name }}-config
+              mountPath: "/config"
+              readOnly: true
+      volumes:
+        # Volumes are defined at the Pod level, then mounted into containers within that Pod
+        - name: {{ include "rime.fullname" . }}-{{ .Values.rime.webServer.name }}-config
+          configMap:
+            name: {{ include "rime.fullname" . }}-{{ .Values.rime.webServer.name }}-conf
+            items:
+              - key: "server.config"
+                path: "server.config"
+      {{- with .Values.rime.webServer.deployment.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 12 }}
+      {{- end }}
+      {{- with .Values.rime.webServer.deployment.affinity }}
+      affinity:
+        {{- toYaml . | nindent 12 }}
+      {{- end }}
+      {{- with .Values.rime.webServer.deployment.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 12 }}
+      {{- end }}

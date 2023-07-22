@@ -2,28 +2,6 @@ rimeAgent:
   verbose: true
   nameOverride:
   fullNameOverride:
-  commonAnnotations: {}
-  commonLabels: {}
-  isInternal: false
-
-  images:
-    # rimeAgent.images.imagePullSecrets -- use existing image pull secrets in your k8s cluster, overriding rimeAgent.dockerCredentials
-    ## Note that the credentials should provide access to both the Agent image and model testing images.
-    imagePullSecrets: []
-    agentImage:
-      # rimeAgent.images.agentImage.registry -- the registry of the agent image.
-      registry: "docker.io"
-      # rimeAgent.images.agentImage.name -- the name and tag of the rime agent image.
-      name: "robustintelligencehq/rime-agent:latest"
-      # rimeAgent.images.agentImage.pullPolicy -- see https://kubernetes.io/docs/concepts/containers/images/#image-pull-policy
-      pullPolicy: Always
-    modelTestJobImage:
-      # rimeAgent.images.modelTestJobImage.registry -- the registry of the default model test job image.
-      registry: "docker.io"
-      # rimeAgent.images.modelTestJobImage.name  -- image name for running model test jobs.
-      name: "robustintelligencehq/rime-testing-engine-dev:latest"
-      # rimeAgent.images.modelTestJobImage.pullPolicy -- image pull policy for model test jobs.
-      pullPolicy: "Always"
 
   # rimeAgent.id -- unique ID for this Agent. Can be left blank if this is a internal agent.
 
@@ -37,54 +15,127 @@ rimeAgent:
   ## If not set, the agent must be installed in the same cluster as the RI Platform.
   apiKey:
 
+  # rimeAgent.platformAddress -- the address of the RI Platform this agent should communicate with.
+
+  ## If not set, the agent must be installed in the same cluster as the RI Platform.
+  platformAddress:  # your-company.rbst.io
+
+  ## Configuration for Image Pull Secret, used to create a Secret of type kubernetes.io/dockerconfigjson.
+  ## All three fields of rimeAgent.dockerCredentials must be specified.
+  ## These credentials are used to access both the Agent image itself and model testing images.
+  ## See https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry
+  dockerCredentials:
+    # rimeAgent.dockerCredentials.registry -- the name of the Docker registry to authenticate with
+    registry:  # https://index.docker.io/v2/
+    # rimeAgent.dockerCredentials.username -- username of a Docker account with authorization to access Robust Intelligence images
+    username:
+    # rimeAgent.dockerCredentials.username -- password for docker login to account with access to Robust Intelligence Images
+    password:
+
   # rimeAgent.dockerCredentialsPayload -- pre-configured json encoded string of k8s docker config secret
 
   ## providing rimeAgent.dockerCredentialsPayload will override any provided inputs in rimeAgent.dockerCredentials
   dockerCredentialsPayload:  # '{"auths":{"https://index.docker.io/v2/":{"auth":"cm9...hZA="}}}'
 
-  connections:
-    # rimeAgent.platformAddress -- the address of the RI Platform this agent should communicate with.
+  # rimeAgent.imagePullSecrets -- use existing image pull secrets in your k8s cluster, overriding rimeAgent.dockerCredentials
 
-    ## If not set, the agent must be installed in the same cluster as the RI Platform and you will need to specify all the internal addresses below.
-    platformAddress:  # your-company.rbst.io
-    # rimeAgent.uploadServerAddress -- internal address of the Control Plane's grpc upload server.
+  ## Note that the credentials should provide access to both the Agent image and model testing images.
+  imagePullSecrets: []
+    # - name: <secret name>
 
-    ## This value will be ignored for external agents that use rimeAgent.platformAddress to connect to the control plane
-    uploadServerAddress: rime-upload-server:5000
-    # rimeAgent.agentManagerAddress -- internal address of the Control Plane's grpc agent management service.
+  ## Configurations for the Agent image.
+  image:
+    # rimeAgent.image.name -- the name and tag of the rime agent image.
+    name: "robustintelligencehq/rime-agent:latest"
+    # rimeAgent.image.pullPolicy -- see https://kubernetes.io/docs/concepts/containers/images/#image-pull-policy
+    pullPolicy: Always
 
-    ## This value will be ignored for external agents that use rimeAgent.platformAddress to connect to the control plane
-    agentManagerAddress: rime-agent-manager-server:15000
-    # rimeAgent.uploadServerRestAddress -- internal address of the Control Plane's upload server.
+  ## Configurations for running the agent with a mounted host path volume for data and model files.
+  local:
+    # rimeAgent.local.enabled -- If true, host path volumes will be mounted on containers of model test jobs.
+    enabled: false
 
-    ## This value will be ignored for external agents that use rimeAgent.platformAddress to connect to the control plane
-    uploadServerRestAddress: rime-upload-server:15001
-    # rimeAgent.firewallServerAddress -- internal address of the Control Plane's firewall server.
+    # rimeAgent.local.hostPath -- the absolute path of the directory on the node to mount onto the agent. Default "/ri-platform/local".
 
-    ## This value will be ignored for external agents that use rimeAgent.platformAddress to connect to the control plane
-    firewallServerRestAddress: rime-firewall-server:15002
-    # rimeAgent.dataCollectorRestAddress -- internal address of the Control Plane's data collector server.
+    ## This path must exist on the node that model testing jobs run on. The directory must be added during k8s cluster setup.
+    ## This directory will be mounted into the container and can be accessed according to rimeAgent.local.mountPath.
+    hostPath: "/ri-platform/local"
 
-    ## This value will be ignored for external agents that use rimeAgent.platformAddress to connect to the control plane
-    dataCollectorRestAddress: rime-data-collector-server:15015
-    # rimeAgent.datasetManagerRestAddress -- internal address of the Control Plane's data collector server.
+    # rimeAgent.local.mountPath -- the absolute path where the local data (from hostPath) will be mounted in the container. Default "/ri-platform/local".
 
-    ## This value will be ignored for external agents that use rimeAgent.platformAddress to connect to the control plane
-    datasetManagerRestAddress: rime-dataset-manager-server:15009
+    ## To access data and models, in job configuration, specify: <mountPath>/<your-data>.csv
+    mountPath: "/ri-platform/local"
 
-  launcher:
-    name: "launcher"
+  # Job Manager Address in the CP. Used by multiple agent services.
+  jobManagerAddr:
+
+  # gRPC Web Server Address in the CP. Used by multiple agent services.
+  grpcWebServerAddr:
+
+  # rimeAgent.agentManagerAddr -- internal address of the Control Plane's agent management service.
+
+  ## This value will be ignored for external agents that use rimeAgent.platformAddress to connect to the control plane
+  agentManagerAddr:
+
+  ## Configurations related to the model testing jobs launched by this agent.
+  modelTestJob:
+    # rimeAgent.modelTestJob.configMapName -- name of the config map used by model test jobs for environment variables.
+
+    ## Note: it is very unlikely that this needs to be changed from the default. Doing so without caution may
+    ## cause jobs to be configured incorrectly and fail to launch.
+    configMapName: "rime-agent-model-testing-conf"
+
+    ## Configure rbac ServiceAccount for the jobs launched by this agent. For example, granting S3 read permissions.
+    serviceAccount:
+      # rimeAgent.modelTestJob.serviceAccount.create -- Specifies whether a ServiceAccount should be created.
+      create: true
+
+      # rimeAgent.modelTestJob.serviceAccount.name -- Specify a preexisting ServiceAccount to use if create is false.
+      name:
+
+      # rimeAgent.modelTestJob.serviceAccount.annotations -- if create is true, annotations to add to the service account.
+
+      ## Since data is stored in a cloud storage (e.g. S3, GCS), add an annotation to allow read access here.
+      ## EKS IAM setup for S3: https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html
+      ## GKE IAM setup for GCS: https://cloud.google.com/kubernetes-engine/docs/how-to/workload-identity
+      annotations: {}
+      #   eks.amazonaws.com/role-arn: <S3 read access role arn>
+      #   iam.gke.io/gcp-service-account: <GCS service account email>
+
+    uploadServerAddr:
+    firewallServerAddr:
+    dataCollectorAddr:
+
+  jobMonitor:
+    deployment:
+      resources:
+        requests:
+          memory: "100Mi"
+          cpu: "100m"
+        limits:
+          memory: "500Mi"
+          cpu: "500m"
+    logArchival:
+      enabled: false
+      storageBucketName: ""
+      endpoint: ""
+      type: ""
+    rbac:
+      # Specifies whether RBAC resources should be created
+      create: true
     serviceAccount:
       # Specifies whether a ServiceAccount should be created
       create: true
       # The name of the ServiceAccount to use.
       # If not set and create is true, a name is generated using the fullname template
+      # This account has special priveleges to read and write to S3 bucket used for blob storage.
+      annotations: {
+        eks.amazonaws.com/role-arn: ""
+      }
       name:
-      annotations: {}
-      labels: {}
+
+  launcher:
     deployment:
-      annotations: {}
-      labels: {}
       resources:
         requests:
           memory: "100Mi"
@@ -93,152 +144,19 @@ rimeAgent:
           memory: "500Mi"
           cpu: "500m"
 
-      # SecurityContext to add to the deployment. Default is just set to not run as root.
-      # ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#securitycontext-v1-core
-      securityContext: {}
+    # rimeAgent.launcher.requestQueueProxyAddr -- the address of the request queue proxy service. Only specify for internal agents.
+    requestQueueProxyAddr:
 
-      ## Extra env variables to add to the deployment. Make sure these don't
-      ## conflict with the ones already defined in the deployment.
-      ## ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#envvar-v1-core
-      #
-      extraEnv: []
-      ## Extra volumes to add to the deployment. Make sure these don't
-      ## conflict with the ones already defined in the deployment.
-      ## ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#volumedevice-v1-coreim gonn
-      #
-      extraVolumes: []
-      ## Extra volume mounts to add to the deployment. Make sure these don't
-      ## conflict with the ones already defined in the deployment.
-      ## ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#volumemount-v1-core
-      #
-      extraVolumeMounts: []
-      ## Node labels for pod assignment
-      ## ref: https://kubernetes.io/docs/user-guide/node-selection/
-      #
-      nodeSelector: {}
-      ## Tolerations for pod assignment
-      ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
-      ##
-      tolerations: []
-      ## Affinity for pod assignment (evaluated as template)
-      ## ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
-      ##
-      affinity: {}
-
-  operator:
-    name: "operator"
-    serviceAccount:
+    rbac:
+      # Specifies whether RBAC resources should be created
       create: true
-      name: ""
-      annotations: {}
-      labels: {}
-    deployment:
-      annotations: {}
-      labels: {}
-      resources:
-        limits:
-          cpu: 500m
-          memory: 128Mi
-        requests:
-          cpu: 500m
-          memory: 128Mi
+    serviceAccount:
+      # Specifies whether a ServiceAccount should be created
+      create: true
+      # The name of the ServiceAccount to use.
+      # If not set and create is true, a name is generated using the fullname template
+      name:
 
-      # SecurityContext to add to the deployment. Default is just set to not run as root.
-      # ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#securitycontext-v1-core
-      securityContext: {}
-
-      ## Extra env variables to add to the deployment. Make sure these don't
-      ## conflict with the ones already defined in the deployment.
-      ## ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#envvar-v1-core
-      #
-      extraEnv: []
-      ## Extra volumes to add to the deployment. Make sure these don't
-      ## conflict with the ones already defined in the deployment.
-      ## ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#volumedevice-v1-coreim gonn
-      #
-      extraVolumes: []
-      ## Extra volume mounts to add to the deployment. Make sure these don't
-      ## conflict with the ones already defined in the deployment.
-      ## ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#volumemount-v1-core
-      #
-      extraVolumeMounts: []
-      ## Node labels for pod assignment
-      ## ref: https://kubernetes.io/docs/user-guide/node-selection/
-      #
-      nodeSelector: {}
-      ## Tolerations for pod assignment
-      ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
-      ##
-      tolerations: []
-      ## Affinity for pod assignment (evaluated as template)
-      ## ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
-      ##
-      affinity: {}
-    ## Configurations related to the model testing jobs launched by this agent.
-    modelTestJob:
-      name: "model-testing-job"
-      annotations: {}
-      labels: {}
-      # rimeAgent.operator.modelTestJob.image -- default image specification for the image used by model test jobs.
-      # rimeAgent.operator.modelTestJob.backoffLimit -- backoff limit for mode test jobs.
-      backoffLimit: 0
-      # rimeAgent.operator.modelTestJob.activeDeadlineSeconds -- active deadline of job in seconds.
-      # Default to 72 hours.
-      activeDeadlineSeconds: 259200
-      # rimeAgent.operator.modelTestJob.ttlSecondsAfterFinished -- TTL for jobs after finished in seconds.
-      # Default to 48 hours.
-      ttlSecondsAfterFinished: 172800
-      ## Configure rbac ServiceAccount for the jobs launched by this agent. For example, granting S3 read permissions.
-      serviceAccount:
-        # rimeAgent.operator.modelTestJob.serviceAccount.create -- Specifies whether a ServiceAccount should be created.
-        create: true
-        # rimeAgent.operator.modelTestJob.serviceAccount.name -- Specify a preexisting ServiceAccount to use if create is false.
-        name:
-        # rimeAgent.operator.modelTestJob.serviceAccount.annotations -- if create is true, annotations to add to the service account.
-        ## Since data is stored in a cloud storage (e.g. S3, GCS), add an annotation to allow read access here.
-        ## EKS IAM setup for S3: https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html
-        ## GKE IAM setup for GCS: https://cloud.google.com/kubernetes-engine/docs/how-to/workload-identity
-        annotations: {}
-        #   eks.amazonaws.com/role-arn: <S3 read access role arn>
-        #   iam.gke.io/gcp-service-account: <GCS service account email>
-      # rimeAgent.operator.modelTestJob.resources -- resource request and limits for model test jobs.
-      resources:
-        limits:
-          cpu: 3000m
-          memory: 8000Mi
-        requests:
-          cpu: 3000m
-          memory: 8000Mi
-
-      # SecurityContext to add to the deployment. Default is just set to not run as root.
-      # ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#securitycontext-v1-core
-      securityContext: {}
-
-      # Extra env variables to add to the deployment. Make sure these don't
-      # conflict with the ones already defined in the deployment.
-      # ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#envvar-v1-core
-      extraEnv: []
-
-      # Extra volumes to add to the deployment. Make sure these don't
-      # conflict with the ones already defined in the deployment.
-      # ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#volumedevice-v1-core
-      extraVolumes: []
-
-      # Extra volume mounts to add to the deployment. Make sure these don't
-      # conflict with the ones already defined in the deployment.
-      # ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#volumemount-v1-core
-      extraVolumeMounts: []
-
-      # rimeAgent.operator.modelTestJob.nodeSelector -- node selector for model test jobs.
-      nodeSelector: {}
-      # rimeAgent.operator.modelTestJob.tolerations -- tolerations for model test jobs.
-      tolerations: []
-      # rimeAgent.operator.modelTestJob.affinity -- affinity for model test jobs.
-      affinity: {}
-
-    logArchival:
-      enabled: false
-
-tls:
-  crossplaneEnabled: false
-  enableCertManager: false
+  # rimeAgent.datadogTagPodAnnotation -- annotation for setting Datadog tagging on the pod. Only for deployment with Datadog installed.
+  # Must be a string that is valid JSON.
+  datadogTagPodAnnotation:
