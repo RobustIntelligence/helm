@@ -12,85 +12,25 @@ Kubernetes: `>=1.20.0-0`
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
-| rimeAgent.apiKey | string | `nil` | the API key the agent will use to communicate with the RI Platform. |
-| rimeAgent.commonAnnotations | object | `{}` |  |
-| rimeAgent.commonLabels | object | `{}` |  |
-| rimeAgent.connections.agentManagerAddress | string | `"rime-agent-manager-server:15000"` |  |
-| rimeAgent.connections.dataCollectorRestAddress | string | `"rime-data-collector-server:15015"` |  |
-| rimeAgent.connections.datasetManagerRestAddress | string | `"rime-dataset-manager-server:15009"` |  |
-| rimeAgent.connections.firewallServerRestAddress | string | `"rime-firewall-server:15002"` |  |
-| rimeAgent.connections.platformAddress | string | `nil` |  |
-| rimeAgent.connections.uploadServerAddress | string | `"rime-upload-server:5000"` |  |
-| rimeAgent.connections.uploadServerRestAddress | string | `"rime-upload-server:15001"` |  |
-| rimeAgent.dockerCredentialsPayload | string | `nil` | pre-configured json encoded string of k8s docker config secret |
-| rimeAgent.fullNameOverride | string | `nil` |  |
-| rimeAgent.id | string | `nil` | unique ID for this Agent. Can be left blank if this is a internal agent. |
-| rimeAgent.images.agentImage.name | string | `"robustintelligencehq/rime-agent:latest"` | the name and tag of the rime agent image. |
-| rimeAgent.images.agentImage.pullPolicy | string | `"Always"` | see https://kubernetes.io/docs/concepts/containers/images/#image-pull-policy |
-| rimeAgent.images.agentImage.registry | string | `"docker.io"` | the registry of the agent image. |
-| rimeAgent.images.imagePullSecrets | list | `[]` | use existing image pull secrets in your k8s cluster, overriding rimeAgent.dockerCredentials # Note that the credentials should provide access to both the Agent image and model testing images. |
-| rimeAgent.images.modelTestJobImage.name | string | `"robustintelligencehq/rime-testing-engine-dev:latest"` |  |
-| rimeAgent.images.modelTestJobImage.pullPolicy | string | `"Always"` | image pull policy for model test jobs. |
-| rimeAgent.images.modelTestJobImage.registry | string | `"docker.io"` | the registry of the default model test job image. |
-| rimeAgent.isInternal | bool | `false` |  |
-| rimeAgent.launcher.deployment.affinity | object | `{}` |  |
-| rimeAgent.launcher.deployment.annotations | object | `{}` |  |
-| rimeAgent.launcher.deployment.extraEnv | list | `[]` |  |
-| rimeAgent.launcher.deployment.extraVolumeMounts | list | `[]` |  |
-| rimeAgent.launcher.deployment.extraVolumes | list | `[]` |  |
-| rimeAgent.launcher.deployment.labels | object | `{}` |  |
-| rimeAgent.launcher.deployment.nodeSelector | object | `{}` |  |
-| rimeAgent.launcher.deployment.resources.limits.cpu | string | `"500m"` |  |
-| rimeAgent.launcher.deployment.resources.limits.memory | string | `"500Mi"` |  |
-| rimeAgent.launcher.deployment.resources.requests.cpu | string | `"100m"` |  |
-| rimeAgent.launcher.deployment.resources.requests.memory | string | `"100Mi"` |  |
-| rimeAgent.launcher.deployment.securityContext | object | `{}` |  |
-| rimeAgent.launcher.deployment.tolerations | list | `[]` |  |
-| rimeAgent.launcher.name | string | `"launcher"` |  |
-| rimeAgent.launcher.serviceAccount.annotations | object | `{}` |  |
-| rimeAgent.launcher.serviceAccount.create | bool | `true` |  |
-| rimeAgent.launcher.serviceAccount.labels | object | `{}` |  |
-| rimeAgent.launcher.serviceAccount.name | string | `nil` |  |
-| rimeAgent.nameOverride | string | `nil` |  |
-| rimeAgent.operator.deployment.affinity | object | `{}` |  |
-| rimeAgent.operator.deployment.annotations | object | `{}` |  |
-| rimeAgent.operator.deployment.extraEnv | list | `[]` |  |
-| rimeAgent.operator.deployment.extraVolumeMounts | list | `[]` |  |
-| rimeAgent.operator.deployment.extraVolumes | list | `[]` |  |
-| rimeAgent.operator.deployment.labels | object | `{}` |  |
-| rimeAgent.operator.deployment.nodeSelector | object | `{}` |  |
-| rimeAgent.operator.deployment.resources.limits.cpu | string | `"500m"` |  |
-| rimeAgent.operator.deployment.resources.limits.memory | string | `"128Mi"` |  |
-| rimeAgent.operator.deployment.resources.requests.cpu | string | `"500m"` |  |
-| rimeAgent.operator.deployment.resources.requests.memory | string | `"128Mi"` |  |
-| rimeAgent.operator.deployment.securityContext | object | `{}` |  |
-| rimeAgent.operator.deployment.tolerations | list | `[]` |  |
-| rimeAgent.operator.logArchival.enabled | bool | `false` |  |
-| rimeAgent.operator.modelTestJob.activeDeadlineSeconds | int | `259200` | active deadline of job in seconds. Default to 72 hours. |
-| rimeAgent.operator.modelTestJob.affinity | object | `{}` | affinity for model test jobs. |
-| rimeAgent.operator.modelTestJob.annotations | object | `{}` |  |
-| rimeAgent.operator.modelTestJob.backoffLimit | int | `0` |  |
-| rimeAgent.operator.modelTestJob.extraEnv | list | `[]` |  |
-| rimeAgent.operator.modelTestJob.extraVolumeMounts | list | `[]` |  |
-| rimeAgent.operator.modelTestJob.extraVolumes | list | `[]` |  |
-| rimeAgent.operator.modelTestJob.labels | object | `{}` |  |
-| rimeAgent.operator.modelTestJob.name | string | `"model-testing-job"` |  |
-| rimeAgent.operator.modelTestJob.nodeSelector | object | `{}` | node selector for model test jobs. |
-| rimeAgent.operator.modelTestJob.resources | object | `{"limits":{"cpu":"3000m","memory":"8000Mi"},"requests":{"cpu":"3000m","memory":"8000Mi"}}` | resource request and limits for model test jobs. |
-| rimeAgent.operator.modelTestJob.securityContext | object | `{}` |  |
-| rimeAgent.operator.modelTestJob.serviceAccount.annotations | object | `{}` | if create is true, annotations to add to the service account. # Since data is stored in a cloud storage (e.g. S3, GCS), add an annotation to allow read access here. # EKS IAM setup for S3: https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html # GKE IAM setup for GCS: https://cloud.google.com/kubernetes-engine/docs/how-to/workload-identity |
-| rimeAgent.operator.modelTestJob.serviceAccount.create | bool | `true` | Specifies whether a ServiceAccount should be created. |
-| rimeAgent.operator.modelTestJob.serviceAccount.name | string | `nil` | Specify a preexisting ServiceAccount to use if create is false. |
-| rimeAgent.operator.modelTestJob.tolerations | list | `[]` | tolerations for model test jobs. |
-| rimeAgent.operator.modelTestJob.ttlSecondsAfterFinished | int | `172800` | TTL for jobs after finished in seconds. Default to 48 hours. |
-| rimeAgent.operator.name | string | `"operator"` |  |
-| rimeAgent.operator.serviceAccount.annotations | object | `{}` |  |
-| rimeAgent.operator.serviceAccount.create | bool | `true` |  |
-| rimeAgent.operator.serviceAccount.labels | object | `{}` |  |
-| rimeAgent.operator.serviceAccount.name | string | `""` |  |
-| rimeAgent.verbose | bool | `true` |  |
-| tls.crossplaneEnabled | bool | `false` |  |
-| tls.enableCertManager | bool | `false` |  |
+| rimeAgent.apiKey | string | `nil` | The API key the agent will use to communicate with the RI Platform. Required for external agents. |
+| rimeAgent.connections | object | (see individual values in `values.yaml`) | Service addresses for the agent. |
+| rimeAgent.dockerCredentialsPayload | string | `nil` | Pre-configured json encoded string of K8s docker config secret Providing `rimeAgent.dockerCredentialsPayload` will override any provided inputs in rimeAgent.dockerCredentials |
+| rimeAgent.existingSecretName | string | `""` | Name of an existing K8s secret containing the API key. If existingSecretName is set, the secret will not be created. Must have api-key set. |
+| rimeAgent.id | string | `nil` | unique ID for this Agent. Can be left blank if this is a internal agent. This id is provided by the RI Platform Control Plane when creating external agents. For internal agents, this field is not used. |
+| rimeAgent.images | object | (see individual values in `values.yaml`) | Image specification for the Agent. |
+| rimeAgent.isInternal | bool | `false` | Whether this agent is running within the same K8s cluster as the control plane. |
+| rimeAgent.launcher | object | (see individual values in `values.yaml`) | `launcher` K8s-level configurations |
+| rimeAgent.monitoring | object | (see individual values in `values.yaml`) | `monitoring` (Datadog) K8s-level configurations |
+| rimeAgent.monitoring.datadogEnabled | bool | `true` | Whether to enable Datadog autodiscovery tags for all services on the RIME agent |
+| rimeAgent.monitoring.enabled | bool | `true` | Whether to enable Prometheus metrics for all services on the RIME agent |
+| rimeAgent.monitoring.port | int | `8080` | Port to expose Prometheus metrics on |
+| rimeAgent.operator | object | (see individual values in `values.yaml`) | `operator` K8s-level configurations |
+| rimeAgent.operator.crossPlaneRPCJob | object | (see individual values in `values.yaml`) | `cross-plane-job` K8s-level configurations |
+| rimeAgent.operator.logArchival | object | (see individual values in `values.yaml`) | Configuration for RIME Job Log Archival (persistence of job logs for debugging). |
+| rimeAgent.operator.modelTestJob | object | (see individual values in `values.yaml`) | `model-testing-job` K8s-level configurations |
+| rimeAgent.registerAgent | object | (see individual values in `values.yaml`) | `registerAgent` K8s-level configurations |
+| rimeAgent.rimeCrossPlaneServer | object | (see individual values in `values.yaml`) | `rime-cross-plane-server` K8s-level configurations |
+| tls | object | (see individual values in `values.yaml`) | Mutual TLS configuration for internal agent. |
 
 ----------------------------------------------
 Autogenerated from chart metadata using [helm-docs v1.11.0](https://github.com/norwoodj/helm-docs/releases/v1.11.0)

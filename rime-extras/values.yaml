@@ -20,9 +20,12 @@ datadog:
       additionalConfigs:
         -
           autodiscovery:
-            kubernetes_container_names:
-              - rime
-              - rime-agent
+            kubernetes_annotations:
+              include:
+                prometheus.io/scrape: "true"
+                app.kubernetes.io/owned-by: "ri"
+              exclude:
+                prometheus.io/scrape: "false"
     # Ignore auto-configuration for `kubernetes_state` (because we disable kube-state-metrics) and `redisdb`
     # See https://docs.datadoghq.com/agent/guide/auto_conf/
     ignoreAutoConfig:
@@ -77,13 +80,13 @@ datadog:
       repository: "robustintelligencehq/datadog-agent"
       pullSecrets:
         - name: rimecreds
-      tag: 7.32.3
+      tag: 7.46.0
   clusterAgent:
     image:
       repository: "robustintelligencehq/datadog-cluster-agent"
       pullSecrets:
         - name: rimecreds
-      tag: 1.14.0
+      tag: 7.46.0
 
 # -- For full reference, see https://github.com/vmware-tanzu/helm-charts/tree/velero-2.23.6/charts/velero
 # @default -- (see individual values in `values`.yaml)
@@ -146,4 +149,4 @@ velero:
           - pv
         # -- At minimum, should include the RIME namespace(s) (all namespaces recommended)
         includedNamespaces:
-          - ""
+          - "*"

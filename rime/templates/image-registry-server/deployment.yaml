@@ -35,6 +35,7 @@ spec:
         {{- with .Values.rime.imageRegistryServer.deployment.annotations }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
+        {{- include "rime.monitoringAnnotations" (dict "monitoring" .Values.rime.monitoring "name" .Values.rime.uploadServer.name ) | nindent 8 }}
         checksum/config: {{ include (print $.Template.BasePath "/image-registry-server/configmap.yaml") . | sha256sum }}
     spec:
       {{- with .Values.rime.images.imagePullSecrets }}
@@ -107,21 +108,11 @@ spec:
             - "/rime/rime"
           args:
             - "start-image-registry-server"
-            {{- if .Values.tls.grpcEnabled }}
-            - "--auth-mode=tls"
-            {{ end }}
             - "--server-config-path=/config/server.config"
             - "--image-builder-job-configmap-file=/config/image_builder_job_configmap.config"
             - "--image-builder-job-file=/config/image_builder_job.config"
             - "--image-registry-port={{ .Values.rime.imageRegistryServer.port }}"
             - "--image-registry-rest-port={{ .Values.rime.imageRegistryServer.restPort }}"
-            {{- if .Values.rime.verbose }}
-            - "--verbose"
-            {{- end }}
-            {{- if .Values.rime.monitoring.enabled }}
-            - "--metrics-exposition-enabled=true"
-            - "--metrics-exposition-port={{ .Values.rime.monitoring.port }}"
-            {{- end }}
           volumeMounts:
             - name: {{ include "rime.fullname" . }}-{{ .Values.rime.imageRegistryServer.name }}-config
               mountPath: "/config"
