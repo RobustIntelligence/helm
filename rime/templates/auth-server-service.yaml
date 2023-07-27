@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "rime.fullname" . }}-auth-server
+  labels:
+    {{- include "rime.labels" . | nindent 4 }}
+  annotations:
+    konghq.com/protocol: "grpc"
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.ports.authServer }}
+      targetPort: auth-server
+      protocol: TCP
+      name: auth-server
+    - port: {{ .Values.ports.userServer }}
+      targetPort: user-server
+      protocol: TCP
+      name: user-server
+    - port: {{ .Values.ports.userServerREST }}
+      targetPort: user-rest
+      protocol: TCP
+      name: user-rest
+  selector:
+    app: auth-server
+    {{- include "rime.selectorLabels" . | nindent 4 }}

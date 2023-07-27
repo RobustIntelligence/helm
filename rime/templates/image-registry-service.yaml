@@ -1,0 +1,24 @@
+{{- if .Values.imageRegistry.create }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "rime.fullname" . }}-image-registry
+  labels:
+    {{- include "rime.labels" . | nindent 4 }}
+  annotations:
+    konghq.com/protocol: "grpc"
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.ports.imageRegistryServer }}
+      targetPort: image-registry
+      protocol: TCP
+      name: image-registry
+    - port: {{ .Values.ports.imageRegistryREST }}
+      targetPort: image-reg-rest
+      protocol: TCP
+      name: image-reg-rest
+  selector:
+    app: image-registry
+    {{- include "rime.selectorLabels" . | nindent 4 }}
+{{- end }}

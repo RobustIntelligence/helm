@@ -1,0 +1,10 @@
+# A ServiceAccount use by the image builder jobs.
+{{- if and .Values.imageRegistry.create .Values.imageRegistry.rbac.create .Values.imageRegistry.rbac.jobAccount.create }}
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ template "imageRegistryJobAccount.name" . }}
+{{- with .Values.imageRegistry.rbac.jobAccount.annotations }}
+  annotations: {{ toYaml . | nindent 4 }}
+{{- end }}
+{{- end }}

@@ -1,8 +1,0 @@
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: {{ include "rime.fullname" . }}-{{ .Values.rime.initVault.name }}-conf
-data:
-  worker.config: |
-{{ include "rime.serverArgs" . | indent 4 }}
-    initVault: {}

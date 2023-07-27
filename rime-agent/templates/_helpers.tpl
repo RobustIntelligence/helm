@@ -7,9 +7,8 @@ Expand the name of the chart.
 
 {{/*
 Create a default fully qualified app name.
-We truncate at 63 chars because some Kubernetes name fields are limited to
-this (by the DNS naming spec). If release name contains chart name it will
-be used as a full name.
+We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
+If release name contains chart name it will be used as a full name.
 */}}
 {{- define "rime-agent.fullname" -}}
 {{- if .Values.rimeAgent.fullNameOverride }}
@@ -32,14 +31,6 @@ Create chart name and version as used by the chart label.
 {{- end }}
 
 {{/*
-Selector labels
-*/}}
-{{- define "rime-agent.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "rime-agent.name" . }}
-app.kubernetes.io/instance: {{ .Release.Name }}
-{{- end }}
-
-{{/*
 Common labels
 */}}
 {{- define "rime-agent.labels" -}}
@@ -52,73 +43,109 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end }}
 
 {{/*
-Common annotations added to all resources.
+Selector labels
 */}}
-{{- define "rime-agent.annotations" -}}
-helm.sh/chart: {{ include "rime-agent.chart" . }}
-{{ include "rime-agent.selectorLabels" . }}
-{{- if .Chart.AppVersion }}
-app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+{{- define "rime-agent.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "rime-agent.name" . }}
+app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
-app.kubernetes.io/part-of: {{ template "rime-agent.name" . }}
-app.kubernetes.io/managed-by: {{ .Release.Service }}
-{{- if .Values.rimeAgent.commonAnnotations}}
-{{ toYaml .Values.rimeAgent.commonAnnotations }}
-{{- end }}
+
+{{/*
+Return the name used for k8s Role granting job read access.
+*/}}
+{{- define "rime-agent.jobReaderRole.fullname" -}}
+{{ include "rime-agent.fullname" . }}-job-reader
 {{- end -}}
 
 {{/*
-Common flags passed to all the Agent servers. Be careful when modifying these values!
+Return the name used for k8s Role granting job write access.
 */}}
-{{- define "rime-agent.serverArgs" -}}
-common:
-    {{- if .Values.tls.crossplaneEnabled }}
-    tls:
-        caPath: "/var/tmp/tls/common/ca.crt"
-        certPath: "/var/tmp/tls/common/tls.crt"
-        keyPath: "/var/tmp/tls/common/tls.key"
-    {{- end }}
-    connections:
-        addresses:
-            {{- if .Values.rimeAgent.connections.agentManagerAddress}}
-            agentManagerServerAddr: {{ .Values.rimeAgent.connections.agentManagerAddress }}
-            {{- end }}
-            {{- if .Values.rimeAgent.connections.uploadServerAddress}}
-            uploadServerAddr: {{ .Values.rimeAgent.connections.uploadServerAddress }}
-            {{- end }}
-dataplane:
-    isInternal: {{ .Values.rimeAgent.isInternal }}
-    platformAddress: {{ .Values.rimeAgent.connections.platformAddress }}
+{{- define "rime-agent.jobWriterRole.fullname" -}}
+{{ include "rime-agent.fullname" . }}-job-writer
+{{- end -}}
+
+
+{{/*
+Return the app name for launcher.
+*/}}
+{{- define "rime-agent.launcher.appName" -}}
+launcher
 {{- end }}
 
 {{/*
-Return the service account name used by the operator controller manager.
+Return the full name used for launcher resources.
+*/}}
+{{- define "rime-agent.launcher.fullname" -}}
+{{ include "rime-agent.fullname" . }}-{{ include "rime-agent.launcher.appName" . }}
+{{- end -}}
+
+{{/*
+Create the name of the service account to use for Launcher
 */}}
 {{- define "rime-agent.launcher.serviceAccountName" -}}
 {{- if .Values.rimeAgent.launcher.serviceAccount.create -}}
-    {{ default (printf "%s-%s" (include "rime-agent.fullname" .) .Values.rimeAgent.launcher.name) .Values.rimeAgent.launcher.serviceAccount.name | trunc 63 | trimSuffix "-" }}
+    {{ default (include "rime-agent.launcher.fullname" .) .Values.rimeAgent.launcher.serviceAccount.name }}
 {{- else -}}
     {{ default "default" .Values.rimeAgent.launcher.serviceAccount.name }}
 {{- end -}}
 {{- end -}}
 
 {{/*
-Return the service account name used by the model testing jobs, which has
-access to read S3 buckets.
+Return the app name for job monitor.
+*/}}
+{{- define "rime-agent.jobMonitor.appName" -}}
+job-monitor
+{{- end }}
+
+{{/*
+Return the name used for job monitor resources.
+*/}}
+{{- define "rime-agent.jobMonitor.fullname" -}}
+{{ include "rime-agent.fullname" . }}-{{include "rime-agent.jobMonitor.appName" .}}
+{{- end -}}
+
+{{/*
+Create the name of the service account to use for Job Monitor
+*/}}
+{{- define "rime-agent.jobMonitor.serviceAccountName" -}}
+{{- if .Values.rimeAgent.launcher.serviceAccount.create -}}
+    {{ default (include "rime-agent.jobMonitor.fullname" .) .Values.rimeAgent.jobMonitor.serviceAccount.name }}
+{{- else -}}
+    {{ default "default" .Values.rimeAgent.jobMonitor.serviceAccount.name }}
+{{- end -}}
+{{- end -}}
+
+
+{{/*
+Return the service account name used by the model testing jobs, which has access to read S3 buckets.
 */}}
 {{- define "rime-agent.modelTestJob.serviceAccountName" -}}
-{{- if .Values.rimeAgent.operator.modelTestJob.serviceAccount.create -}}
-    {{ default "rime-agent-model-tester" .Values.rimeAgent.operator.modelTestJob.serviceAccount.name }}
+{{- if .Values.rimeAgent.modelTestJob.serviceAccount.create -}}
+    {{ default "rime-agent-model-tester" .Values.rimeAgent.modelTestJob.serviceAccount.name }}
 {{- else -}}
-    {{ default "default" .Values.rimeAgent.operator.modelTestJob.serviceAccount.name }}
+    {{ default "default" .Values.rimeAgent.modelTestJob.serviceAccount.name }}
 {{- end -}}
 {{- end -}}
 
 {{/*
-Return the name used for secrets containing credentials used by agent services.
+Return the name used for model testing job configmap. This must be in sync with the control plane.
 */}}
-{{- define "rime-agent.secretName" -}}
-{{ include "rime-agent.fullname" . }}-secret
+{{- define "rime-agent.modelTestJob.configMapName" -}}
+{{ .Values.rimeAgent.modelTestJob.configMapName}}
+{{- end -}}
+
+{{/*
+Return the name used for model testing job secret. This must be in sync with the control plane.
+*/}}
+{{- define "rime-agent.modelTestJob.secretName" -}}
+rime-agent-model-testing-secret
+{{- end -}}
+
+{{/*
+Return the name of the Secret containing the api key.
+*/}}
+{{- define "rime-agent.apiKeySecretName" -}}
+{{ include "rime-agent.fullname" . }}-api-key
 {{- end -}}
 
 {{/*
@@ -129,28 +156,12 @@ Return the name of the created Secret containing docker config.
 {{- end -}}
 
 {{/*
-Return image pull secrets to be used for all images (agent and model testing
-images).
+Return image pull secrets to be used for all images (agent and model testing images).
 */}}
 {{- define "rime-agent.imagePullSecretsYaml" -}}
-{{- if (gt (len .Values.rimeAgent.images.imagePullSecrets) 0) -}}
-imagePullSecrets:
-{{ .Values.rimeAgent.images.imagePullSecrets | toYaml | indent 2 }}
-{{- else if .Values.rimeAgent.dockerCredentialsPayload -}}
-imagePullSecrets:
-    - name : {{ include "rime-agent.dockerSecretName" . }}
-{{- else }}
-imagePullSecrets: []
-{{- end -}}
-{{- end -}}
-
-{{/*
-Return the service account name used by the operator controller manager.
-*/}}
-{{- define "rime-agent.operator.serviceAccountName" -}}
-{{- if .Values.rimeAgent.operator.serviceAccount.create -}}
-    {{ default (printf "%s-%s" (include "rime-agent.fullname" .) .Values.rimeAgent.operator.name) .Values.rimeAgent.operator.serviceAccount.name | trunc 63 | trimSuffix "-" }}
+{{- if (gt (len .Values.rimeAgent.imagePullSecrets) 0) -}}
+{{ .Values.rimeAgent.imagePullSecrets | toYaml}}
 {{- else -}}
-    {{ default "default" .Values.rimeAgent.operator.serviceAccount.name }}
+- name : {{ include "rime-agent.dockerSecretName" . }}
 {{- end -}}
 {{- end -}}

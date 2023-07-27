@@ -1,0 +1,17 @@
+{{- if .Values.rimeAgent.jobMonitor.rbac.create}}
+# A role granting access to read operations on k8s jobs. Used by Job Monitor.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ include "rime-agent.jobReaderRole.fullname" . }}
+rules:
+  - apiGroups: ["", "batch"]
+    resources: [jobs]
+    verbs: [get, watch, list]
+  - apiGroups: [""]
+    resources: [pods]
+    verbs: [list]
+  - apiGroups: [""]
+    resources: [pods/log]
+    verbs: [get]
+{{- end }}

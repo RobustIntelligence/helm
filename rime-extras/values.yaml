@@ -1,49 +1,46 @@
 rimeExtras:
-  # -- Whether to install the DataDog Helm charts for observability
   datadog: false
-  # -- Whether to install the Velero Helm charts for disaster recovery
   velero: false
 
-# -- For full reference, see https://github.com/DataDog/helm-charts/tree/datadog-2.20.3/charts/datadog
-# @default -- (see individual values in `values`.yaml)
 datadog:
+  targetSystem: "linux"
   registry: "docker.io"
   datadog:
-    # kube-state-metrics disabled by default, as they are redundant and unused
-    # The metrics controlled by this value show up as `kube_pod_info` or similar.
-    # Not the same as the native kubernetes.* metrics.
+    # We do not deploy the kube-state-metrics deployment by default. These metrics are redundant and unused.
+    # The metrics controlled by this value show up as `kube_pod_info` or similar. Not the same as the native
+    # kubernetes.* metrics.
     # See https://github.com/DataDog/helm-charts/blob/c75a5effa46d934f5f9952d2bf658823e9170135/charts/datadog/values.yaml#L122
     kubeStateMetricsEnabled: false
+
+    # Whether to autodiscover and scrape pods with Prometheus annotations.
+    # The container name restriction restricts prometheus metrics scraping to only our custom containers. The names
+    # of these containers are controlled by the agent and control plane helm charts.
     prometheusScrape:
       enabled: true
-      # Restricts prometheus metrics scraping to only our custom containers.
       additionalConfigs:
         -
           autodiscovery:
-            kubernetes_container_names:
+            kubernetes_container_names:  # Will be made more flexible and standardized in RIME-10996
               - rime
               - rime-agent
-    # Ignore auto-configuration for `kubernetes_state` (because we disable kube-state-metrics) and `redisdb`
-    # See https://docs.datadoghq.com/agent/guide/auto_conf/
+
+    # see https://docs.datadoghq.com/agent/guide/auto_conf/
     ignoreAutoConfig:
       - kubernetes_state
       - redisdb
-    # Enable logs agent and provide custom configs
+    ## Enable logs agent and provide custom configs
     logs:
-      # Enabled to activate Datadog Agent log collection
-      # ref: https://docs.datadoghq.com/containers/kubernetes/log/?tab=helm
       enabled: true
-      # Enabled to allow log collection for all containers
-      # ref: https://docs.datadoghq.com/containers/kubernetes/log/?tab=helm
       containerCollectAll: true
-      # Collect logs from files in /var/log/pods instead of using container runtime API
-      # It's usually the most efficient way of collecting logs.
-      # ref: https://docs.datadoghq.com/containers/kubernetes/log/?tab=helm
+
+      # datadog.logs.containerCollectUsingFiles -- Collect logs from files in /var/log/pods instead of using container runtime API
+      ## It's usually the most efficient way of collecting logs.
+      ## ref: https://docs.datadoghq.com/agent/basic_agent_usage/kubernetes/#log-collection-setup
       containerCollectUsingFiles: true
+
     env:
-      # -- Log masking to prevent transmission of sensitive info
-      # NOTE: regex in the log rules require an extra escape for any escape character used,
-      # e.g. \\\b for \b in normal regex
+      # log rules
+      # NOTE: regex in the log rules require an extra escape character for any escape character used, e.g. \\b for \b in normal regex
       - name: DD_LOGS_CONFIG_PROCESSING_RULES
         value: >-
           [{
@@ -58,17 +55,9 @@ datadog:
             "replace_placeholder": "[masked_email]",
             "pattern" : "[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,4}"
            }]
-    # -- (string) API key for DataDog services.
-    # Will be provided by your RI Solutions Architect.
-    apiKey: ""
-    # -- List of static tags to attach to every metric, event and service check collected by this Agent.
-    #  Learn more about tagging: https://docs.datadoghq.com/tagging/
-    tags:
-      - "user:${datadog_user_tag}"
-      - "rime-version:${datadog_rime_version_tag}"
   agents:
-    # Needed to allow the Agent to run on the dedicated nodegroup for test jobs
     tolerations:
+      # toleration for allowing Datadog Agent to run on the dedicated node for test jobs
       - key: "dedicated"
         operator: "Equal"
         value: "model-testing"
@@ -85,17 +74,13 @@ datadog:
         - name: rimecreds
       tag: 1.14.0
 
-# -- For full reference, see https://github.com/vmware-tanzu/helm-charts/tree/velero-2.23.6/charts/velero
-# @default -- (see individual values in `values`.yaml)
 velero:
   image:
     repository: "docker.io/robustintelligencehq/velero"
+    # explicitly state Velero version used with this helm chart
     tag: "v1.6.3"
     imagePullSecrets:
       - rimecreds
-  # -- Init containers to add to the Velero deployment's pod spec.
-  # At least one plugin provider image is required. For other cloud
-  # providers, see https://velero.io/docs/v1.6/supported-providers/
   initContainers:
     - name: velero-plugin-for-aws
       image: "docker.io/robustintelligencehq/velero-plugin-for-aws:v1.2.1"
@@ -106,44 +91,37 @@ velero:
   configuration:
     # Cloud provider being used (e.g. aws, azure, gcp).
     provider: aws
-    logFormat: json
+
     # Parameters for the `default` BackupStorageLocation. See
     # https://velero.io/docs/v1.6/api-types/backupstoragelocation/
     backupStorageLocation:
-      # -- Bucket is the name of the bucket to store backups in. Required.
-      bucket: ""
+      # Additional provider-specific configuration. See link above
+      # for details of required/optional fields for your provider.
       config:
-        # -- AWS region for the EKS cluster
-        region: ""
         serverSideEncryption: AES256
+
     volumeSnapshotLocation:
-      # -- Name of the volume snapshot location where snapshots are being taken. Required.
+      # name is the name of the volume snapshot location where snapshots are being taken. Required.
       name: mongodb-snapshots
-      config:
-        # -- AWS region for the EKS cluster
-        region: ""
+      # Additional provider-specific configuration. See link above
+      # for details of required/optional fields for your provider.
+
+    logFormat: json
+
   serviceAccount:
-    # Needed to allow the K8s Velero server to orchestrate cloud provider snapshots
     server:
       create: true
-    # -- For AWS: Specify ARN of IRSA-enabled Velero Backups IAM role here
-    annotations:
-      eks.amazonaws.com/role-arn: ""
+
   credentials:
-    # Secret not needed due to use of service accounts (e.g., IRSA on AWS)
     useSecret: false
+
   schedules:
     mongodb-backup:
       disabled: false
-      # -- Default: daily at 2:00am
       schedule: "0 2 * * *"
       useOwnerReferencesInBackup: false
       template:
-        # -- Backup horizon. Default is 336h (i.e., 2 weeks)
         ttl: "336h"
         includedResources:
           - pvc
           - pv
-        # -- At minimum, should include the RIME namespace(s) (all namespaces recommended)
-        includedNamespaces:
-          - ""

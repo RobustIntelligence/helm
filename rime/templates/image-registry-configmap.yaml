@@ -1,0 +1,117 @@
+# Config map that defines templates for image builder jobs.
+#
+# Note: if you change these templates, you must do 2 steps to update
+# them on a cluster:
+# 1. Re-deploy the config on the cluster using `helm upgrade`
+# 2. You must restart the image-registry service, because it caches this
+#    template config on the server and won't update until restarted:
+#    `kubectl rollout restart deployment/rime-image-registry` 
+{{- if .Values.imageRegistry.create }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "rime.fullname" . }}-image-registry-conf
+data:
+  server.config: |
+    {{- toYaml .Values.imageRegistry.config | nindent 4 }}
+  image_builder_job_configmap.config: |
+    apiVersion: v1
+    kind: ConfigMap
+    metadata:
+      name: job-conf-placeholder
+    immutable: true
+  image_builder_job.config: |
+    apiVersion: batch/v1
+    kind: Job
+    metadata:
+      name: job-placeholder
+    spec:
+      # Terminate job after at most 1 hours; see
+      # https://kubernetes.io/docs/concepts/workloads/controllers/job/#job-termination-and-cleanup
+      activeDeadlineSeconds: 3600
+      # TTL job 48 hours after finished; see
+      # https://kubernetes.io/docs/concepts/workloads/controllers/job/#ttl-mechanism-for-finished-jobs
+      ttlSecondsAfterFinished: 172800
+      template:
+        spec:
+          {{- with .Values.imagePullSecrets }}
+          imagePullSecrets:
+            {{- toYaml . | nindent 10 }}
+          {{- end }}
+          serviceAccountName: {{ template "imageRegistryJobAccount.name" . }} 
+          initContainers:
+          # This init container is designed to wait until the source image
+          # required by the main container can be pulled thereby ensuring
+          # a strict temporal ordering of dependent builder jobs.
+          - name: {{ .Chart.Name }}-src-waiter
+            # The source image name must be filled in by the job creator.
+            image: ""
+            imagePullPolicy: {{ .Values.imageRegistry.image.pullPolicy }}
+            command: ['sh', '-c', 'true']
+          containers:
+          - name: {{ .Chart.Name }}
+            image: "{{ .Values.imageRegistry.image.name }}"
+            imagePullPolicy: {{ .Values.imageRegistry.image.pullPolicy }}
+            {{- if .Values.imageRegistry.builderJobs.privilegedOverride }}
+            securityContext:
+              privileged: true
+            {{- end}}
+            # TODO(blaine): make a separate set of resources for the image
+            # builder jobs
+            {{- with .Values.modelTestResources }}
+            resources:
+              {{- toYaml . | nindent 14 }}
+            {{- end }}
+            # This command depends on setting environmental variables:
+            #  * SOURCE - source repo uri (without the version tag).
+            #  * SOURCE_AUTH_MODE - auth mode for using the source image.
+            #  * IMAGE_NAME - the name used by RIME to identify the new image.
+            #  * DESTINATION - destination repo uri (without the version tag).
+            #  * DESTINATION_AUTH_MODE - auth mode for writing the destination image.
+            #  * VERSION - version for the source and destination image.
+            # to configure the target image being built.
+            command:
+              - "/builder/build_image.sh"
+            args:
+              - "--source=$(SOURCE):$(VERSION)"
+              - "--source_auth_mode=$(SOURCE_AUTH_MODE)"
+              # Currently only docker auth files can be added and we add this
+              # flag whether or not it is required for the source image.
+              {{- if .Values.imageRegistry.dockerSecretName }}
+              - "--source_auth_file=/auth/.docker/config.json"
+              {{- end }}
+              - "--workingdir=/build-config/"
+              - "--destination=$(DESTINATION):$(VERSION)"
+              - "--destination_auth_mode=$(DESTINATION_AUTH_MODE)"
+              # Currently only docker auth files can be added and we add this
+              # flag whether or not it is required for the destination image.
+              {{- if .Values.imageRegistry.dockerSecretName }}
+              - "--destination_auth_file=/auth/.docker/config.json"
+              {{- end }}
+              - "--image_name=$(IMAGE_NAME)"
+              - "--image_registry_addr={{ include "rime.fullname" . }}-image-registry:{{ .Values.ports.imageRegistryServer }}"
+            volumeMounts:
+              # This mounts the docker credentials used for pulling the base image from Docker.
+              # This is only mounted if a dockerSecretName is provided to the image registry module.
+              {{- if .Values.imageRegistry.dockerSecretName }}
+              - name: docker-config
+                mountPath: "/auth/.docker"
+              {{- end }}
+              # Mount the folder "/build-config" with the volume containing the Dockerfile.
+          restartPolicy: Never
+          volumes:
+            # This provides the volume containing the Docker secrets but is only
+            # constructed if a dockerSecretName is provided to the image registry module.
+            {{- if .Values.imageRegistry.dockerSecretName }}
+            - name: docker-config
+              projected:
+                sources:
+                - secret:
+                    name: {{ .Values.imageRegistry.dockerSecretName }}
+                    items:
+                      - key: .dockerconfigjson
+                        path: config.json
+            {{- end }}
+            # Mount an additional volume containing the Dockerfile.
+      backoffLimit: {{ .Values.imageRegistry.builderJobs.backoffLimit }}
+{{- end }}
