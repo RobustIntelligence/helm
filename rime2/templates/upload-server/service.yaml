@@ -1,0 +1,24 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "rime.fullname" . }}-{{.Values.rime.uploadServer.name}}
+  labels:
+    {{- include "rime.labels" . | nindent 4 }}
+    {{- with .Values.rime.uploadServer.service.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  annotations:
+    {{- include "rime.annotations" . | nindent 4 }}
+    {{- with .Values.rime.uploadServer.service.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  type: {{ .Values.rime.uploadServer.service.type }}
+  ports:
+    - port: {{ .Values.rime.uploadServer.port }}
+      targetPort: {{ .Values.rime.uploadServer.port }}
+      protocol: TCP
+      name: us
+  selector:
+    app: {{.Values.rime.uploadServer.name}}
+    {{- include "rime.labels" . | nindent 4 }}

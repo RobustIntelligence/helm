@@ -1,0 +1,16 @@
+# Binds ServiceAccounts to the job manager Role.
+{{- if or .Values.imageRegistry.rbac.create }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "rime.fullname" . }}-job-manager-binding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ include "rime.fullname" . }}-job-manager
+subjects:
+  {{- if .Values.imageRegistry.rbac.create }}
+  - kind: ServiceAccount
+    name: {{ include "imageRegistryServerAccount.name" . }}
+  {{- end }}
+{{- end }}

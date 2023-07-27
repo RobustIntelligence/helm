@@ -1,0 +1,11 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: rime-init-vault-job-role-binding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: rime-secret-writer
+subjects:
+  - kind: ServiceAccount
+    name: rime-init-vault-job-service-account

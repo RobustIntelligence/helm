@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "rime.fullname" . }}-agent-manager-server
+  labels:
+    {{- include "rime.labels" . | nindent 4 }}
+  annotations:
+    konghq.com/protocol: "grpc"
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.ports.agentManagerServer }}
+      targetPort: agent
+      protocol: TCP
+      name: agent
+    - port: {{ .Values.ports.agentManagerREST }}
+      targetPort: agent-rest
+      protocol: TCP
+      name: agent-rest
+  selector:
+    app: agent-manager-server
+    {{- include "rime.selectorLabels" . | nindent 4 }}

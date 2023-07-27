@@ -1,0 +1,24 @@
+{{ if .Values.firewall.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "rime.fullname" . }}-firewall-server
+  labels:
+    {{- include "rime.labels" . | nindent 4 }}
+  annotations:
+    konghq.com/protocol: "grpc"
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.ports.firewallServer }}
+      targetPort: firewall-server
+      protocol: TCP
+      name: firewall-server
+    - port: {{ .Values.ports.firewallREST }}
+      targetPort: firewall-rest
+      protocol: TCP
+      name: firewall-rest
+  selector:
+    app: firewall-server
+    {{- include "rime.selectorLabels" . | nindent 4 }}
+{{ end }}

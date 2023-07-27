@@ -13,17 +13,12 @@ SHELL = /bin/bash
 VERSION_FILE := ../../version.txt
 VERSION ?= $(shell cat ${VERSION_FILE})
 APP_VERSION := v$(VERSION)
-REPO_URL=https://robustintelligence.github.io/helm
+REPO_URL=gs://rime-backend-helm-repository
 
-OPERATOR_ROLE_FILE := rime-agent/templates/operator/role.yaml
-
-.PHONY: clean .tmp-charts/rime  .tmp-charts/rime-agent  .tmp-charts/rime-extras .tmp-charts/rime-kube-system gen_operator_manifests
+.PHONY: clean .tmp-charts/rime  .tmp-charts/rime-agent  .tmp-charts/rime-extras .tmp-charts/rime-kube-system
 
 clean:
 	rm -rf .tmp-charts/
-	rm -rf .rime-releases/
-	rm -rf rime-agent/crds
-	rm -rf $(OPERATOR_ROLE_FILE)
 
 # Rule to copy a file to .tmp-charts/
 .tmp-charts/%: %
@@ -32,15 +27,8 @@ clean:
 
 # Rules to create .tmp-charts by copying only the chart files.
 .tmp-charts/rime: .tmp-charts/rime/Chart.yaml .tmp-charts/rime/Chart.lock .tmp-charts/rime/values.yaml $(patsubst %, .tmp-charts/%, $(wildcard rime/templates/*.*)) $(patsubst %, .tmp-charts/%, $(wildcard rime/charts/*.tgz)) $(patsubst %, .tmp-charts/%, $(wildcard rime/custom-key-auth/*.*))
-	( \
-		cp -rf "rime/templates/." ".tmp-charts/rime/templates/." \
-	)
 
-.tmp-charts/rime-agent: .tmp-charts/rime-agent/Chart.yaml .tmp-charts/rime-agent/values.yaml $(patsubst %, .tmp-charts/%, $(wildcard rime-agent/templates/*.*)) $(patsubst %, .tmp-charts/%, $(wildcard rime-agent/templates/operator/*.*)) $(patsubst %, .tmp-charts/%, $(wildcard rime-agent/crds/*.*))
-	( \
-		cp -rf "rime-agent/crds" ".tmp-charts/rime-agent/." && \
-		cp "$(OPERATOR_ROLE_FILE)" ".tmp-charts/rime-agent/templates/operator/." \
-	)
+.tmp-charts/rime-agent: .tmp-charts/rime-agent/Chart.yaml .tmp-charts/rime-agent/values.yaml $(patsubst %, .tmp-charts/%, $(wildcard rime-agent/templates/*.*))
 
 .tmp-charts/rime-extras: .tmp-charts/rime-extras/Chart.yaml .tmp-charts/rime-extras/Chart.lock .tmp-charts/rime-extras/values.yaml $(patsubst %, .tmp-charts/%, $(wildcard rime-extras/charts/*.tgz))
 
@@ -57,7 +45,7 @@ clean:
 		popd \
 	)
 
-.rime-releases/rime-agent-$(VERSION).tgz: gen_operator_manifests .tmp-charts/rime-agent
+.rime-releases/rime-agent-$(VERSION).tgz: .tmp-charts/rime-agent
 	( \
 		$(call check_defined, APP_VERSION VERSION, helm chart version) \
 		mkdir -p .rime-releases && \
@@ -96,25 +84,20 @@ clean:
 # Creates a new rime Helm chart release.
 create_rime_charts_release: clean .rime-releases/index.yaml
 
-### Operator manfiest files for rime-agent helm chart ###
-gen_operator_manifests: rime-agent/crds/rimejob-crd.yaml $(OPERATOR_ROLE_FILE)
-
-rime-agent/crds/rimejob-crd.yaml: rime-agent/crds ../../go/dataplane/operator/api/v1/rimejob.go ../../go/dataplane/operator/api/v1/groupversion_info.go
-	# TODO: make gen_go_protos a prereq instead
-	cd ../.. && make gen_go_protos
-	cd ../../go/dataplane/operator && \
-	controller-gen crd paths="./..." output:crd:stdout > ../../../deployments/helm/rime-agent/crds/rimejob-crd.yaml
-
-# CRD is generated into a subdirectory called 'crds' so that helm will skip if already installed
-# as CRDs are cluster scope.
-# https://helm.sh/docs/chart_best_practices/custom_resource_definitions/
-rime-agent/crds:
-	mkdir -p $@
-
-$(OPERATOR_ROLE_FILE): ../../go/dataplane/operator/controllers/rimejob_controller.go
-	# TODO: make gen_go_protos a prereq instead
-	cd ../.. && make gen_go_protos
-	cd ../../go/dataplane/operator && \
-	controller-gen rbac:roleName="PLACEHOLDER_ROLE_NAME" paths="./..." output:rbac:stdout | sed 's/PLACEHOLDER_ROLE_NAME/{{ include "rime-agent.fullname" . }}-{{ .Values.rimeAgent.operator.name }}-role/1' > ../../../deployments/helm/$(OPERATOR_ROLE_FILE)
-	echo '{{- if .Values.rimeAgent.operator.serviceAccount.create -}}' | cat - $(OPERATOR_ROLE_FILE) > temp.yaml && mv temp.yaml $(OPERATOR_ROLE_FILE) && \
-	echo '{{- end }}' >> $(OPERATOR_ROLE_FILE)
+# Builds and pushes a new RIME Helm chart to GCS.
+# You must be logged in to GCS (see README.md).
+push_rime_charts_release: create_rime_charts_release
+	$(call check_defined, VERSION, helm chart version)
+	helm repo add rime $(REPO_URL)
+	helm repo update
+	env | sort
+ifeq ($(DO_PUBLISH), true)
+	echo "INFO: Push Helm charts into GCS"
+	helm gcs push .rime-releases/rime-$(VERSION).tgz rime
+	helm gcs push .rime-releases/rime-agent-$(VERSION).tgz rime
+	helm gcs push .rime-releases/rime-extras-$(VERSION).tgz rime
+	helm gcs push .rime-releases/rime-kube-system-$(VERSION).tgz rime
+	helm repo update
+else
+	echo "WARNING: Not push Helm charts into GCS per DO_PUBLISH"
+endif

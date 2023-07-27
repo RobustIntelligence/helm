@@ -1,0 +1,11 @@
+# A Role used to access and manage k8s config maps
+{{- if or .Values.imageRegistry.rbac.create .Values.modelTesting.rbac.create }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ include "rime.fullname" . }}-config-map-manager
+rules:
+  - apiGroups: [""]
+    resources: [configmaps]
+    verbs: [create, get, update]
+{{- end }}

@@ -1,1177 +1,292 @@
-# -- Global variables used by all RIME services.
-# @default -- (see individual values in `values`.yaml)
+# Default values for rime.
 rime:
-  verbose: true
-  # Override for the chart name. If used, this will be appended to the
-  # release name to form the fully qualified app name
-  # (e.g., `rime-${nameOverride}` instead of just `rime`)
-  nameOverride: ""
-  # Override for the fully qualified app name used across services.
-  # If specified, `nameOverride` will be ignored.
-  fullnameOverride: ""
-  # Common annotations added to all K8s resources
-  commonAnnotations: {}
-  # Common labels added to all K8s resources
-  commonLabels: {}
-  # -- Base domain of the RIME web app, which will consist of `rime.${domain}`
-  domain: ""
-  # Override for entire Web App Host (only use if manually creating routes to applications).
-  # If specified, `domain` will be ignored.
+  loadBalancerSecurityGroups: ""
+  loadBalancerTags: ""
+  verbose: false
+  consumersPerWorker: 5
+  # Use a separate node group for model testing
+  # TODO(andrew): RIME-10083 make agents configure node selectors instead of defining in the control plane
+  separateModelTestingGroup: true
+  enableApiKeyAuth: true
+  ipAllowlist: []
+  adminUsername: admin@robustintelligence.com
+  adminPassword: adminpassword
+  adminSecretName: rime-admin-secret
+  # Override for Web App Host if manually creating routes to applications.
   webAppHostOverride: ""
+  # Annotation for tagging Datadog logs at Pod level
+  # Must be a valid JSON string
+  datadogTagPodAnnotation:
 
-  # -- Values for the internal RIME K8 secret
-  # @default -- (see individual values in `values`.yaml)
-  secrets:
-    # If existingSecret is set, the secret will not be created. Must have adminUsername,
-    # adminPassword, and rimeLicense keys set.
-    existingSecretName: ""
-    # rimeLicense (str): JWT containing RIME license (required)
-    rimeLicense: ""
-    admin:
-      # username (str): Initial Admin Username. Should be an email (required)
-      username: trial@robustintelligence.com
-      # password (str): Initial Admin Password. This will be reset on first login (required)
-      password: adminuser
-    oidc:
-      # oidcClientSecret (str): Client secret for OIDC application to initialize SSO (optional)
-      clientSecret: ""
-      # oidcClientSecret (str): Client ID for OIDC application to initialize SSO (optional)
-      clientID: ""
-      # issuerURL (str): Issuer URL for  OIDC application (optional)
-      issuerURL: ""
+firewall:
+  enabled: true  # by default microservices are turned on
 
-  # -- Parameters for Robust Intelligence Docker images (update accordingly if using a private registry)
-  images:
-    imagePullSecrets:
-      - name: rimecreds
-    backendImage:
-      registry: "docker.io"
-      name: "robustintelligencehq/rime-backend:latest"
-      pullPolicy: "Always"
-    frontendImage:
-      registry: "docker.io"
-      name: "robustintelligencehq/rime-frontend:latest"
-      pullPolicy: "Always"
-    modelTestingImage:
-      registry: "docker.io"
-      name: "robustintelligencehq/rime-testing-engine-dev:latest"
-      pullPolicy: "Always"
-    imageBuilderImage:
-      registry: "docker.io"
-      name: "robustintelligencehq/rime-image-builder:latest"
-      pullPolicy: "Always"
-    kubectlImage:
-      registry: "docker.io"
-      name: "robustintelligencehq/kubectl:v1.0"
-      pullPolicy: "Always"
+replicaCount: 1
 
-  # -- `authServer` K8s-level configurations
-  # @default -- (see individual values in `values.yaml`)
-  authServer:
-    name: "auth-server"
-    port: 5012
-    grpcPort: 5017
-    grpcRestPort: 15017
-    # Service for authServer
-    service:
-      type: ClusterIP
-      annotations: {}
-      labels: {}
-    # HPA for the authServer. If disabled, will use `replicaCount` for the deployment.
-    hpa:
-      enabled: false
-      annotations: {}
-      labels: {}
-      minReplicas: 1
-      maxReplicas: 10
-      metrics:
-        - type: Resource
-          resource:
-            name: cpu
-            target:
-              type: Utilization
-              averageUtilization: 60
-    deployment:
-      annotations: {}
-      labels: {}
-      # Replica count for the authServer. Only used if HPA is disabled.
-      replicaCount: 1
-      resources:
-        limits:
-          cpu: 2000m
-          memory: 2Gi
-        requests:
-          cpu: 1200m
-          memory: 1Gi
+backendImage:
+  name: rime-backend
+  pullPolicy: Never
 
-      # SecurityContext to add to the deployment. Default is just set to not run as root.
-      # ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#securitycontext-v1-core
-      securityContext: {}
+frontendImage:
+  name: rime-frontend
+  pullPolicy: Never
 
-      # Extra env variables to add to the deployment. Make sure these don't
-      # conflict with the ones already defined in the deployment.
-      # ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#envvar-v1-core
-      extraEnv: []
+modelTestImage:
+  name: dev-rime-testing-engine
+  pullPolicy: Never
 
-      # Extra volumes to add to the deployment. Make sure these don't
-      # conflict with the ones already defined in the deployment.
-      # ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#volumedevice-v1-core
-      extraVolumes: []
+imagePullSecrets:
+  - name: rimecreds
 
-      # Extra volume mounts to add to the deployment. Make sure these don't
-      # conflict with the ones already defined in the deployment.
-      # ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#volumemount-v1-core
-      extraVolumeMounts: []
+nameOverride: ""
+fullnameOverride: ""
 
-      ## Node labels for pod assignment
-      ## ref: https://kubernetes.io/docs/user-guide/node-selection/
-      nodeSelector: {}
+rimeJwt: ""
 
-      ## Tolerations for pod assignment
-      ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
-      tolerations: []
+service:
+  type: ClusterIP
 
-      ## Affinity for pod assignment (evaluated as template)
-      ## ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
-      affinity: {}
+scheduledCT:
+  scheduledCTCRON:
+    # for v18 don't deploy this by default
+    create: false
+    # fifth minute of every hour
+    schedule: "*/5 */1 * * *"
 
-  # -- `featureFlagServer` K8s-level configurations
-  # @default -- (see individual values in `values.yaml`)
-  featureFlagServer:
-    name: "feature-flag-server"
-    port: 5013
-    restPort: 15013
-    # Service for feature-flag-server.
-    service:
-      type: ClusterIP
-      annotations: {}
-      labels: {}
-    # HPA for the featureflag-server. If disabled, will use `replicaCount` for the deployment.
-    hpa:
-      annotations: {}
-      labels: {}
-      enabled: true
-      minReplicas: 1
-      maxReplicas: 10
-      metrics:
-        - type: Resource
-          resource:
-            name: cpu
-            target:
-              type: Utilization
-              averageUtilization: 60
-    deployment:
-      annotations: {}
-      labels: {}
-      # Replica count for the featureflag-server. Only used if HPA is disabled.
-      replicaCount: 3
-      resources:
-        limits:
-          cpu: 100m
-          memory: 90Mi
-        requests:
-          cpu: 100m
-          memory: 90Mi
 
-      # SecurityContext to add to the deployment. Default is just set to not run as root.
-      # ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#securitycontext-v1-core
-      securityContext: {}
+# Configuration variables for notifications.
+notifications:
+  digestCRON:
+    create: true
+    # By default, run the CRON job every 20 minutes.
+    schedule: "*/20 * * * *"
 
-      # Extra env variables to add to the deployment. Make sure these don't
-      # conflict with the ones already defined in the deployment.
-      # ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#envvar-v1-core
-      extraEnv: []
+rmqHealth:
+  create: true
+  resourceCleaner:
+    create: true
+    frequency: 5m
+  metricsUpdater:
+    create: true
+    frequency: 1s
 
-      # Extra volumes to add to the deployment. Make sure these don't
-      # conflict with the ones already defined in the deployment.
-      # ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#volumedevice-v1-core
-      extraVolumes: []
-
-      # Extra volume mounts to add to the deployment. Make sure these don't
-      # conflict with the ones already defined in the deployment.
-      # ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#volumemount-v1-core
-
-      extraVolumeMounts: []
-
-      ## Node labels for pod assignment
-      ## ref: https://kubernetes.io/docs/user-guide/node-selection/
-      nodeSelector: {}
-
-      ## Tolerations for pod assignment
-      ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
-      tolerations: []
-
-      ## Affinity for pod assignment (evaluated as template)
-      ## ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
-      affinity: {}
-
-  # -- `agentManagerServer` K8s-level configurations
-  # @default -- (see individual values in `values.yaml`)
-  agentManagerServer:
-    name: "agent-manager-server"
-    port: 5016
-    restPort: 15016
-    # Service for agent-manager-server.
-    service:
-      type: ClusterIP
-      annotations: {}
-      labels: {}
-    # HPA for the agent-manager-server. If disabled, will use `replicaCount` for the deployment.
-    hpa:
-      annotations: {}
-      labels: {}
-      enabled: true
-      minReplicas: 1
-      maxReplicas: 10
-      metrics:
-        - type: Resource
-          resource:
-            name: cpu
-            target:
-              type: Utilization
-              averageUtilization: 60
-    deployment:
-      annotations: {}
-      labels: {}
-      # Replica count for the agent-manager-server. Only used if HPA is disabled.
-      replicaCount: 3
-      resources:
-        limits:
-          cpu: 100m
-          memory: 90Mi
-        requests:
-          cpu: 100m
-          memory: 90Mi
-
-      # SecurityContext to add to the deployment. Default is just set to not run as root.
-      # ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#securitycontext-v1-core
-      securityContext: {}
-
-      # Extra env variables to add to the deployment. Make sure these don't
-      # conflict with the ones already defined in the deployment.
-      # ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#envvar-v1-core
-      extraEnv: []
-
-      # Extra volumes to add to the deployment. Make sure these don't
-      # conflict with the ones already defined in the deployment.
-      # ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#volumedevice-v1-core
-      extraVolumes: []
-
-      # Extra volume mounts to add to the deployment. Make sure these don't
-      # conflict with the ones already defined in the deployment.
-      # ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#volumemount-v1-core
-      extraVolumeMounts: []
-
-      ## Node labels for pod assignment
-      ## ref: https://kubernetes.io/docs/user-guide/node-selection/
-      nodeSelector: {}
-
-      ## Tolerations for pod assignment
-      ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
-      tolerations: []
-
-      ## Affinity for pod assignment (evaluated as template)
-      ## ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
-      affinity: {}
-
-  # -- `dataCollectorServer` K8s-level configurations
-  # @default -- (see individual values in `values.yaml`)
-  dataCollectorServer:
-    name: "data-collector-server"
-    port: 5015
-    restPort: 15015
-    # Service for data-collector-server.
-    service:
-      type: ClusterIP
-      annotations: {}
-      labels: {}
-    # HPA for the datacollector-server. If disabled, will use `replicaCount` for the deployment.
-    hpa:
-      annotations: {}
-      labels: {}
-      enabled: true
-      minReplicas: 1
-      maxReplicas: 10
-      metrics:
-        - type: Resource
-          resource:
-            name: cpu
-            target:
-              type: Utilization
-              averageUtilization: 60
-    deployment:
-      annotations: {}
-      labels: {}
-      # Replica count for the datacollector-server. Only used if HPA is disabled.
-      replicaCount: 3
-      resources:
-        limits:
-          cpu: 100m
-          memory: 90Mi
-        requests:
-          cpu: 100m
-          memory: 90Mi
-
-      # SecurityContext to add to the deployment. Default is just set to not run as root.
-      # ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#securitycontext-v1-core
-      securityContext: {}
-
-      # Extra env variables to add to the deployment. Make sure these don't
-      # conflict with the ones already defined in the deployment.
-      # ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#envvar-v1-core
-      extraEnv: []
-
-      # Extra volumes to add to the deployment. Make sure these don't
-      # conflict with the ones already defined in the deployment.
-      # ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#volumedevice-v1-core
-      extraVolumes: []
-
-      # Extra volume mounts to add to the deployment. Make sure these don't
-      # conflict with the ones already defined in the deployment.
-      # ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#volumemount-v1-core
-      extraVolumeMounts: []
-
-      ## Node labels for pod assignment
-      ## ref: https://kubernetes.io/docs/user-guide/node-selection/
-      nodeSelector: {}
-
-      ## Tolerations for pod assignment
-      ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
-      tolerations: []
-
-      ## Affinity for pod assignment (evaluated as template)
-      ## ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
-      affinity: {}
-
-  # -- `firewallServer` K8s-level configurations
-  # @default -- (see individual values in `values.yaml`)
-  firewallServer:
-    name: "firewall-server"
-    port: 5002
-    restPort: 15002
-    # Service for firewall-server.
-    service:
-      type: ClusterIP
-      annotations: {}
-      labels: {}
-
-    # HPA for the firewall-server. If disabled, will use `replicaCount` for the deployment.
-    hpa:
-      annotations: {}
-      labels: {}
-      enabled: true
-      minReplicas: 1
-      maxReplicas: 10
-      metrics:
-        - type: Resource
-          resource:
-            name: cpu
-            target:
-              type: Utilization
-              averageUtilization: 60
-    deployment:
-      annotations: {}
-      labels: {}
-      # Replica count for the firewall-server. Only used if HPA is disabled.
-      replicaCount: 3
-      resources:
-        limits:
-          cpu: 100m
-          memory: 90Mi
-        requests:
-          cpu: 100m
-          memory: 90Mi
-
-      # SecurityContext to add to the deployment. Default is just set to not run as root.
-      # ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#securitycontext-v1-core
-      securityContext: {}
-
-      # Extra env variables to add to the deployment. Make sure these don't
-      # conflict with the ones already defined in the deployment.
-      # ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#envvar-v1-core
-      extraEnv: []
-
-      # Extra volumes to add to the deployment. Make sure these don't
-      # conflict with the ones already defined in the deployment.
-      # ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#volumedevice-v1-core
-      extraVolumes: []
-
-      # Extra volume mounts to add to the deployment. Make sure these don't
-      # conflict with the ones already defined in the deployment.
-      # ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#volumemount-v1-core
-      extraVolumeMounts: []
-
-      ## Node labels for pod assignment
-      ## ref: https://kubernetes.io/docs/user-guide/node-selection/
-      nodeSelector: {}
-
-      ## Tolerations for pod assignment
-      ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
-      tolerations: []
-
-      ## Affinity for pod assignment (evaluated as template)
-      ## ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
-      affinity: {}
-
-    # -- Configuration for scheduled Continuous Testing
-    scheduledCTCron:
-      name: "scheduled-ct-cron"
-      enabled: true
-      # By default, run the CRON job every 20 minutes.
-      schedule: "*/20 * * * *"
-      annotations: {}
-      labels: {}
-
-  # -- `datasetManagerServer` K8s-level configurations
-  # @default -- (see individual values in `values.yaml`)
-  datasetManagerServer:
-    name: "dataset-manager-server"
-    enabled: false
-    port: 5009
-    restPort: 15009
-    config:
-      # -- The bucket name of the S3 bucket used as the blob storage.
-      storageBucketName: ""
-      endpoint: "s3.amazonaws.com"
-      type: "s3"
-    # -- Account used by services that need access to blob storage.
-    serviceAccount:
+# Configuration variables for the image registry service.
+imageRegistry:
+  # Whether or not to create the image registry service.
+  create: true
+  # Configuration of the image registry server, which is meant to be overridden.
+  config:
+    imageRegistry:
+      baseImage: {}
+  # Specification of the container image used for running the image builder jobs.
+  image:
+    name: "rime-image-builder"
+    pullPolicy: "Never"
+  rbac:
+    # If true, create & use RBAC resources
+    create: true
+    # Account used by the image registry service to start new image building jobs.
+    # This account has special privileges to access and modify k8s' objects
+    # and to create, access, and modify repositories in the image registry.
+    serverAccount:
       create: true
-      name: ""
-      annotations: {
-        # -- Specify ARN of IRSA-enabled Load Balancer Controller IAM role here
-        eks.amazonaws.com/role-arn: ""
-      }
-      labels: {}
-    # Service for dataset-manager-server.
-    service:
-      type: ClusterIP
+      # The default name to use if not creating an account.
+      # The true name is given by the `imageRegistryServerAccount.name` template.
+      name: default
       annotations: {}
-      labels: {}
-
-    # HPA for the dataset-manager-server. If disabled, will use `replicaCount` for the deployment.
-    hpa:
-      annotations: {}
-      labels: {}
-      enabled: true
-      minReplicas: 1
-      maxReplicas: 10
-      metrics:
-        - type: Resource
-          resource:
-            name: cpu
-            target:
-              type: Utilization
-              averageUtilization: 60
-    deployment:
-      annotations: {}
-      labels: {}
-      # Replica count for the dataset-manager-server. Only used if HPA is disabled.
-      replicaCount: 3
-      resources:
-        limits:
-          cpu: 100m
-          memory: 90Mi
-        requests:
-          cpu: 100m
-          memory: 90Mi
-
-      # SecurityContext to add to the deployment. Default is just set to not run as root.
-      # ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#securitycontext-v1-core
-      securityContext: {}
-
-      # Extra env variables to add to the deployment. Make sure these don't
-      # conflict with the ones already defined in the deployment.
-      # ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#envvar-v1-core
-      extraEnv: []
-
-      # Extra volumes to add to the deployment. Make sure these don't
-      # conflict with the ones already defined in the deployment.
-      # ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#volumedevice-v1-core
-      extraVolumes: []
-
-      # Extra volume mounts to add to the deployment. Make sure these don't
-      # conflict with the ones already defined in the deployment.
-      # ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#volumemount-v1-core
-      extraVolumeMounts: []
-
-      ## Node labels for pod assignment
-      ## ref: https://kubernetes.io/docs/user-guide/node-selection/
-      nodeSelector: {}
-
-      ## Tolerations for pod assignment
-      ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
-      tolerations: []
-
-      ## Affinity for pod assignment (evaluated as template)
-      ## ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
-      affinity: {}
-
-  # -- `webServer` K8s-level configurations
-  # @default -- (see individual values in `values.yaml`)
-  webServer:
-    name: "web-server"
-    port: 5555
-    grpcPort: 5011
-    grpcRestPort: 15011
-    # Service for web-server
-    service:
-      type: ClusterIP
-      annotations: {}
-      labels: {}
-    # ServiceAccount used by the web server to read secrets.
-    serviceAccount:
+    # Account used by each image building job.
+    # This account has special privileges to upload images to the image registry
+    # service.
+    jobAccount:
       create: true
-      name: ""
+      # The default name to use if not creating an account.
+      # The true name is given by the `imageRegistryJobAccount.name` template.
+      name: default
+      # Account annotations; e.g. used to connect it with an IAM role.
       annotations: {}
-      labels: {}
-
-    # HPA for the web-server. If disabled, will use `replicaCount` for the deployment.
-    hpa:
-      annotations: {}
-      labels: {}
-      enabled: true
-      minReplicas: 1
-      maxReplicas: 10
-      metrics:
-        - type: Resource
-          resource:
-            name: cpu
-            target:
-              type: Utilization
-              averageUtilization: 60
-    deployment:
-      annotations: {}
-      labels: {}
-      # Replica count for the web-server. Only used if HPA is disabled.
-      replicaCount: 1
-      resources:
-        limits:
-          cpu: 500m
-          memory: 1000Mi
-        requests:
-          cpu: 300m
-          memory: 300Mi
-
-      # SecurityContext to add to the deployment. Default is just set to not run as root.
-      # ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#securitycontext-v1-core
-      securityContext: {}
-
-      # Extra env variables to add to the deployment. Make sure these don't
-      # conflict with the ones already defined in the deployment.
-      # ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#envvar-v1-core
-      extraEnv: []
-
-      # Extra volumes to add to the deployment. Make sure these don't
-      # conflict with the ones already defined in the deployment.
-      # ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#volumedevice-v1-core
-      extraVolumes: []
-
-      # Extra volume mounts to add to the deployment. Make sure these don't
-      # conflict with the ones already defined in the deployment.
-      # ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#volumemount-v1-core
-      extraVolumeMounts: []
-
-      ## Node labels for pod assignment
-      ## ref: https://kubernetes.io/docs/user-guide/node-selection/
-      nodeSelector: {}
-
-      ## Tolerations for pod assignment
-      ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
-      tolerations: []
-
-      ## Affinity for pod assignment (evaluated as template)
-      ## ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
-      affinity: {}
-
-  # -- `uploadServer` K8s-level configurations
-  # @default -- (see individual values in `values.yaml`)
-  uploadServer:
-    name: "upload-server"
-    port: 5000
-    restPort: 15001
-    # Service for upload-server.
-    service:
-      type: ClusterIP
-      annotations: {}
-      labels: {}
-    # ServiceAccount used by the upload server to read secrets.
-    serviceAccount:
-      create: true
-      name: ""
-      annotations: {}
-      labels: {}
-
-    # HPA for the upload-server. If disabled, will use `replicaCount` for the deployment.
-    hpa:
-      annotations: {}
-      labels: {}
-      enabled: true
-      minReplicas: 1
-      maxReplicas: 10
-      metrics:
-        - type: Resource
-          resource:
-            name: cpu
-            target:
-              type: Utilization
-              averageUtilization: 60
-    deployment:
-      annotations: {}
-      labels: {}
-      # Replica count for the upload-server. Only used if HPA is disabled.
-      replicaCount: 3
-      resources:
-        limits:
-          cpu: 500m
-          memory: 1000Mi
-        requests:
-          cpu: 300m
-          memory: 300Mi
-
-      # SecurityContext to add to the deployment. Default is just set to not run as root.
-      # ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#securitycontext-v1-core
-      securityContext: {}
-
-      # Extra env variables to add to the deployment. Make sure these don't
-      # conflict with the ones already defined in the deployment.
-      # ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#envvar-v1-core
-      extraEnv: []
-
-      # Extra volumes to add to the deployment. Make sure these don't
-      # conflict with the ones already defined in the deployment.
-      # ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#volumedevice-v1-core
-      extraVolumes: []
-
-      # Extra volume mounts to add to the deployment. Make sure these don't
-      # conflict with the ones already defined in the deployment.
-      # ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#volumemount-v1-core
-      extraVolumeMounts: []
-
-      ## Node labels for pod assignment
-      ## ref: https://kubernetes.io/docs/user-guide/node-selection/
-      nodeSelector: {}
-
-      ## Tolerations for pod assignment
-      ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
-      tolerations: []
-
-      ## Affinity for pod assignment (evaluated as template)
-      ## ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
-      affinity: {}
-
-  # -- `notificationsWorker` K8s-level configurations
-  # @default -- (see individual values in `values.yaml`)
-  notificationsWorker:
-    name: "notifications-worker"
-    # -- Configuration for scheduled push notifications
-    notificationsDigestCron:
-      name: "notifications-digest-cron"
-      enabled: true
-      # By default, run the CRON job every 20 minutes.
-      schedule: "*/20 * * * *"
-      annotations: {}
-      labels: {}
-
-    # HPA for the notifications-worker. If disabled, will use `replicaCount` for the deployment.
-    hpa:
-      annotations: {}
-      labels: {}
-      enabled: true
-      minReplicas: 1
-      maxReplicas: 10
-      metrics:
-        - type: Resource
-          resource:
-            name: cpu
-            target:
-              type: Utilization
-              averageUtilization: 60
-    deployment:
-      annotations: {}
-      labels: {}
-      # Replica count for the notifications-worker. Only used if HPA is disabled.
-      replicaCount: 3
-      resources:
-        limits:
-          cpu: 100m
-          memory: 90Mi
-        requests:
-          cpu: 100m
-          memory: 90Mi
-
-      # SecurityContext to add to the deployment. Default is just set to not run as root.
-      # ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#securitycontext-v1-core
-      securityContext: {}
-
-      # Extra env variables to add to the deployment. Make sure these don't
-      # conflict with the ones already defined in the deployment.
-      # ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#envvar-v1-core
-      extraEnv: []
-
-      # Extra volumes to add to the deployment. Make sure these don't
-      # conflict with the ones already defined in the deployment.
-      # ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#volumedevice-v1-core
-      extraVolumes: []
-
-      # Extra volume mounts to add to the deployment. Make sure these don't
-      # conflict with the ones already defined in the deployment.
-      # ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#volumemount-v1-core
-      extraVolumeMounts: []
-
-      ## Node labels for pod assignment
-      ## ref: https://kubernetes.io/docs/user-guide/node-selection/
-      nodeSelector: {}
-
-      ## Tolerations for pod assignment
-      ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
-      tolerations: []
-
-      ## Affinity for pod assignment (evaluated as template)
-      ## ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
-      affinity: {}
-
-  # -- `modelTestingServer` K8s-level configurations
-  # @default -- (see individual values in `values.yaml`)
-  modelTestingServer:
-    name: "model-testing-server"
-    port: 5003
-    restPort: 15003
-    service:
-      type: ClusterIP
-      annotations: {}
-      labels: {}
-    # ServiceAccount used by the model testing server. This service account
-    # must read/write access to configmaps.
-    serviceAccount:
-      create: true
-      name: ""
-      annotations: {}
-      labels: {}
-
-    # HPA for the model-testing-server. If disabled, will use `replicaCount` for the deployment.
-    hpa:
-      annotations: {}
-      labels: {}
-      enabled: true
-      minReplicas: 1
-      maxReplicas: 10
-      metrics:
-        - type: Resource
-          resource:
-            name: cpu
-            target:
-              type: Utilization
-              averageUtilization: 60
-    deployment:
-      annotations: {}
-      labels: {}
-      # Replica count for the model-testing-server. Only used if HPA is disabled.
-      replicaCount: 3
-      resources:
-        limits:
-          cpu: 100m
-          memory: 90Mi
-        requests:
-          cpu: 100m
-          memory: 90Mi
-
-      # SecurityContext to add to the deployment. Default is just set to not run as root.
-      # ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#securitycontext-v1-core
-      securityContext: {}
-
-      # Extra env variables to add to the deployment. Make sure these don't
-      # conflict with the ones already defined in the deployment.
-      # ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#envvar-v1-core
-      extraEnv: []
-
-      # Extra volumes to add to the deployment. Make sure these don't
-      # conflict with the ones already defined in the deployment.
-      # ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#volumedevice-v1-core
-      extraVolumes: []
-
-      # Extra volume mounts to add to the deployment. Make sure these don't
-      # conflict with the ones already defined in the deployment.
-      # ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#volumemount-v1-core
-      extraVolumeMounts: []
-
-      ## Node labels for pod assignment
-      ## ref: https://kubernetes.io/docs/user-guide/node-selection/
-      nodeSelector: {}
-
-      ## Tolerations for pod assignment
-      ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
-      tolerations: []
-
-      ## Affinity for pod assignment (evaluated as template)
-      ## ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
-      affinity: {}
-
-  # -- `imageRegistryServer` K8s-level configurations
-  # @default -- (see individual values in `values.yaml`)
-  imageRegistryServer:
-    name: "image-registry-server"
-    port: 5010
-    restPort: 15010
-    # -- Whether to enable the Managed Images feature
-    enabled: false
-    service:
-      type: ClusterIP
-      annotations: {}
-      labels: {}
-
-    # -- Comment this section (see below) if using the Managed Images feature
-    config: {}
-    # # -- Uncomment this section if using the Managed Images feature
-    # config:
-    #   imageRegistry:
-    #     # Identifies the base image upon which customized images are built
-    #     baseImage:
-    #       name: ""
-    #       registryType: dockerhub
-    #   # -- Uncomment this section if using the Managed Images feature on AWS (Elastic Container Registry)
-    #   ecr:
-    #     registryId: ""
-    #     repositoryPrefix:
-    #   # -- Uncomment this section if using the Managed Images feature on AWS (Google Artifact Repository)
-    #   gar:
-    #     location: ""
-    #     project: ""
-    #     repository: ""
-
-    # ServiceAccount used by the image registry server. This service account
-    # must have access to the image registry backend that you have configured.
-    # It also must be able to create jobs.
-    serviceAccount:
-      create: true
-      name: ""
-      annotations: {
-        # -- Specify ARN of IRSA-enabled Repo Manager IAM role here
-        eks.amazonaws.com/role-arn: ""
-      }
-      labels: {}
-
-    # HPA for the model-testing-server. If disabled, will use `replicaCount` for the deployment.
-    hpa:
-      annotations: {}
-      labels: {}
-      enabled: true
-      minReplicas: 1
-      maxReplicas: 10
-      metrics:
-        - type: Resource
-          resource:
-            name: cpu
-            target:
-              type: Utilization
-              averageUtilization: 60
-    deployment:
-      annotations: {}
-      labels: {}
-
-      # Replica count for the model-testing-server. Only used if HPA is disabled.
-      replicaCount: 3
-      resources:
-        limits:
-          cpu: 100m
-          memory: 90Mi
-        requests:
-          cpu: 100m
-          memory: 90Mi
-
-      # SecurityContext to add to the deployment. Default is just set to not run as root.
-      # ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#securitycontext-v1-core
-      securityContext: {}
-
-      # Extra env variables to add to the deployment. Make sure these don't
-      # conflict with the ones already defined in the deployment.
-      # ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#envvar-v1-core
-      extraEnv: []
-
-      # Extra volumes to add to the deployment. Make sure these don't
-      # conflict with the ones already defined in the deployment.
-      # ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#volumedevice-v1-core
-      extraVolumes: []
-
-      # Extra volume mounts to add to the deployment. Make sure these don't
-      # conflict with the ones already defined in the deployment.
-      # ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#volumemount-v1-core
-      extraVolumeMounts: []
-
-      ## Node labels for pod assignment
-      ## ref: https://kubernetes.io/docs/user-guide/node-selection/
-      nodeSelector: {}
-
-      ## Tolerations for pod assignment
-      ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
-      tolerations: []
-
-      ## Affinity for pod assignment (evaluated as template)
-      ## ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
-      affinity: {}
-
-    imageRegistryJob:
-      name: "image-builder-job"
-      privilegedOverride: false
-      dockerSecretName: rimecreds
-
-      # # -- Uncomment this section if using a dedicated model testing node group
-      # tolerations:
-      #   - key: "dedicated"
-      #     operator: "Equal"
-      #     value: "model-testing"
-      #     effect: "NoSchedule"
-      # nodeSelector:
-      #   dedicated: model-testing
-
-      # ServiceAccount used by the image registry server jobs. This service account
-      # must have write access to the image registry backend that you have configured.
-      serviceAccount:
-        create: true
-        name: ""
-        annotations: {
-          # -- Specify ARN of IRSA-enabled Image Builder IAM role here
-          eks.amazonaws.com/role-arn: ""
-        }
-        labels: {}
-      resources:
-        limits:
-          cpu: 1500m
-          memory: 16Gi
-        requests:
-          cpu: 1500m
-          memory: 10Gi
-      backoffLimit: 0
-
-      # SecurityContext to add to the deployment. Default is just set to not run as root.
-      # ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#securitycontext-v1-core
-      securityContext: {}
-
-      # Extra env variables to add to the deployment. Make sure these don't
-      # conflict with the ones already defined in the deployment.
-      # ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#envvar-v1-core
-      extraEnv: []
-
-      # Extra volumes to add to the deployment. Make sure these don't
-      # conflict with the ones already defined in the deployment.
-      # ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#volumedevice-v1-core
-      extraVolumes: []
-
-      # Extra volume mounts to add to the deployment. Make sure these don't
-      # conflict with the ones already defined in the deployment.
-      # ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#volumemount-v1-core
-      extraVolumeMounts: []
-
-      ## Node labels for pod assignment
-      ## ref: https://kubernetes.io/docs/user-guide/node-selection/
-      nodeSelector: {}
-
-      ## Tolerations for pod assignment
-      ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
-      tolerations: []
-
-      ## Affinity for pod assignment (evaluated as template)
-      ## ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
-      affinity: {}
-
-  # -- `frontendServer` K8s-level configurations
-  # @default -- (see individual values in `values.yaml`)
-  frontendServer:
-    name: "frontend-server"
-    port: 80
-    # Service for frontend-server.
-    service:
-      type: ClusterIP
-      annotations: {}
-      labels: {}
-    # HPA for the frontend-server. If disabled, will use `replicaCount` for the deployment.
-    hpa:
-      annotations: {}
-      labels: {}
-      enabled: true
-      minReplicas: 1
-      maxReplicas: 10
-      metrics:
-        - type: Resource
-          resource:
-            name: cpu
-            target:
-              type: Utilization
-              averageUtilization: 60
-    deployment:
-      annotations: {}
-      labels: {}
-      # Replica count for the frontend-server. Only used if HPA is disabled.
-      replicaCount: 3
-      resources:
-        limits:
-          cpu: 1000m
-          memory: 2.5Gi
-        requests:
-          cpu: 800m
-          memory: 2Gi
-
-      # SecurityContext to add to the deployment. Default is just set to not run as root.
-      # ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#securitycontext-v1-core
-      securityContext: {}
-
-      # Extra env variables to add to the deployment. Make sure these don't
-      # conflict with the ones already defined in the deployment.
-      # ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#envvar-v1-core
-      extraEnv: []
-
-      # Extra volumes to add to the deployment. Make sure these don't
-      # conflict with the ones already defined in the deployment.
-      # ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#volumedevice-v1-core
-      extraVolumes: []
-
-      # Extra volume mounts to add to the deployment. Make sure these don't
-      # conflict with the ones already defined in the deployment.
-      # ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#volumemount-v1-core
-      extraVolumeMounts: []
-
-      ## Node labels for pod assignment
-      ## ref: https://kubernetes.io/docs/user-guide/node-selection/
-      nodeSelector: {}
-
-      ## Tolerations for pod assignment
-      ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
-      tolerations: []
-
-      ## Affinity for pod assignment (evaluated as template)
-      ## ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
-      affinity: {}
-
-  # -- `initVault` K8s-level configurations
-  # @default -- (see individual values in `values.yaml`)
-  initVault:
-    name: "init-vault"
-    enabled: true
-    # If a pod fails in debug mode, it will sleep for a time so the pod can be inspected.
-    debug: true
+  # Settings for the builder jobs that are spawned by the image registry
+  builderJobs:
+    # Allows the build jobs to run in privileged mode.
+    # Generally this is considered dangerous and should only be enabled for
+    # running in GCP where it is currently required.
+    # TODO(blaine): Remove this option once we fix buildah issues on GCP.
+    privilegedOverride: false
     backoffLimit: 2
-    # SecurityContext to add to the deployment. Default is just set to not run as root.
-    # ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#securitycontext-v1-core
-    securityContext: {}
+
+# Configuration variables for the model testing service.
+modelTesting:
+  # The name of the configmap from which the agent will inject container env variables in the model test job
+  configMapName: "rime-agent-model-testing-conf"
+  allowExternalCustomImages: true
+  rbac:
+    # If true, create & use RBAC resources
+    create: true
+    # Account used by the model testing service to manage config maps and read pod logs
     serviceAccount:
       create: true
-      name: ""
+      # The default name to use if not creating an account.
+      # The true name is given by the `modelTesting.serviceAccountName` template.
+      name: default
       annotations: {}
-      labels: {}
-    annotations: {}
-    labels: {}
+  backoffLimit: 0
 
-  # -- `initMongoTLS` K8s-level configurations
-  # @default -- (see individual values in `values.yaml`)
-  initMongoTLS:
-    name: "init-mongo-tls"
-    enabled: true
-    # If a pod fails in debug mode, it will sleep for a time so the pod can be inspected.
-    debug: true
-    backoffLimit: 2
-    # SecurityContext to add to the deployment. Default is just set to not run as root.
-    # ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#securitycontext-v1-core
-    securityContext: {}
-    serviceAccount:
+blobStore:
+  rbac:
+    # If true, create & use RBAC resources
+    create: true
+    # Account used by services that need access to blob storage.
+    # This account has special priveleges to read and write to S3 bucket used for blob storage.
+    blobStoreAccount:
       create: true
-      name: ""
+      # The default name to use if not creating an account.
+      # The true name is given by the `blobStoreAccount.name` template.
+      name: default
       annotations: {}
-      labels: {}
-    annotations: {}
-    labels: {}
+  # The bucket name of the S3 bucket used as the blob storage.
+  storageBucketName: ""
+  endpoint: "s3.amazonaws.com"
+  type: "s3"
 
-  # -- `rolloutRestart` K8s-level configurations
-  # @default -- (see individual values in `values.yaml`)
-  rolloutRestart:
-    name: "rollout-restart"
-    enabled: true
-    # If a pod fails in debug mode, it will sleep for a time so the pod can be inspected.
-    debug: true
-    backoffLimit: 2
-    # SecurityContext to add to the deployment. Default is just set to not run as root.
-    # ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#securitycontext-v1-core
-    securityContext: {}
-    serviceAccount:
-      create: true
-      name: ""
-      annotations: {}
-      labels: {}
-    annotations: {}
-    labels: {}
+modelManager:
+  create: false
 
-  # -- `initClusterMetadata` K8s-level configurations
-  # @default -- (see individual values in `values.yaml`)
-  initClusterMetadata:
-    name: "init-cluster-metadata"
-    enabled: true
-    # Only run the job once by default.
-    backoffLimit: 0
-    debug: true
-    overwriteLicense: true
-    # SecurityContext to add to the deployment. Default is just set to not run as root.
-    # ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#securitycontext-v1-core
-    securityContext: {}
-    annotations: {}
-    labels: {}
+modelCard:
+  create: true
 
-  # -- `initIndexes` K8s-level configurations
-  # @default -- (see individual values in `values.yaml`)
-  initIndexes:
-    name: "init-indexes"
-    enabled: true
-    # Only run the job once by default.
-    backoffLimit: 0
-    debug: true
-    # SecurityContext to add to the deployment. Default is just set to not run as root.
-    # ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#securitycontext-v1-core
-    securityContext: {}
-    annotations: {}
-    labels: {}
-
-  # THIS MAY DELETE CUSTOMER DATA if enabled; be careful.
-  # -- `dropDuplicates` K8s-level configurations
-  # @default -- (see individual values in `values.yaml`)
-  dropDuplicates:
-    name: "drop-duplicates"
-    enabled: false
-    # If a pod fails in debug mode, it will sleep for a time so the pod can be inspected.
-    debug: true
-    backoffLimit: 2
-    # SecurityContext to add to the deployment. Default is just set to not run as root.
-    # ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#securitycontext-v1-core
-    securityContext: {}
-    annotations: {}
-    labels: {}
-
-  # -- `ingress` K8s-level configurations
-  # @default -- (see individual values in `values.yaml`)
-  ingress:
-    annotations: {
-      # # Uncomment if using externalDns (from rime-kube-system) and fill out the hostname
-      # # accordingly (e.g., "rime.${domain}")
-      # external-dns.alpha.kubernetes.io/hostname: ""
-    }
-    labels: {}
-    tls: []
-
-  # -- `monitoring` (Prometheus metrics) K8s-level configurations
-  # @default -- (see individual values in `values.yaml`)
-  monitoring:
-    port: 8080
-
-    # -- Whether to enable Prometheus metrics for all services on the RIME cluster
-    enabled: true
-
-# -- MongoDB sub-chart. See https://artifacthub.io/packages/helm/bitnami/mongodb for all parameters.
-# @default -- (see individual values in `values`.yaml)
-mongodb:
+# Configuration for pods that expose Prometheus metrics.
+prometheusMetricsExposition:
+  # Global toggle for whether to expose metrics.
   enabled: true
+
+  port: 8080
+  path: "/metrics"
+
+jobMonitoring:
+  create: true
+
+# These are the ports exposed out of the cluster for
+# each external facing service.
+ports:
+  nativerestweb: 5555
+  frontend: 80
+  upload: 5000
+  authServer: 5012  # REST port
+  featureFlagServer: 5013
+  featureFlagServerREST: 15013
+  datasetManagerServer: 5009
+  datasetManagerREST: 15009
+  firewallServer: 5002
+  firewallREST: 15002
+  imageRegistryServer: 5010
+  imageRegistryREST: 15010
+  modelManagerServer: 5008
+  modelTestingServer: 5003
+  modelTestingREST: 15003
+  notificationsWorker: 5007
+  grpcWebServer: 5011
+  grpcWebREST: 15011
+  requestQueueProxy: 5014
+  requestQueueProxyREST: 15014
+  dataCollectorServer: 5015
+  dataCollectorREST: 15015
+  agentManagerServer: 5016
+  agentManagerREST: 15016
+  userServer: 5017
+  userServerREST: 15017
+  modelCardServer: 5018
+  modelCardREST: 15018
+
+resources:
+  requests:
+    memory: "100Mi"
+    cpu: "100m"
+  limits:
+    memory: "500Mi"
+    cpu: "500m"
+
+grpcWebServerResources:
+  requests:
+    memory: "100Mi"
+    cpu: "100m"
+  limits:
+    memory: "500Mi"
+    cpu: "500m"
+
+grpcWebServerReplicas:
+  minReplicas: 1
+  maxReplicas: 10
+
+featureFlagResources:
+  requests:
+    memory: "100Mi"
+    cpu: "100m"
+  limits:
+    memory: "500Mi"
+    cpu: "500m"
+
+featureFlagReplicas:
+  minReplicas: 1
+  maxReplicas: 10
+
+modelTestResources:
+  requests:
+    memory: "4000Mi"
+    cpu: "1500m"
+
+authResources:
+  requests:
+    memory: "300Mi"
+    cpu: "300m"
+  limits:
+    memory: "500Mi"
+    cpu: "500m"
+
+frontendResources:
+  requests:
+    memory: "2000Mi"
+    cpu: "800m"
+  limits:
+    memory: "2500Mi"
+    cpu: "1000m"
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
+
+# Database setup configuration (creating indices, schema validation, migrations).
+databaseSetup:
+  indexCreationHook:
+    enabled: true
+    # Only run the job once by default.
+    backoffLimit: 0
+
+    # THIS MAY DELETE CUSTOMER DATA if enabled; be careful.
+    dropDuplicates: false
+
+  initClusterMetadataHook:
+    enabled: true
+    # Only run the job once by default.
+    backoffLimit: 0
+    overwriteLicense: false
+
+  # Whether to run the database setup hooks in debug mode.
+  # If a pod fails in debug mode, it will sleep for a time so the pod can be inspected.
+  debug: true
+
+vaultBootstrap:
+  enabled: true
+  # If a pod fails in debug mode, it will sleep for a time so the pod can be inspected.
+  debug: true
+  backoffLimit: 2
+
+mongodb:
   image:
     registry: "docker.io"
     repository: "robustintelligencehq/mongodb"
     tag: "5.0.9-debian-11-r7"
-    pullSecrets:
-      - rimecreds
   architecture: "replicaset"
   replicaCount: 3
   arbiter:
@@ -1183,19 +298,11 @@ mongodb:
   replicaSetName: rs0
   resources:
     requests:
-      memory: "3Gi"
+      memory: "3000Mi"
       cpu: "1500m"
     limits:
-      memory: "8Gi"
+      memory: "8000Mi"
       cpu: "2000m"
-
-  persistence:
-    enabled: true
-    # -- Name of the StorageClass for MongoDB. Should be of the form "mongo-storage-$NAMESPACE"
-    storageClass: "expandable-storage"
-    # -- Size of the PVs for MongoDB storage.
-    size: "32Gi"
-
   podAnnotations:
     cluster-autoscaler.kubernetes.io/safe-to-evict: "false"
     ad.datadoghq.com/mongodb.check_names: '["mongo"]'
@@ -1210,36 +317,17 @@ mongodb:
         }
       ]
     ad.datadoghq.com/mongodb.logs: '[{"source":"mongodb","service":"mongodb"}]'
-  # # -- Uncomment if enabling mutual TLS for MongoDB (see `tls.mongoEnabled`)
-  # tls:
-  #   image:
-  #     registry: "docker.io"
-  #     repository: "robustintelligencehq/mongodb"
-  #     tag: "5.0.9-debian-11-r7"
-  #     pullSecrets:
-  #       - rimecreds
-  #   enabled: true
-  #   autoGenerated: false
 
-  #   # -- Should take the form "${release_name}-mongo-bitnami-tls"
-  #   existingSecret: ""
+directory:
+  storePath: /mnt/rime-store
 
-
-# -- Ingress-nginx controller sub-chart. See https://artifacthub.io/packages/helm/ingress-nginx/ingress-nginx for all parameters.
-# @default -- (see individual values in `values`.yaml)
 ingress-nginx:
-  imagePullSecrets:
-    - name: rimecreds
   controller:
     image:
       registry: "docker.io"
       image: "robustintelligencehq/ingress-nginx-controller"
-      tag: "v1.3.0"
-      digest: "sha256:067673df26a65ec5c2d5b30f25db869bad4d7d391fc81882250134577e581ef0"
-    scope:
-      enabled: true
-      # -- K8s namespace for the ingress
-      namespace: ""
+      tag: "v1.3.1"
+      digest: "sha256:d3642f55a6a7a102a9a579b3382fe73869c73890de4c94f28e36ba5e07925944"
     ingressClassResource:
       enabled: false
     admissionWebhooks:
@@ -1248,40 +336,80 @@ ingress-nginx:
       targetPorts:
         http: http
         https: http
-      # -- For full list of annotations, see
-      # https://kubernetes-sigs.github.io/aws-load-balancer-controller/v2.2/guide/service/annotations/
-      annotations:
-        # -- Specifies the ARN of one or more certificates managed by the AWS Certificate Manager.
-        service.beta.kubernetes.io/aws-load-balancer-ssl-cert: ""
-        # -- NLB specification: either "internal" or "internet-facing"
-        service.beta.kubernetes.io/aws-load-balancer-scheme: "internet-facing"
-        # # -- Uncomment if using an IP allowlist
-        # # (Set of CIDR routes to add to the allowlist for all ingresses.
-        # #  If not specified, all IP addresses are allowed.)
-        # service.beta.kubernetes.io/aws-load-balancer-target-group-attributes: preserve_client_ip.enabled=true
-        # Specifies the frontend ports with TLS listeners.
-        service.beta.kubernetes.io/aws-load-balancer-ssl-ports: "https"
-        service.beta.kubernetes.io/aws-load-balancer-connection-idle-timeout: "3600"
-        service.beta.kubernetes.io/aws-load-balancer-backend-protocol: "tcp"
-        # Load balancer type: either "external" or "nlb-ip"
-        service.beta.kubernetes.io/aws-load-balancer-type: "external"
-        # Needed for routing to pod IP
-        service.beta.kubernetes.io/aws-load-balancer-nlb-target-type: "ip"
     config:
       force-ssl-redirect: "false"
       ssl-redirect: "false"
+    resources:
+      requests:
+        cpu: 100m
+        memory: 90Mi
 
-# -- Vault sub-chart. See https://github.com/hashicorp/vault-helm for more information.
-# @default -- (see individual values in `values`.yaml)
+kong:
+  deployment:
+    kong:
+      enabled: false
+  image:
+    repository: "docker.io/robustintelligencehq/kong"
+    tag: "2.8"
+  ingressController:
+    enabled: false
+    ingressClass: kong
+    image:
+      repository: "docker.io/robustintelligencehq/kong-kubernetes-ingress-controller"
+      tag: "2.2"
+  proxy:
+    enabled: false
+    http:
+      parameters:
+        - http2
+    tls:
+      overrideServiceTargetPort: 8000
+  plugins:
+    configMaps:  # change this to 'secrets' if you created a secret
+      - name: kong-plugin-custom-key-auth-headers
+        pluginName: custom-key-auth
+
+redis:
+  image:
+    registry: "docker.io"
+    repository: "robustintelligencehq/redis"
+    tag: "7.0.4-debian-11-r4"
+  architecture: "standalone"
+  auth:
+    enabled: false
+  master:
+    resources:
+      requests:
+        memory: "500Mi"
+        cpu: "500m"
+      limits:
+        memory: "1000Mi"
+        cpu: "1000m"
+    persistence:
+      enabled: true
+  podAnnotations:
+    cluster-autoscaler.kubernetes.io/safe-to-evict: "false"
+
+datasetManager:
+  useFileUploadService: false
+
 vault:
   global:
     enabled: true
-    # -- Whether to disable mutual TLS for Vault. Must match `tls.vaultDisabled`
     tlsDisable: true
-    imagePullSecrets:
-      - name: rimecreds
   injector:
-    enabled: false
+    enabled: true
+    # Use the Vault K8s Image https://github.com/hashicorp/vault-k8s/
+    image:
+      repository: "docker.io/robustintelligencehq/vault-k8s"
+      tag: "v1.0"
+    resources:
+      requests:
+        memory: 64Mi
+        cpu: 250m
+      limits:
+        memory: 128Mi
+        cpu: 500m
   server:
     # Use the opensource image instead of Enterprise Image
     image:
@@ -1303,20 +431,6 @@ vault:
       path: "/v1/sys/health?standbyok=true&sealedcode=204&uninitcode=204"
     standalone:
       enabled: false
-
-    # # -- Uncomment this section if enabling mutual TLS for Vault (see `tls.vaultDisabled` and `tlsDisable`)
-    # volumes:
-    #   # -- Should take the form "${release_name}-vault-tls"
-    #   - name: ""
-    #     secret:
-    #       # -- Should take the form "${release_name}-vault-tls"
-    #       secretName: ""
-    # volumeMounts:
-    #   # -- Should take the form "${release_name}-vault-tls"
-    #   - name: ""
-    #     mountPath: "/var/tmp/vault-server-tls"
-    #     readOnly: true
-
     # Run Vault in "HA" mode.
     ha:
       enabled: true
@@ -1330,85 +444,8 @@ vault:
             address = "[::]:8200"
             cluster_address = "[::]:8201"
             tls_disable = true
-            # # -- Uncomment this section (and modify `tls_disable` above) if enabling mutual TLS for Vault (see `tls.vaultDisabled` and `tlsDisable`)
-            # tls_cert_file = "/var/tmp/vault-server-tls/tls.crt"
-            # tls_key_file  = "/var/tmp/vault-server-tls/tls.key"
-            # tls_client_ca_file = "/var/tmp/vault-server-tls/ca.crt"
           }
           storage "raft" {
             path = "/vault/data"
-            retry_join {
-              # -- Uncomment this section if disabling mutual TLS for Vault (see `tls.vaultDisabled` and `tlsDisable`)
-              leader_api_addr = "http://${release_name}-vault-0.${release_name}-vault-internal:8200"
-
-              # # -- Uncomment this section if enabling mutual TLS for Vault (see `tls.vaultDisabled` and `tlsDisable`)
-              # leader_api_addr = "https://${release_name}-vault-0.${release_name}-vault-internal:8200"
-              # leader_ca_cert_file = "/var/tmp/vault-server-tls/ca.crt"
-              # leader_client_cert_file = "/var/tmp/vault-server-tls/tls.crt"
-              # leader_client_key_file = "/var/tmp/vault-server-tls/tls.key"
-            }
           }
-          service_registration "kubernetes" {}
-
-external:
-  # -- Whether to use an external Vault instance
-  vault:
-    enabled: false
-    ## -- In order to use an external vault with TLS configured, first create
-    ## a k8s secret with the cert files. The cert files needed are:
-    ## ca.crt, tls.crt, tls.key. Each of these files need to correspond to a key
-    ## in the secret; the keys need to be "ca.crt", "tls.crt", and "tls.key".
-    ## Then, fill in the secretName below with the name of the secret.
-    secretName: ""
-    ## -- The vault url
-    url: ""
-    ## -- The vault role name
-    roleName: ""
-    ## -- The vault namespace
-    namespace: ""
-    ## -- The vault kv version
-    kvVersion: ""
-  # -- Whether to use an external MongoDB instance
-  mongo:
-    enabled: false
-    ## -- Fill this section if using an external MongoDB instance
-    ## -- The database name
-    databaseName: ""
-    ## -- The mongo url prefix e.g. mongodb+srv://
-    urlPrefix: ""
-    ## -- The mongo url
-    url: ""
-    ## -- The replica set
-    replicaSetName: ""
-    ## -- In order to use an external mongo with TLS configured, first create
-    ## a k8s secret with the cert files. The cert files needed are:
-    ## ca.crt, tls.crt, tls.key. Each of these files need to correspond to a key
-    ## in the secret; the keys need to be "ca.crt", "tls.crt", and "tls.key".
-    ## Then, fill in the secretName below with the name of the secret.
-    secretName: ""
-
-
-tls:
-  # -- Whether to enable the cert-manager service for issuing and managing TLS certificates within the cluster
-  enableCertManager: false
-  # -- Whether to automatically rotate TLS certificates for services
-  # (`enableCertManager` must be true to enable)
-  autorotateEnabled: false
-  # -- Whether to disable mutual TLS for the Vault service
-  # (`enableCertManager` must be true to enable)
-  vaultDisabled: true
-  # -- Whether to disable mutual TLS for the MongoDB service
-  # (`enableCertManager` must be true to enable)
-  mongoEnabled: false
-  # -- Whether to enable mutual TLS for REST communications
-  # (`enableCertManager` must be true to enable)
-  # TODO explain why this is here (I thought cluster internal was gRPC)
-  restEnabled: false
-  # -- Whether to enable mutual TLS for REST communications
-  # (`enableCertManager` must be true to enable)
-  # TODO explain why this is here (I thought cluster internal was gRPC)
-  grpcEnabled: false
-  # -- Whether to enable mutual TLS for cross-plane
-  # (control plane to data plane) communications
-  # (`enableCertManager` must be true to enable)
-  crossplaneEnabled: false
+          service_registration "kubernetes" { }

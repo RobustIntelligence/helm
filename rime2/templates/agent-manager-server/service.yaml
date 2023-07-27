@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "rime.fullname" . }}-{{.Values.rime.agentManagerServer.name}}
+  labels:
+    {{- include "rime.labels" . | nindent 4 }}
+    {{- with .Values.rime.agentManagerServer.service.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  annotations:
+    {{- include "rime.annotations" . | nindent 4 }}
+    {{- with .Values.rime.agentManagerServer.service.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  type: {{ .Values.rime.agentManagerServer.service.type }}
+  ports:
+    - port: {{ .Values.rime.agentManagerServer.port }}
+      targetPort: {{ .Values.rime.agentManagerServer.port }}
+      protocol: TCP
+      name: am
+    - port: {{ .Values.rime.agentManagerServer.restPort }}
+      targetPort: {{ .Values.rime.agentManagerServer.restPort }}
+      protocol: TCP
+      name: am-rest
+  selector:
+    app: {{.Values.rime.agentManagerServer.name}}
+    {{- include "rime.labels" . | nindent 4 }}

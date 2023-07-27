@@ -1,0 +1,27 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "rime.fullname" . }}-grpc-web-server
+  labels:
+    {{- include "rime.labels" . | nindent 4 }}
+  annotations:
+    konghq.com/protocol: "grpc"
+    konghq.com/override: long-timeout-kong-ingress
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.ports.grpcWebServer }}
+      targetPort: grpcweb
+      protocol: TCP
+      name: grpcweb
+    - port: {{ .Values.ports.grpcWebREST }}
+      targetPort: grpcweb-rest
+      protocol: TCP
+      name: grpcweb-rest
+    - port: {{ .Values.ports.nativerestweb }}
+      targetPort: nativerestweb
+      protocol: TCP
+      name: nativerestweb
+  selector:
+    app: grpc-web-server
+    {{- include "rime.selectorLabels" . | nindent 4 }}
