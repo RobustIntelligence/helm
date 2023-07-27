@@ -1,0 +1,14 @@
+{{- if .Values.rimeAgent.jobMonitor.rbac.create}}
+# A Role granting access to write operations on k8s jobs. Used by Launcher.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ include "rime-agent.jobWriterRole.fullname" . }}
+rules:
+  - apiGroups: ["", "batch"]
+    resources: [jobs]
+    verbs: [create, update, patch, delete, list]
+  - apiGroups: [""]
+    resources: [configmaps, secrets]
+    verbs: ["*"]
+{{- end }}

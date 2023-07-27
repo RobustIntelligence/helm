@@ -1,0 +1,110 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "rime.fullname" . }}-model-testing
+  labels:
+    app: model-testing
+    {{- include "rime.labels" . | nindent 4 }}
+    tags.datadoghq.com/service: model-testing
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      app: model-testing
+      {{- include "rime.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        app: model-testing
+        {{- include "rime.selectorLabels" . | nindent 8 }}
+        tags.datadoghq.com/service: model-testing
+      annotations:
+        {{- include "prometheusScrapingAnnotations" . | nindent 8 }}
+        {{- if .Values.rime.datadogTagPodAnnotation }}
+        ad.datadoghq.com/tags: '{{ .Values.rime.datadogTagPodAnnotation }}'
+        {{- end }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ template "modelTesting.serviceAccountName" . }}
+      containers:
+        - name: {{ .Chart.Name }}
+          env:
+            {{- include "rime.commonEnv" . | nindent 12 }}
+          image: "{{ .Values.backendImage.name }}"
+          imagePullPolicy: {{ .Values.backendImage.pullPolicy }}
+          ports:
+            - name: modeltest
+              containerPort: {{ .Values.ports.modelTestingServer }}
+              protocol: TCP
+            - name: modeltest-rest
+              containerPort: {{ .Values.ports.modelTestingREST }}
+              protocol: TCP
+            - name: modeltest-debug
+              containerPort: 6060
+              protocol: TCP
+          livenessProbe:
+            exec:
+              command: ["/bin/grpc_health_probe", "-addr=:{{ .Values.ports.modelTestingServer }}"]
+            periodSeconds: 5
+          readinessProbe:
+            exec:
+              command: ["/bin/grpc_health_probe", "-addr=:{{ .Values.ports.modelTestingServer }}"]
+            periodSeconds: 5
+          startupProbe:
+            exec:
+              command: ["/bin/grpc_health_probe", "-addr=:{{ .Values.ports.modelTestingServer }}"]
+            failureThreshold: 60
+            periodSeconds: 5
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          command: 
+            - "/rime/rime"
+          args: 
+            - "start-model-testing-server"
+            - "--server-config-path=/config/server.config"
+            - "--rime-engine-job-configmap-file=/config/job_configmap.config"
+            - "--rime-engine-job-file=/config/job.config"
+            - "--model-testing-port={{ .Values.ports.modelTestingServer }}"
+            {{if .Values.imageRegistry.create}}
+            - "--image-registry-addr={{ include "rime.fullname" . }}-image-registry:{{ .Values.ports.imageRegistryServer }}"
+            {{end }}
+            - "--redis-addr={{ include "rime.fullname" . }}-redis-headless:6379"
+            - "--firewall-addr={{ include "rime.fullname" . }}-firewall-server.{{ .Release.Namespace }}:{{ .Values.ports.firewallServer }}"
+            - "--feature-flag-addr={{ include "rime.fullname" . }}-feature-flag-server:{{ .Values.ports.featureFlagServer }}"
+            # TODO(blaine): Replace direct DB access with a call to another service.
+            - "--database-url={{ include "rime.fullname" . }}-mongodb-headless/?tls=false"
+            - "--database-url-prefix=mongodb+srv://"
+            - "--replica-set-name={{ .Values.mongodb.replicaSetName }}"
+            - "--job-manager-addr={{ include "rime.fullname" . }}-upload-server:{{ .Values.ports.upload }}"
+            - "--agent-manager-addr={{ include "rime.fullname" . }}-agent-manager-server:{{ .Values.ports.agentManagerServer}}"
+            # TODO (QuantumWombat) [RIME-8719]: delete this
+            - "--job-reader-addr={{ include "rime.fullname" . }}-grpc-web-server:{{ .Values.ports.grpcWebServer }}"
+            - "--auth-server-addr={{ include "rime.fullname" . }}-auth-server:{{ .Values.ports.userServer }}"
+            {{- if .Values.rime.verbose }}
+            - "--verbose"
+            {{- end }}
+            {{- if .Values.prometheusMetricsExposition.enabled }}
+            - "--metrics-exposition-enabled=true"
+            - "--metrics-exposition-port={{ .Values.prometheusMetricsExposition.port }}"
+            {{- end }}
+          volumeMounts:
+          - name: {{ include "rime.fullname" . }}-job-config
+            mountPath: "/config"
+            readOnly: true
+      volumes:
+      # Volumes are defined at the Pod level, then mounted into containers within that Pod
+      - name: {{ include "rime.fullname" . }}-job-config
+        configMap:
+          name: {{ include "rime.fullname" . }}-model-testing-conf
+          items:
+          - key: "server.config"
+            path: "server.config"
+          - key: "job_configmap.config"
+            path: "job_configmap.config"
+          - key: "job.config"
+            path: "job.config"

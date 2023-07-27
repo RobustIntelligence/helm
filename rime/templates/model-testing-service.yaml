@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "rime.fullname" . }}-model-testing
+  labels:
+    {{- include "rime.labels" . | nindent 4 }}
+  annotations:
+    konghq.com/protocol: "grpc"
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.ports.modelTestingServer }}
+      targetPort: modeltest
+      protocol: TCP
+      name: modeltest
+    - port: {{ .Values.ports.modelTestingREST }}
+      targetPort: modeltest-rest
+      protocol: TCP
+      name: modeltest-rest
+  selector:
+    app: model-testing
+    {{- include "rime.selectorLabels" . | nindent 4 }}

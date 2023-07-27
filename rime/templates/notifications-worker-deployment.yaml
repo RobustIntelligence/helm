@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "rime.fullname" . }}-notifications-worker
+  labels:
+    app: notifications-worker
+    {{- include "rime.labels" . | nindent 4 }}
+    tags.datadoghq.com/service: notifications-worker
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      app: notifications-worker
+  {{- include "rime.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        app: notifications-worker
+        {{- include "rime.selectorLabels" . | nindent 8 }}
+        tags.datadoghq.com/service: notifications-worker
+      annotations:
+        {{- include "prometheusScrapingAnnotations" . | nindent 8 }}
+        {{- if .Values.rime.datadogTagPodAnnotation }}
+        ad.datadoghq.com/tags: '{{ .Values.rime.datadogTagPodAnnotation }}'
+        {{- end }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+      {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: {{ .Chart.Name }}
+          env:
+            {{- include "rime.commonEnv" . | nindent 12 }}
+          image: "{{ .Values.backendImage.name }}"
+          imagePullPolicy: {{ .Values.backendImage.pullPolicy }}
+          resources:
+          {{- toYaml .Values.resources | nindent 12 }}
+          command:
+            - "/rime/rime"
+          args:
+            - "start-notifications-worker"
+            - "--server-config-path=/config/server.config"
+            - "--redis-addr={{ include "rime.fullname" . }}-redis-headless:6379"
+            - "--num-consumers={{ .Values.rime.consumersPerWorker }}"
+            - "-database-name=rime-store"
+            - "--database-url={{ include "rime.fullname" . }}-mongodb-headless/?tls=false"
+            - "--database-url-prefix=mongodb+srv://"
+            - "-replica-set-name={{ .Values.mongodb.replicaSetName }}"
+            {{- if .Values.prometheusMetricsExposition.enabled }}
+            - "--metrics-exposition-enabled=true"
+            - "--metrics-exposition-port={{ .Values.prometheusMetricsExposition.port }}"
+            {{- end }}
+          volumeMounts:
+          - name: {{ include "rime.fullname" . }}-notifications-worker-config
+            mountPath: "/config"
+            readOnly: true
+      volumes:
+      # Volumes are defined at the Pod level, then mounted into containers within that Pod
+      - name: {{ include "rime.fullname" . }}-notifications-worker-config
+        configMap:
+          name: {{ include "rime.fullname" . }}-notifications-worker-conf
+          items:
+          - key: "server.config"
+            path: "server.config"

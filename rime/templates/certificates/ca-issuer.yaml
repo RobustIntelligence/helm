@@ -1,9 +1,7 @@
-{{- if .Values.tls.enableCertManager }}
 apiVersion: cert-manager.io/v1
 kind: Issuer
 metadata:
-  name: rime-{{ .Release.Namespace }}-ca-issuer
+  name: {{ include "rime.fullname" . }}-ca-issuer
 spec:
   ca:
     secretName: {{ include "rime.fullname" . }}-root-ca
-{{- end }}

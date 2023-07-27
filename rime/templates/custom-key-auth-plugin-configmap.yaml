@@ -1,0 +1,16 @@
+{{- if .Values.kong.ingressController.enabled }}
+# Config map that defines templates for image builder jobs.
+#
+# Note: if you change these templates, you must do 2 steps to update
+# them on a cluster:
+# 1. Re-deploy the config on the cluster using `helm upgrade`
+# 2. You must restart the image-registry service, because it caches this
+#    template config on the server and won't update until restarted:
+#    `kubectl rollout restart deployment/rime-image-registry`
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kong-plugin-custom-key-auth-headers
+data:
+{{ (.Files.Glob "custom-key-auth/*").AsConfig | indent 2 }}
+{{- end }}

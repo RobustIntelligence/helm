@@ -1,0 +1,24 @@
+{{- if .Values.modelCard.create }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "rime.fullname" . }}-model-card
+  labels:
+    {{- include "rime.labels" . | nindent 4 }}
+  annotations:
+    konghq.com/protocol: "grpc"
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.ports.modelCardServer }}
+      targetPort: model-card
+      protocol: TCP
+      name: model-card
+    - port: {{ .Values.ports.modelCardREST }}
+      targetPort: model-card-rest
+      protocol: TCP
+      name: model-card-rest
+  selector:
+    app: model-card
+    {{- include "rime.selectorLabels" . | nindent 4 }}
+  {{- end }}

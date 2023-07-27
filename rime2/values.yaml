@@ -1,0 +1,650 @@
+rime:
+  # Global variables used by all rime services.
+  nameOverride: ""
+  fullnameOverride: ""
+  commonAnnotations: {}
+  commonLabels: {}
+  rimeJwt: ""
+  verbose: true
+  # Override for Web App Host if manually creating routes to applications.
+  webAppHostOverride: ""
+
+  # Image parameters for images used by all rime services.
+  images:
+    imagePullSecrets:
+      - name: rimecreds
+    backendImage:
+      registry: "docker.io"
+      name: "robustintelligencehq/rime-backend:latest"
+      pullPolicy: "Always"
+
+  authServer:
+    name: "auth-server"
+    port: 5012
+    grpcPort: 5017
+    grpcRestPort: 15017
+    # Service for authServer.
+    service:
+      type: ClusterIP
+      annotations: {}
+      labels: {}
+    # HPA for the authServer. If disabled, will use num replicas for the deployment.
+    hpa:
+      annotations: {}
+      labels: {}
+      enabled: true
+      minReplicas: 1
+      maxReplicas: 10
+      metrics:
+        - type: Resource
+          resource:
+            name: cpu
+            targetAverageUtilization: 60
+    deployment:
+      annotations: {}
+      labels: {}
+      # Replica count for the authServer. Only used if HPA is disabled.
+      replicaCount: 3
+      resources:
+        limits:
+          cpu: 100m
+          memory: 90Mi
+        requests:
+          cpu: 100m
+          memory: 90Mi
+      ## Node labels for pod assignment
+      ## ref: https://kubernetes.io/docs/user-guide/node-selection/
+      #
+      nodeSelector: {}
+
+      ## Tolerations for pod assignment
+      ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+      ##
+      tolerations: []
+
+      ## Affinity for pod assignment (evaluated as template)
+      ## ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
+      ##
+      affinity: {}
+  featureFlagServer:
+    name: "feature-flag-server"
+    port: 5013
+    restPort: 15013
+    # Service for feature-flag-server.
+    service:
+      type: ClusterIP
+      annotations: {}
+      labels: {}
+    # HPA for the featureflag-server. If disabled, will use num replicas for the deployment.
+    hpa:
+      annotations: {}
+      labels: {}
+      enabled: true
+      minReplicas: 1
+      maxReplicas: 10
+      metrics:
+        - type: Resource
+          resource:
+            name: cpu
+            targetAverageUtilization: 60
+    deployment:
+      annotations: {}
+      labels: {}
+      # Replica count for the featureflag-server. Only used if HPA is disabled.
+      replicaCount: 3
+      resources:
+        limits:
+          cpu: 100m
+          memory: 90Mi
+        requests:
+          cpu: 100m
+          memory: 90Mi
+      ## Node labels for pod assignment
+      ## ref: https://kubernetes.io/docs/user-guide/node-selection/
+      #
+      nodeSelector: {}
+
+      ## Tolerations for pod assignment
+      ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+      ##
+      tolerations: []
+
+      ## Affinity for pod assignment (evaluated as template)
+      ## ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
+      ##
+      affinity: {}
+  modelCardServer:
+    name: "model-card-server"
+    port: 5018
+    restPort: 15018
+    # Service for model-card-server.
+    service:
+      type: ClusterIP
+      annotations: {}
+      labels: {}
+    # HPA for the modelcard-server. If disabled, will use num replicas for the deployment.
+    hpa:
+      annotations: {}
+      labels: {}
+      enabled: true
+      minReplicas: 1
+      maxReplicas: 10
+      metrics:
+        - type: Resource
+          resource:
+            name: cpu
+            targetAverageUtilization: 60
+    deployment:
+      annotations: {}
+      labels: {}
+      # Replica count for the modelcard-server. Only used if HPA is disabled.
+      replicaCount: 3
+      resources:
+        limits:
+          cpu: 100m
+          memory: 90Mi
+        requests:
+          cpu: 100m
+          memory: 90Mi
+      ## Node labels for pod assignment
+      ## ref: https://kubernetes.io/docs/user-guide/node-selection/
+      #
+      nodeSelector: {}
+
+      ## Tolerations for pod assignment
+      ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+      ##
+      tolerations: []
+
+      ## Affinity for pod assignment (evaluated as template)
+      ## ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
+      ##
+      affinity: {}
+  agentManagerServer:
+    name: "agent-manager-server"
+    port: 5016
+    restPort: 15016
+    # Service for agent-manager-server.
+    service:
+      type: ClusterIP
+      annotations: {}
+      labels: {}
+    # HPA for the agentmanager-server. If disabled, will use num replicas for the deployment.
+    hpa:
+      annotations: {}
+      labels: {}
+      enabled: true
+      minReplicas: 1
+      maxReplicas: 10
+      metrics:
+        - type: Resource
+          resource:
+            name: cpu
+            targetAverageUtilization: 60
+    deployment:
+      annotations: {}
+      labels: {}
+      # Replica count for the agentmanager-server. Only used if HPA is disabled.
+      replicaCount: 3
+      resources:
+        limits:
+          cpu: 100m
+          memory: 90Mi
+        requests:
+          cpu: 100m
+          memory: 90Mi
+      ## Node labels for pod assignment
+      ## ref: https://kubernetes.io/docs/user-guide/node-selection/
+      #
+      nodeSelector: {}
+
+      ## Tolerations for pod assignment
+      ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+      ##
+      tolerations: []
+
+      ## Affinity for pod assignment (evaluated as template)
+      ## ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
+      ##
+      affinity: {}
+  dataCollectorServer:
+    name: "data-collector-server"
+    port: 5015
+    restPort: 15015
+    # Service for data-collector-server.
+    service:
+      type: ClusterIP
+      annotations: {}
+      labels: {}
+    # HPA for the datacollector-server. If disabled, will use num replicas for the deployment.
+    hpa:
+      annotations: {}
+      labels: {}
+      enabled: true
+      minReplicas: 1
+      maxReplicas: 10
+      metrics:
+        - type: Resource
+          resource:
+            name: cpu
+            targetAverageUtilization: 60
+    deployment:
+      annotations: {}
+      labels: {}
+      # Replica count for the datacollector-server. Only used if HPA is disabled.
+      replicaCount: 3
+      resources:
+        limits:
+          cpu: 100m
+          memory: 90Mi
+        requests:
+          cpu: 100m
+          memory: 90Mi
+      ## Node labels for pod assignment
+      ## ref: https://kubernetes.io/docs/user-guide/node-selection/
+      #
+      nodeSelector: {}
+
+      ## Tolerations for pod assignment
+      ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+      ##
+      tolerations: []
+
+      ## Affinity for pod assignment (evaluated as template)
+      ## ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
+      ##
+      affinity: {}
+  firewallServer:
+    name: "firewall-server"
+    port: 5002
+    restPort: 15002
+    # Service for firewall-server.
+    service:
+      type: ClusterIP
+      annotations: {}
+      labels: {}
+    # HPA for the firewall-server. If disabled, will use num replicas for the deployment.
+    hpa:
+      annotations: {}
+      labels: {}
+      enabled: true
+      minReplicas: 1
+      maxReplicas: 10
+      metrics:
+        - type: Resource
+          resource:
+            name: cpu
+            targetAverageUtilization: 60
+    deployment:
+      annotations: {}
+      labels: {}
+      # Replica count for the firewall-server. Only used if HPA is disabled.
+      replicaCount: 3
+      resources:
+        limits:
+          cpu: 100m
+          memory: 90Mi
+        requests:
+          cpu: 100m
+          memory: 90Mi
+      ## Node labels for pod assignment
+      ## ref: https://kubernetes.io/docs/user-guide/node-selection/
+      #
+      nodeSelector: {}
+
+      ## Tolerations for pod assignment
+      ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+      ##
+      tolerations: []
+
+      ## Affinity for pod assignment (evaluated as template)
+      ## ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
+      ##
+      affinity: {}
+  datasetManagerServer:
+    name: "dataset-manager-server"
+    useFileUploadService: false
+    port: 5009
+    restPort: 15009
+    blobStore:
+      rbac:
+        # If true, create & use RBAC resources
+        create: true
+        # Account used by services that need access to blob storage.
+        # This account has special privileges to read and write to S3 bucket used for blob storage.
+        blobStoreAccount:
+          create: true
+          # The default name to use if not creating an account.
+          # The true name is given by the `blobStoreAccount.name` template.
+          name: default
+          annotations: {}
+      # The bucket name of the S3 bucket used as the blob storage.
+      storageBucketName: ""
+      endpoint: "s3.amazonaws.com"
+      type: "s3"
+    # Service for dataset-manager-server.
+    service:
+      type: ClusterIP
+      annotations: {}
+      labels: {}
+    # HPA for the dataset-manager-server. If disabled, will use num replicas for the deployment.
+    hpa:
+      annotations: {}
+      labels: {}
+      enabled: true
+      minReplicas: 1
+      maxReplicas: 10
+      metrics:
+        - type: Resource
+          resource:
+            name: cpu
+            targetAverageUtilization: 60
+    deployment:
+      annotations: {}
+      labels: {}
+      # Replica count for the dataset-manager-server. Only used if HPA is disabled.
+      replicaCount: 3
+      resources:
+        limits:
+          cpu: 100m
+          memory: 90Mi
+        requests:
+          cpu: 100m
+          memory: 90Mi
+      ## Node labels for pod assignment
+      ## ref: https://kubernetes.io/docs/user-guide/node-selection/
+      #
+      nodeSelector: {}
+
+      ## Tolerations for pod assignment
+      ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+      ##
+      tolerations: []
+
+      ## Affinity for pod assignment (evaluated as template)
+      ## ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
+      ##
+      affinity: {}
+  requestQueueProxy:
+    name: "request-queue-proxy"
+    port: 5014
+    restPort: 15014
+    # Service for request-queue-proxy.
+    service:
+      type: ClusterIP
+      annotations: {}
+      labels: {}
+    # HPA for the request-queue-proxy. If disabled, will use num replicas for the deployment.
+    hpa:
+      annotations: {}
+      labels: {}
+      enabled: true
+      minReplicas: 1
+      maxReplicas: 10
+      metrics:
+        - type: Resource
+          resource:
+            name: cpu
+            targetAverageUtilization: 60
+    deployment:
+      annotations: {}
+      labels: {}
+      # Replica count for the request-queue-proxy. Only used if HPA is disabled.
+      replicaCount: 1
+      resources:
+        limits:
+          cpu: 100m
+          memory: 90Mi
+        requests:
+          cpu: 100m
+          memory: 90Mi
+      ## Node labels for pod assignment
+      ## ref: https://kubernetes.io/docs/user-guide/node-selection/
+      #
+      nodeSelector: {}
+
+      ## Tolerations for pod assignment
+      ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+      ##
+      tolerations: []
+
+      ## Affinity for pod assignment (evaluated as template)
+      ## ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
+      ##
+      affinity: {}
+  webServer:
+    name: "web-server"
+    port: 5555
+    grpcPort: 5011
+    grpcRestPort: 15011
+    # Service for web-server
+    service:
+      type: ClusterIP
+      annotations: {}
+      labels: {}
+    # HPA for the web-server. If disabled, will use num replicas for the deployment.
+    hpa:
+      annotations: {}
+      labels: {}
+      enabled: true
+      minReplicas: 1
+      maxReplicas: 10
+      metrics:
+        - type: Resource
+          resource:
+            name: cpu
+            targetAverageUtilization: 60
+    deployment:
+      annotations: {}
+      labels: {}
+      # Replica count for the web-server. Only used if HPA is disabled.
+      replicaCount: 1
+      resources:
+        limits:
+          cpu: 100m
+          memory: 90Mi
+        requests:
+          cpu: 100m
+          memory: 90Mi
+      ## Node labels for pod assignment
+      ## ref: https://kubernetes.io/docs/user-guide/node-selection/
+      #
+      nodeSelector: {}
+
+      ## Tolerations for pod assignment
+      ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+      ##
+      tolerations: []
+
+      ## Affinity for pod assignment (evaluated as template)
+      ## ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
+      ##
+      affinity: {}
+  uploadServer:
+    name: "upload-server"
+    port: 5000
+    # Service for upload-server.
+    service:
+      type: ClusterIP
+      annotations: {}
+      labels: {}
+    # HPA for the upload-server. If disabled, will use num replicas for the deployment.
+    hpa:
+      annotations: {}
+      labels: {}
+      enabled: true
+      minReplicas: 1
+      maxReplicas: 10
+      metrics:
+        - type: Resource
+          resource:
+            name: cpu
+            targetAverageUtilization: 60
+    deployment:
+      annotations: {}
+      labels: {}
+      # Replica count for the upload-server. Only used if HPA is disabled.
+      replicaCount: 3
+      resources:
+        limits:
+          cpu: 100m
+          memory: 90Mi
+        requests:
+          cpu: 100m
+          memory: 90Mi
+      ## Node labels for pod assignment
+      ## ref: https://kubernetes.io/docs/user-guide/node-selection/
+      #
+      nodeSelector: {}
+
+      ## Tolerations for pod assignment
+      ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+      ##
+      tolerations: []
+
+      ## Affinity for pod assignment (evaluated as template)
+      ## ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
+      ##
+      affinity: {}
+  monitoring:
+    enabled: true
+    port: 8080
+
+# Mongodb Subchart. See https://artifacthub.io/packages/helm/bitnami/mongodb for all parameters.
+mongodb:
+  image:
+    registry: "docker.io"
+    repository: "robustintelligencehq/mongodb"
+    tag: "5.0.9-debian-11-r7"
+  architecture: "replicaset"
+  replicaCount: 3
+  arbiter:
+    enabled: false
+  auth:
+    enabled: false
+  service:
+    port: 27017
+  replicaSetName: rs0
+  resources:
+    requests:
+      memory: "3000Mi"
+      cpu: "1500m"
+    limits:
+      memory: "8000Mi"
+      cpu: "2000m"
+  podAnnotations:
+    cluster-autoscaler.kubernetes.io/safe-to-evict: "false"
+    ad.datadoghq.com/mongodb.check_names: '["mongo"]'
+    ad.datadoghq.com/mongodb.init_configs: '[{}]'
+    ad.datadoghq.com/mongodb.instances: |
+      [
+        {
+          "hosts": ["%%host%%:%%port%%"],
+          "database": "rime-store",
+          "additional_metrics": ["collection"],
+          "collections": ["project", "docstore-notif-setting", "docstore-firewall", "UserV0"]
+        }
+      ]
+    ad.datadoghq.com/mongodb.logs: '[{"source":"mongodb","service":"mongodb"}]'
+
+# Ingress-Nginx controller Subchart. See https://artifacthub.io/packages/helm/ingress-nginx/ingress-nginx for all parameters.
+ingress-nginx:
+  controller:
+    image:
+      registry: "docker.io"
+      image: "robustintelligencehq/ingress-nginx-controller"
+      tag: "v1.3.0"
+      digest: "sha256:067673df26a65ec5c2d5b30f25db869bad4d7d391fc81882250134577e581ef0"
+    ingressClassResource:
+      enabled: false
+    admissionWebhooks:
+      enabled: false
+    service:
+      targetPorts:
+        http: http
+        https: http
+    config:
+      force-ssl-redirect: "false"
+      ssl-redirect: "false"
+
+# Redis Subchart. See https://artifacthub.io/packages/helm/bitnami/redis for all parameters.
+redis:
+  image:
+    registry: "docker.io"
+    repository: "robustintelligencehq/redis"
+    tag: "7.0.4-debian-11-r4"
+  architecture: "standalone"
+  auth:
+    enabled: false
+  master:
+    resources:
+      requests:
+        memory: "500Mi"
+        cpu: "500m"
+      limits:
+        memory: "1000Mi"
+        cpu: "1000m"
+    persistence:
+      enabled: true
+  podAnnotations:
+    cluster-autoscaler.kubernetes.io/safe-to-evict: "false"
+
+# Vault Subchart. See https://github.com/hashicorp/vault-helm for more information.
+vault:
+  global:
+    enabled: true
+    tlsDisable: true
+  injector:
+    enabled: true
+    # Use the Vault K8s Image https://github.com/hashicorp/vault-k8s/
+    image:
+      registry: "docker.io"
+      repository: "robustintelligencehq/vault-k8s"
+      tag: "v1.0"
+    resources:
+      requests:
+        memory: 64Mi
+        cpu: 250m
+      limits:
+        memory: 128Mi
+        cpu: 500m
+  server:
+    # Use the opensource image instead of Enterprise Image
+    image:
+      registry: "docker.io"
+      repository: "robustintelligencehq/vault"
+      tag: "v1.11.3"
+    # These Resource Limits are in line with node requirements in the
+    # Vault Reference Architecture for a Small Cluster
+    resources:
+      requests:
+        memory: 64Mi
+        cpu: 250m
+      limits:
+        memory: 128Mi
+        cpu: 500m
+    # For HA configuration and because we need to manually init the vault,
+    # we need to define custom readiness/liveness Probe settings
+    readinessProbe:
+      enabled: true
+      path: "/v1/sys/health?standbyok=true&sealedcode=204&uninitcode=204"
+    standalone:
+      enabled: false
+    # Run Vault in "HA" mode.
+    ha:
+      enabled: true
+      replicas: 1
+      raft:
+        enabled: true
+        setNodeId: true
+
+        config: |
+          listener "tcp" {
+            address = "[::]:8200"
+            cluster_address = "[::]:8201"
+            tls_disable = true
+          }
+          storage "raft" {
+            path = "/vault/data"
+          }
+          service_registration "kubernetes" { }

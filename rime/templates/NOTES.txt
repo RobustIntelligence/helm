@@ -1,0 +1,12 @@
+To view the service status run:
+  kubectl get services
+And look for the {{ .Release.Name }} service.
+
+When running on minikube run the following to expose the service ports to the local machine:
+  minikube service {{ .Release.Name }} --url
+
+To uninstall this helm chart run:
+  helm uninstall {{ .Release.Name }}
+
+To run deployment tests run:
+  helm test {{ .Release.Name }}

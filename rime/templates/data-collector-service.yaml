@@ -1,0 +1,24 @@
+{{ if .Values.firewall.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "rime.fullname" . }}-data-collector-server
+  labels:
+    {{- include "rime.labels" . | nindent 4 }}
+  annotations:
+    konghq.com/protocol: "grpc"
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.ports.dataCollectorServer }}
+      targetPort: dc-server
+      protocol: TCP
+      name: dc-server
+    - port: {{ .Values.ports.dataCollectorREST }}
+      targetPort: dc-rest
+      protocol: TCP
+      name: dc-rest
+  selector:
+    app: data-collector-server
+    {{- include "rime.selectorLabels" . | nindent 4 }}
+{{ end }}

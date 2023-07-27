@@ -1,0 +1,10 @@
+{{- if .Values.rime.datasetManagerServer.useFileUploadService }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "rime.fullname" . }}-{{ .Values.rime.datasetManagerServer.name }}-conf
+data:
+  server.config: |
+{{ include "rime.serverArgs" . | indent 4 }}
+    datasetManager: {}
+{{- end }}

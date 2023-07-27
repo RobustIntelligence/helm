@@ -1,0 +1,62 @@
+# Config map that defines templates for model testing jobs.
+#
+# Note: if you change these templates, you must do 2 steps to update
+# them on a cluster:
+# 1. Re-deploy the config on the cluster using `helm upgrade`
+# 2. You must restart the model-testing service, because it caches this
+#    template config on the server and won't update until restarted:
+#    `kubectl rollout restart deployment/rime-model-testing`
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "rime.fullname" . }}-model-testing-conf
+data:
+  server.config: |
+    modelTests:
+      managedImages:
+        allow_external_custom_images: {{ .Values.modelTesting.allowExternalCustomImages }}
+  job_configmap.config: |
+    apiVersion: v1
+    kind: ConfigMap
+    metadata:
+      name: job-conf-placeholder
+    immutable: true
+  job.config: |
+    apiVersion: batch/v1
+    kind: Job
+    metadata:
+      name: job-placeholder
+    spec:
+      # Terminate job after at most 72 hours; see
+      # https://kubernetes.io/docs/concepts/workloads/controllers/job/#job-termination-and-cleanup
+      activeDeadlineSeconds: 259200
+      # TTL job 48 hours after finished; see
+      # https://kubernetes.io/docs/concepts/workloads/controllers/job/#ttl-mechanism-for-finished-jobs
+      ttlSecondsAfterFinished: 172800
+      template:
+        spec:
+          containers:
+          - name: {{ .Chart.Name }}
+            image: "{{ .Values.modelTestImage.name }}"
+            env:
+              {{- include "rime.uploadServerEnv" . | nindent 14 }}
+              {{- include "rime.firewallServerEnv" . | nindent 14 }}
+              {{- include "rime.dataCollectorEnv" . | nindent 14 }}
+              {{- include "rime.disableTLSEnv" . | nindent 14 }}
+              {{- include "rime.apiKeyEnv" . | nindent 14 }}
+            imagePullPolicy: {{ .Values.modelTestImage.pullPolicy }}
+            {{- with .Values.modelTestResources }}
+            resources:
+              {{- toYaml . | nindent 14 }}
+            {{- end }}
+          restartPolicy: Never
+          tolerations:
+          - key: "dedicated"
+            operator: "Equal"
+            value: "model-testing"
+            effect: "NoSchedule"
+          {{- if .Values.rime.separateModelTestingGroup }}
+          nodeSelector:
+            dedicated: model-testing
+          {{- end }}
+      backoffLimit: {{ .Values.modelTesting.backoffLimit }}
