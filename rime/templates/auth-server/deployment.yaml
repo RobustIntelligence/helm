@@ -34,6 +34,7 @@ spec:
         {{- with .Values.rime.authServer.deployment.annotations }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
+        {{- include "rime.monitoringAnnotations" (dict "monitoring" .Values.rime.monitoring "name" .Values.rime.authServer.name ) | nindent 8 }}
         checksum/config: {{ include (print $.Template.BasePath "/auth-server/configmap.yaml") . | sha256sum }}
     spec:
       {{- with .Values.rime.images.imagePullSecrets }}
@@ -102,11 +103,10 @@ spec:
             - "/rime/rime"
           args:
             - "start-auth-server"
-            {{- if .Values.tls.grpcEnabled }}
-            - "--auth-mode=tls"
-            {{ end }}
             - "--server-config-path=/config/server.config"
             - "--auth-port={{ .Values.rime.authServer.port }}"
+            - "--user-apikey-lifetime-hours={{ .Values.rime.authServer.apiKeyLifetimeHours.userApiKeyLifetime }}"
+            - "--agent-apikey-lifetime-hours={{ .Values.rime.authServer.apiKeyLifetimeHours.agentApiKeyLifetime }}"
           volumeMounts:
             - name: {{ include "rime.fullname" . }}-{{ .Values.rime.authServer.name }}-config
               mountPath: "/config"
