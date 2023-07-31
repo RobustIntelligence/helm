@@ -1,0 +1,24 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "rime.fullname" . }}-{{ .Values.rime.cacheServer.name }}
+  labels:
+    {{- include "rime.labels" . | nindent 4 }}
+    {{- with .Values.rime.cacheServer.service.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  annotations:
+    {{- include "rime.annotations" . | nindent 4 }}
+    {{- with .Values.rime.cacheServer.service.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  type: {{ .Values.rime.cacheServer.service.type }}
+  ports:
+    - port: {{ .Values.rime.cacheServer.port }}
+      targetPort: {{ .Values.rime.cacheServer.port }}
+      protocol: TCP
+      name: cs
+  selector:
+    app: {{ .Values.rime.cacheServer.name }}
+    {{- include "rime.labels" . | nindent 4 }}
