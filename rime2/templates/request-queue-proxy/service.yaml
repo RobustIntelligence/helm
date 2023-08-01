@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "rime.fullname" . }}-{{.Values.rime.requestQueueProxy.name}}
+  labels:
+    {{- include "rime.labels" . | nindent 4 }}
+    {{- with .Values.rime.requestQueueProxy.service.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  annotations:
+    {{- include "rime.annotations" . | nindent 4 }}
+    {{- with .Values.rime.requestQueueProxy.service.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  type: {{ .Values.rime.requestQueueProxy.service.type }}
+  ports:
+    - port: {{ .Values.rime.requestQueueProxy.port }}
+      targetPort: {{ .Values.rime.requestQueueProxy.port }}
+      protocol: TCP
+      name: rqp
+    - port: {{ .Values.rime.requestQueueProxy.restPort }}
+      targetPort: {{ .Values.rime.requestQueueProxy.restPort }}
+      protocol: TCP
+      name: rqp-rest
+  selector:
+    app: {{.Values.rime.requestQueueProxy.name}}
+    {{- include "rime.labels" . | nindent 4 }}

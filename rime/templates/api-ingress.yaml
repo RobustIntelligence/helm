@@ -1,0 +1,167 @@
+{{- if .Values.kong.ingressController.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "rime.fullname" . }}-api-ingress
+  labels:
+  {{- include "rime.labels" . | nindent 4 }}
+  annotations:
+    kubernetes.io/ingress.class: {{ .Values.kong.ingressController.ingressClass }}
+    konghq.com/protocols: "grpc,grpcs"
+    {{- if and .Values.rime.ipAllowlist .Values.rime.enableApiKeyAuth }}
+    konghq.com/plugins: custom-key-auth,ip-restriction
+    {{- else if .Values.rime.enableApiKeyAuth}}
+    konghq.com/plugins: "custom-key-auth"
+    {{- else if .Values.rime.ipAllowlist}}
+    konghq.com/plugins: "ip-restriction"
+    {{- end }}
+    external-dns.alpha.kubernetes.io/hostname: "rime-backend.{{ .Values.rime.domain }}"
+spec:
+  rules:
+    - http:
+        paths:
+          - path: /rime.FileUpload
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "rime.fullname" . }}-dataset-manager
+                port:
+                  number: {{ .Values.ports.datasetManagerServer }}
+        {{ if .Values.imageRegistry.create }}
+          - path: /rime.ImageRegistry
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "rime.fullname" . }}-image-registry
+                port:
+                  number: {{ .Values.ports.imageRegistryServer }}
+        {{ end }}
+          - path: /rime.ResultSynthesizer
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "rime.fullname" . }}-upload-server
+                port:
+                  number: {{ .Values.ports.upload }}
+          - path: /rime.JobManager
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "rime.fullname" . }}-upload-server
+                port:
+                  number: {{ .Values.ports.upload }}
+          - path: /rime.FileScanningResults
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "rime.fullname" . }}-upload-server
+                port:
+                  number: {{ .Values.ports.upload }}
+          - path: /rime.ModelTesting
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "rime.fullname" . }}-model-testing
+                port:
+                  number: {{ .Values.ports.modelTestingServer }}
+          - path: /rime.FileScanning
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "rime.fullname" . }}-model-testing
+                port:
+                  number: {{ .Values.ports.modelTestingServer }}
+          - path: /rime.TestRunTracker
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "rime.fullname" . }}-grpc-web-server
+                port:
+                  number: {{ .Values.ports.grpcWebServer }}
+          - path: /testrunresult.ResultsReader
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "rime.fullname" . }}-grpc-web-server
+                port:
+                  number: {{ .Values.ports.grpcWebServer }}
+      {{ if .Values.firewall.enabled }}
+          - path: /rime.FirewallService
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "rime.fullname" . }}-firewall-server
+                port:
+                  number: {{ .Values.ports.firewallServer }}
+          - path: /rime.DataCollector
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "rime.fullname" . }}-data-collector-server
+                port:
+                  number: {{ .Values.ports.dataCollectorServer }}
+      {{ end }}
+          - path: /rime.ProjectManager
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "rime.fullname" . }}-grpc-web-server
+                port:
+                  number: {{ .Values.ports.grpcWebServer }}
+          - path: /rime.JobReader
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "rime.fullname" . }}-grpc-web-server
+                port:
+                  number: {{ .Values.ports.grpcWebServer }}
+          - path: /rime.RIMEInfo
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "rime.fullname" . }}-grpc-web-server
+                port:
+                  number: {{ .Values.ports.grpcWebServer }}
+          - path: /rime.FeatureFlag
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "rime.fullname" . }}-feature-flag-server
+                port:
+                  number: {{ .Values.ports.featureFlagServer }}
+          - path: /rime.RequestQueueProxy
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "rime.fullname" . }}-request-queue-proxy
+                port:
+                  number: {{ .Values.ports.requestQueueProxy }}
+          - path: /rime.ResponseQueueProxy
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "rime.fullname" . }}-request-queue-proxy
+                port:
+                  number: {{ .Values.ports.requestQueueProxy }}
+          - path: /rime.AgentManager
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "rime.fullname" . }}-agent-manager-server
+                port:
+                  number: {{ .Values.ports.agentManagerServer }}
+          - path: /rime.NotificationSetting
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "rime.fullname" . }}-grpc-web-server
+                port:
+                  number: {{ .Values.ports.grpcWebServer }}
+          - path: /rime.SecretManager
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "rime.fullname" . }}-grpc-web-server
+                port:
+                  number: {{ .Values.ports.grpcWebServer }}
+{{- end }}

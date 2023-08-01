@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "rime.fullname" . }}-frontend
+  labels:
+    app: frontend
+    {{- include "rime.labels" . | nindent 4 }}
+    tags.datadoghq.com/service: frontend
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      app: frontend
+      {{- include "rime.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        app: frontend
+        {{- include "rime.selectorLabels" . | nindent 8 }}
+        tags.datadoghq.com/service: frontend
+      annotations:
+        {{- if .Values.rime.datadogTagPodAnnotation }}
+        ad.datadoghq.com/tags: '{{ .Values.rime.datadogTagPodAnnotation }}'
+        {{- end }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.frontendImage.name }}"
+          imagePullPolicy: {{ .Values.frontendImage.pullPolicy }}
+          ports:
+            - name: frontend
+              containerPort: {{ .Values.ports.frontend }}
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /
+              port: frontend
+            periodSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /
+              port: frontend
+            periodSeconds: 5
+          startupProbe:
+            httpGet:
+              path: /
+              port: frontend
+            failureThreshold: 60
+            periodSeconds: 5
+          resources:
+            {{- toYaml .Values.frontendResources | nindent 12 }}
+          env:
+            {{- include "rime.webAppHostEnv" . | nindent 12 }}
+            - name: WEB_STANDALONE_PORT
+              value: "{{ .Values.ports.frontend }}"
+            - name: REACT_APP_USERPILOT_FLOW
+              value: "{{ .Values.userpilotFlow }}"

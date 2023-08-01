@@ -1,0 +1,18 @@
+# A Role used to read logs from pods (i.e. GetLatestLogs)
+{{- if .Values.modelTesting.rbac.create }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ include "rime.fullname" . }}-pod-log-reader
+rules:
+  - apiGroups: [""]
+    resources: [pods]
+    verbs: [list]
+  - apiGroups: [""]
+    resources: [pods/log]
+    verbs: [get]
+  - apiGroups: ["", "batch"]
+    resources: [jobs]
+    verbs: [get, list]
+
+{{- end }}

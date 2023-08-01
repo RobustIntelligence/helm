@@ -1,0 +1,84 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "rime.fullname" . }}-request-queue-proxy
+  labels:
+    app: request-queue-proxy
+    {{- include "rime.labels" . | nindent 4 }}
+    tags.datadoghq.com/service: request-queue-proxy
+spec:
+  replicas: 1 #TODO(csreesan): tune replica count
+  selector:
+    matchLabels:
+      app: request-queue-proxy
+      {{- include "rime.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        app: request-queue-proxy
+        {{- include "rime.selectorLabels" . | nindent 8 }}
+        tags.datadoghq.com/service: request-queue-proxy
+      annotations:
+        {{- include "prometheusScrapingAnnotations" . | nindent 8 }}
+        {{- if .Values.rime.datadogTagPodAnnotation }}
+        ad.datadoghq.com/tags: '{{ .Values.rime.datadogTagPodAnnotation }}'
+        {{- end }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: {{ .Chart.Name }}
+          env:
+            {{- include "rime.commonEnv" . | nindent 12 }}
+          image: "{{ .Values.backendImage.name }}"
+          imagePullPolicy: {{ .Values.backendImage.pullPolicy }}
+          ports:
+            - name: rqproxy
+              containerPort: {{ .Values.ports.requestQueueProxy }}
+              protocol: TCP
+            - name: rqproxy-rest
+              containerPort: {{ .Values.ports.requestQueueProxyREST }}
+              protocol: TCP
+            - name: rqproxy-debug
+              containerPort: 6060
+              protocol: TCP
+          livenessProbe:
+            exec:
+              command: ["/bin/grpc_health_probe", "-addr=:{{ .Values.ports.requestQueueProxy }}"]
+            periodSeconds: 5
+          readinessProbe:
+            exec:
+              command: ["/bin/grpc_health_probe", "-addr=:{{ .Values.ports.requestQueueProxy }}"]
+            periodSeconds: 5
+          startupProbe:
+            exec:
+              command: ["/bin/grpc_health_probe", "-addr=:{{ .Values.ports.requestQueueProxy }}"]
+            failureThreshold: 60
+            periodSeconds: 5
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          command: 
+            - "/rime/rime"
+          args: 
+            - "start-request-queue-proxy"
+            - "--server-config-path=/config/server.config"
+            - "--request-queue-proxy-port={{ .Values.ports.requestQueueProxy }}"
+            - "--redis-addr={{ include "rime.fullname" . }}-redis-headless:6379"
+            - "--agent-manager-addr={{ include "rime.fullname" . }}-agent-manager-server:{{ .Values.ports.agentManagerServer}}"
+            {{- if .Values.rime.verbose }}
+            - "--verbose"
+            {{- end }}
+          volumeMounts:
+          - name: {{ include "rime.fullname" . }}-request-queue-proxy-config
+            mountPath: "/config"
+            readOnly: true
+      volumes:
+      # Volumes are defined at the Pod level, then mounted into containers within that Pod
+      - name: {{ include "rime.fullname" . }}-request-queue-proxy-config
+        configMap:
+          name: {{ include "rime.fullname" . }}-request-queue-proxy-conf
+          items:
+          - key: "server.config"
+            path: "server.config"
