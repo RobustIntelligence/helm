@@ -33,6 +33,7 @@ spec:
         {{- with .Values.rime.initIndexes.annotations }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
+        {{- include "rime.monitoringAnnotations" (dict "monitoring" .Values.rime.monitoring "name" .Values.rime.initIndexes.name ) | nindent 8 }}
     spec:
       {{- with .Values.rime.images.imagePullSecrets }}
       imagePullSecrets:

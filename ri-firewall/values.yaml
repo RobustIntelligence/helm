@@ -1,0 +1,49 @@
+riFirewall:
+  # @ignored -- Override for the chart name. If used, this will be appended to the
+  # release name to form the fully qualified app name
+  # (e.g., `rime-${nameOverride}` instead of just `rime`)
+  nameOverride: ""
+
+  # -- Image specification for the RI Firewall.
+  # @default -- (see individual values in `values.yaml`)
+  images:
+    imagePullSecrets:
+      - name: rimecreds
+    grpcGatewayProxyImage:
+      registry: "docker.io"
+      name: "robustintelligencehq/rime-backend:latest"
+      pullPolicy: "Always"
+    firewallServerImage:
+      registry: "docker.io"
+      name: "robustintelligencehq/rime-testing-engine-dev:latest"
+      pullPolicy: "Always"
+
+  firewallServer:
+    name: "firewall-server"
+    proxyPort: 8081
+    firewallServerLocalPort: 50052
+    # Service for the firewall-server
+    service:
+      type: LoadBalancer
+      annotations: {}
+      labels: {}
+    # Deployment for the firewall server.
+    deployment:
+      annotations: {}
+      labels: {}
+      # Replica count for the firewall-server: only use if HPA disabled.
+      replicaCount: 1
+      # Resources for the firewall server container.
+      serverResources:
+        limits:
+          memory: 500Mi
+        requests:
+          cpu: 100m
+          memory: 500Mi
+      # Resources for the gRPC-gateway proxy container.
+      proxyResources:
+        limits:
+          memory: 100Mi
+        requests:
+          cpu: 100m
+          memory: 100Mi

@@ -32,6 +32,7 @@ spec:
         {{- with .Values.rimeAgent.launcher.deployment.annotations }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
+        {{- include "rime-agent.monitoringAnnotations" (dict "monitoring" .Values.rimeAgent.monitoring "name" .Values.rimeAgent.launcher.name ) | nindent 8 }}
         checksum/config: {{ include (print $.Template.BasePath "/launcher/configmap.yaml") . | sha256sum }}
     spec:
       {{- include "rime-agent.imagePullSecretsYaml" .  | nindent 6 }}
@@ -53,21 +54,19 @@ spec:
                   name: {{ include "rime-agent.secretName" .}}
                   key: api-key
                   optional: true
+            - name: RIME_CROSS_SERVICE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "rime-agent.generatedSecretsName" .}}
+                  key: crossServiceKey
+                  optional: true
             {{- with.Values.rimeAgent.launcher.deployment.extraEnv }}
               {{- toYaml . | nindent 12 }}
             {{- end }}
           command:
             - "/rime/launcher"
           args:
-            {{- if .Values.tls.crossplaneEnabled }}
-            - "--auth-mode=tls"
-            {{- end }}
-            {{- if .Values.rimeAgent.id }}
-            - "--id={{ .Values.rimeAgent.id }}"
-            {{- end }}
-            {{- if .Values.rimeAgent.verbose }}
-            - "--verbose"
-            {{- end }}
+            - "--backend-id-int={{ .Values.rimeAgent.launcher.backendID }}"
             - "--server-config-path=/config/server.config"
           volumeMounts:
             {{- if .Values.tls.crossplaneEnabled }}
