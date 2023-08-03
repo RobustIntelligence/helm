@@ -28,7 +28,7 @@ A Helm chart for RIME's extra resources
 | velero.configuration.volumeSnapshotLocation.name | string | `"mongodb-snapshots"` | Name of the volume snapshot location where snapshots are being taken. Required. |
 | velero.initContainers | list | `[{"image":"docker.io/robustintelligencehq/velero-plugin-for-aws:v1.2.1","imagePullPolicy":"IfNotPresent","name":"velero-plugin-for-aws","volumeMounts":[{"mountPath":"/target","name":"plugins"}]}]` | Init containers to add to the Velero deployment's pod spec. At least one plugin provider image is required. For other cloud providers, see https://velero.io/docs/v1.6/supported-providers/ |
 | velero.schedules.mongodb-backup.schedule | string | `"0 2 * * *"` | Default: daily at 2:00am |
-| velero.schedules.mongodb-backup.template.includedNamespaces | list | `[""]` | At minimum, should include the RIME namespace(s) (all namespaces recommended) |
+| velero.schedules.mongodb-backup.template.includedNamespaces | list | `["*"]` | At minimum, should include the RIME namespace(s) (all namespaces recommended) |
 | velero.schedules.mongodb-backup.template.ttl | string | `"336h"` | Backup horizon. Default is 336h (i.e., 2 weeks) |
 | velero.serviceAccount.annotations | object | `{"eks.amazonaws.com/role-arn":""}` | For AWS: Specify ARN of IRSA-enabled Velero Backups IAM role here |
 
