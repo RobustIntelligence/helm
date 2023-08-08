@@ -37,6 +37,7 @@ data:
             {{- with .Values.rime.imageRegistryServer.imageRegistryJob.annotations }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
+            {{- include "rime.monitoringAnnotations" (dict "monitoring" .Values.rime.monitoring "name" .Values.rime.imageRegistryServer.imageRegistryJob.name ) | nindent 12 }}
         spec:
           {{- with .Values.rime.images.imagePullSecrets }}
           imagePullSecrets:
