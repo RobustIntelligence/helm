@@ -19,7 +19,7 @@ Kubernetes: `>=1.20.0-0`
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | external.mongo | object | `{"databaseName":"","enabled":false,"replicaSetName":"","secretName":"","url":"","urlPrefix":""}` | Whether to use an external MongoDB instance |
-| external.vault | object | `{"enabled":false,"kvVersion":"","namespace":"","roleName":"","secretName":"","url":""}` | Whether to use an external Vault instance |
+| external.vault | object | `{"enabled":false,"kvVersion":"","mountPath":"","namespace":"","roleName":"","secretName":"","url":""}` | Whether to use an external Vault instance |
 | ingress-nginx | object | (see individual values in `values`.yaml) | Ingress-nginx controller sub-chart. See https://artifacthub.io/packages/helm/ingress-nginx/ingress-nginx for all parameters. |
 | ingress-nginx.controller.scope.namespace | string | `""` | K8s namespace for the ingress |
 | ingress-nginx.controller.service.annotations | object | `{"service.beta.kubernetes.io/aws-load-balancer-backend-protocol":"tcp","service.beta.kubernetes.io/aws-load-balancer-connection-idle-timeout":"3600","service.beta.kubernetes.io/aws-load-balancer-nlb-target-type":"ip","service.beta.kubernetes.io/aws-load-balancer-scheme":"internet-facing","service.beta.kubernetes.io/aws-load-balancer-ssl-cert":"","service.beta.kubernetes.io/aws-load-balancer-ssl-ports":"https","service.beta.kubernetes.io/aws-load-balancer-type":"external"}` | For full list of annotations, see https://kubernetes-sigs.github.io/aws-load-balancer-controller/v2.2/guide/service/annotations/ |
@@ -31,11 +31,12 @@ Kubernetes: `>=1.20.0-0`
 | rime | object | (see individual values in `values`.yaml) | Global variables used by all RIME services. |
 | rime.agentManagerServer | object | (see individual values in `values.yaml`) | `agentManagerServer` K8s-level configurations |
 | rime.authServer | object | (see individual values in `values.yaml`) | `authServer` K8s-level configurations |
+| rime.cacheServer | object | (see individual values in `values.yaml`) | `cacheServer` K8s-level configurations |
 | rime.dataCollectorServer | object | (see individual values in `values.yaml`) | `dataCollectorServer` K8s-level configurations |
 | rime.datasetManagerServer | object | (see individual values in `values.yaml`) | `datasetManagerServer` K8s-level configurations |
 | rime.datasetManagerServer.config.storageBucketName | string | `""` | The bucket name of the S3 bucket used as the blob storage. |
 | rime.datasetManagerServer.serviceAccount | object | `{"annotations":{"eks.amazonaws.com/role-arn":""},"create":true,"labels":{},"name":""}` | Account used by services that need access to blob storage. |
-| rime.datasetManagerServer.serviceAccount.annotations."eks.amazonaws.com/role-arn" | string | `""` | Specify ARN of IRSA-enabled Load Balancer Controller IAM role here |
+| rime.datasetManagerServer.serviceAccount.annotations."eks.amazonaws.com/role-arn" | string | `""` | Specify ARN of IRSA-enabled Blob Storage IAM role here |
 | rime.domain | string | `""` | Base domain of the RIME web app, which will consist of `rime.${domain}` |
 | rime.dropDuplicates | object | (see individual values in `values.yaml`) | `dropDuplicates` K8s-level configurations |
 | rime.featureFlagServer | object | (see individual values in `values.yaml`) | `featureFlagServer` K8s-level configurations |
@@ -54,8 +55,10 @@ Kubernetes: `>=1.20.0-0`
 | rime.initMongoTLS | object | (see individual values in `values.yaml`) | `initMongoTLS` K8s-level configurations |
 | rime.initVault | object | (see individual values in `values.yaml`) | `initVault` K8s-level configurations |
 | rime.modelTestingServer | object | (see individual values in `values.yaml`) | `modelTestingServer` K8s-level configurations |
-| rime.monitoring | object | (see individual values in `values.yaml`) | `monitoring` (Prometheus metrics) K8s-level configurations |
+| rime.monitoring | object | (see individual values in `values.yaml`) | `monitoring` (Prometheus metrics/Datadog) K8s-level configurations |
+| rime.monitoring.datadogEnabled | bool | `true` | Whether to enable Datadog autodiscovery tags for all services on the RIME cluster |
 | rime.monitoring.enabled | bool | `true` | Whether to enable Prometheus metrics for all services on the RIME cluster |
+| rime.monitoring.port | int | `8080` | Port to expose Prometheus metrics on |
 | rime.notificationsWorker | object | (see individual values in `values.yaml`) | `notificationsWorker` K8s-level configurations |
 | rime.notificationsWorker.notificationsDigestCron | object | `{"annotations":{},"enabled":true,"labels":{},"name":"notifications-digest-cron","schedule":"*/20 * * * *"}` | Configuration for scheduled push notifications |
 | rime.rolloutRestart | object | (see individual values in `values.yaml`) | `rolloutRestart` K8s-level configurations |
