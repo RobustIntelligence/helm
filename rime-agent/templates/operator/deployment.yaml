@@ -98,7 +98,7 @@ spec:
           mountPath: "/server-config"
           readOnly: true
         {{- with .Values.rimeAgent.operator.deployment.extraVolumeMounts }}
-            {{- toYaml . | nindent 12 }}
+          {{- toYaml . | nindent 8 }}
         {{- end }}
       terminationGracePeriodSeconds: 10
       volumes:
