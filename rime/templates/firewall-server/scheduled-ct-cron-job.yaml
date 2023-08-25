@@ -31,6 +31,7 @@ spec:
             {{- with .Values.rime.firewallServer.scheduledCTCron.labels }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
+            {{- include "rime.monitoringAnnotations" (dict "monitoring" .Values.rime.monitoring "name" .Values.rime.firewallServer.scheduledCTCron.name ) | nindent 12 }}
         spec:
           {{- with .Values.rime.images.imagePullSecrets }}
           imagePullSecrets:
@@ -45,9 +46,6 @@ spec:
               command:
                 - "/rime/scheduled_ct_worker"
                 - "--server-config-path=/config/worker.config"
-                {{- if .Values.tls.grpcEnabled }}
-                - "--auth-mode=tls"
-                {{ end }}
                 - "--timeout=4m"
                 {{- if .Values.rime.verbose }}
                 - "-verbose"
