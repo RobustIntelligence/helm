@@ -34,6 +34,7 @@ spec:
         {{- with .Values.rime.webServer.deployment.annotations }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
+        {{- include "rime.monitoringAnnotations" (dict "monitoring" .Values.rime.monitoring "name" .Values.rime.webServer.name ) | nindent 8 }}
         checksum/config: {{ include (print $.Template.BasePath "/web-server/configmap.yaml") . | sha256sum }}
     spec:
       {{- with .Values.rime.images.imagePullSecrets }}
@@ -105,19 +106,9 @@ spec:
             - "/rime/rime"
           args:
             - "start-grpc-web-server"
-            {{- if .Values.tls.grpcEnabled }}
-            - "--auth-mode=tls"
-            {{ end }}
             - "--server-config-path=/config/server.config"
             - "--grpc-web-port={{ .Values.rime.webServer.grpcPort }}"
             - "--native-rest-web-port={{ .Values.rime.webServer.port }}"
-            {{- if .Values.rime.verbose }}
-            - "--verbose"
-            {{- end }}
-            {{- if .Values.rime.monitoring.enabled }}
-            - "--metrics-exposition-enabled=true"
-            - "--metrics-exposition-port={{ .Values.rime.monitoring.port }}"
-            {{- end }}
           volumeMounts:
             - name: {{ include "rime.fullname" . }}-{{ .Values.rime.webServer.name }}-config
               mountPath: "/config"

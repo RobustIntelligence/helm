@@ -72,6 +72,9 @@ rime:
     port: 5012
     grpcPort: 5017
     grpcRestPort: 15017
+    apiKeyLifetimeHours:
+      userApiKeyLifetime: 6480  # nine months
+      agentApiKeyLifetime: 6480  # nine months
     # Service for authServer
     service:
       type: ClusterIP
@@ -98,7 +101,6 @@ rime:
       replicaCount: 1
       resources:
         limits:
-          cpu: 2000m
           memory: 2Gi
         requests:
           cpu: 1200m
@@ -167,11 +169,66 @@ rime:
       replicaCount: 3
       resources:
         limits:
-          cpu: 100m
-          memory: 90Mi
+          memory: 500Mi
         requests:
           cpu: 100m
           memory: 90Mi
+
+      # SecurityContext to add to the deployment. Default is just set to not run as root.
+      # ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#securitycontext-v1-core
+      securityContext: {}
+
+      # Extra env variables to add to the deployment. Make sure these don't
+      # conflict with the ones already defined in the deployment.
+      # ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#envvar-v1-core
+      extraEnv: []
+
+      # Extra volumes to add to the deployment. Make sure these don't
+      # conflict with the ones already defined in the deployment.
+      # ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#volumedevice-v1-core
+      extraVolumes: []
+
+      # Extra volume mounts to add to the deployment. Make sure these don't
+      # conflict with the ones already defined in the deployment.
+      # ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#volumemount-v1-core
+
+      extraVolumeMounts: []
+
+      ## Node labels for pod assignment
+      ## ref: https://kubernetes.io/docs/user-guide/node-selection/
+      nodeSelector: {}
+
+      ## Tolerations for pod assignment
+      ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+      tolerations: []
+
+      ## Affinity for pod assignment (evaluated as template)
+      ## ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
+      affinity: {}
+
+  # -- `cacheServer` K8s-level configurations
+  # @default -- (see individual values in `values.yaml`)
+  cacheServer:
+    enabled: true
+    name: "cache-server"
+    port: 5018
+    # Service for cache-server.
+    service:
+      type: ClusterIP
+      annotations: {}
+      labels: {}
+    deployment:
+      annotations: {}
+      labels: {}
+      # Replica count for the cache-server. The cache server is a singleton so this should always be 1.
+      replicaCount: 1
+      resources:
+        limits:
+          cpu: 100m
+          memory: 1000Mi
+        requests:
+          cpu: 100m
+          memory: 500Mi
 
       # SecurityContext to add to the deployment. Default is just set to not run as root.
       # ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#securitycontext-v1-core
@@ -237,8 +294,7 @@ rime:
       replicaCount: 3
       resources:
         limits:
-          cpu: 100m
-          memory: 90Mi
+          memory: 500Mi
         requests:
           cpu: 100m
           memory: 90Mi
@@ -306,8 +362,7 @@ rime:
       replicaCount: 3
       resources:
         limits:
-          cpu: 100m
-          memory: 90Mi
+          memory: 500Mi
         requests:
           cpu: 100m
           memory: 90Mi
@@ -376,8 +431,7 @@ rime:
       replicaCount: 3
       resources:
         limits:
-          cpu: 100m
-          memory: 90Mi
+          memory: 500Mi
         requests:
           cpu: 100m
           memory: 90Mi
@@ -439,7 +493,7 @@ rime:
       create: true
       name: ""
       annotations: {
-        # -- Specify ARN of IRSA-enabled Load Balancer Controller IAM role here
+        # -- Specify ARN of IRSA-enabled Blob Storage IAM role here
         eks.amazonaws.com/role-arn: ""
       }
       labels: {}
@@ -464,14 +518,14 @@ rime:
               type: Utilization
               averageUtilization: 60
     deployment:
+      priorityClassName: "system-node-critical"
       annotations: {}
       labels: {}
       # Replica count for the dataset-manager-server. Only used if HPA is disabled.
       replicaCount: 3
       resources:
         limits:
-          cpu: 100m
-          memory: 90Mi
+          memory: 500Mi
         requests:
           cpu: 100m
           memory: 90Mi
@@ -547,7 +601,6 @@ rime:
       replicaCount: 1
       resources:
         limits:
-          cpu: 500m
           memory: 1000Mi
         requests:
           cpu: 300m
@@ -623,7 +676,6 @@ rime:
       replicaCount: 3
       resources:
         limits:
-          cpu: 500m
           memory: 1000Mi
         requests:
           cpu: 300m
@@ -694,8 +746,7 @@ rime:
       replicaCount: 3
       resources:
         limits:
-          cpu: 100m
-          memory: 90Mi
+          memory: 500Mi
         requests:
           cpu: 100m
           memory: 90Mi
@@ -770,8 +821,7 @@ rime:
       replicaCount: 3
       resources:
         limits:
-          cpu: 100m
-          memory: 90Mi
+          memory: 500Mi
         requests:
           cpu: 100m
           memory: 90Mi
@@ -829,15 +879,15 @@ rime:
     #     baseImage:
     #       name: ""
     #       registryType: dockerhub
-    #   # -- Uncomment this section if using the Managed Images feature on AWS (Elastic Container Registry)
-    #   ecr:
-    #     registryId: ""
-    #     repositoryPrefix:
-    #   # -- Uncomment this section if using the Managed Images feature on AWS (Google Artifact Repository)
-    #   gar:
-    #     location: ""
-    #     project: ""
-    #     repository: ""
+    #     # -- Uncomment this section if using the Managed Images feature on AWS (Elastic Container Registry)
+    #     ecr:
+    #       registryID: ""
+    #       repositoryPrefix:
+    #     # # -- Uncomment this section if using the Managed Images feature on AWS (Google Artifact Repository)
+    #     # gar:
+    #     #   location: ""
+    #     #   project: ""
+    #     #   repository: ""
 
     # ServiceAccount used by the image registry server. This service account
     # must have access to the image registry backend that you have configured.
@@ -873,8 +923,7 @@ rime:
       replicaCount: 3
       resources:
         limits:
-          cpu: 100m
-          memory: 90Mi
+          memory: 500Mi
         requests:
           cpu: 100m
           memory: 90Mi
@@ -914,7 +963,8 @@ rime:
       name: "image-builder-job"
       privilegedOverride: false
       dockerSecretName: rimecreds
-
+      annotations: {}
+      labels: {}
       # # -- Uncomment this section if using a dedicated model testing node group
       # tolerations:
       #   - key: "dedicated"
@@ -936,7 +986,6 @@ rime:
         labels: {}
       resources:
         limits:
-          cpu: 1500m
           memory: 16Gi
         requests:
           cpu: 1500m
@@ -978,7 +1027,7 @@ rime:
   # @default -- (see individual values in `values.yaml`)
   frontendServer:
     name: "frontend-server"
-    port: 80
+    port: 8000
     # Service for frontend-server.
     service:
       type: ClusterIP
@@ -1005,11 +1054,10 @@ rime:
       replicaCount: 3
       resources:
         limits:
-          cpu: 1000m
-          memory: 2.5Gi
+          memory: 4Gi
         requests:
-          cpu: 800m
-          memory: 2Gi
+          cpu: 2500m
+          memory: 3Gi
 
       # SecurityContext to add to the deployment. Default is just set to not run as root.
       # ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#securitycontext-v1-core
@@ -1150,28 +1198,47 @@ rime:
       # # Uncomment if using externalDns (from rime-kube-system) and fill out the hostname
       # # accordingly (e.g., "rime.${domain}")
       # external-dns.alpha.kubernetes.io/hostname: ""
+      nginx.ingress.kubernetes.io/affinity: "cookie",
+      nginx.ingress.kubernetes.io/affinity-mode: "persistent",
+      nginx.ingress.kubernetes.io/session-cookie-expires: "172800",
+      nginx.ingress.kubernetes.io/session-cookie-max-age: "172800",
+      nginx.ingress.kubernetes.io/session-cookie-path: "/",
+      nginx.ingress.kubernetes.io/session-cookie-httponly: "true",
+      nginx.ingress.kubernetes.io/session-cookie-secure: "true",
     }
     labels: {}
     tls: []
 
-  # -- `monitoring` (Prometheus metrics) K8s-level configurations
+  auth-ingress:
+    annotations: {
+      nginx.ingress.kubernetes.io/affinity: "cookie",
+      nginx.ingress.kubernetes.io/affinity-mode: "persistent",
+      nginx.ingress.kubernetes.io/session-cookie-expires: "172800",
+      nginx.ingress.kubernetes.io/session-cookie-max-age: "172800",
+      nginx.ingress.kubernetes.io/session-cookie-path: "/",
+      nginx.ingress.kubernetes.io/session-cookie-httponly: "true",
+      nginx.ingress.kubernetes.io/session-cookie-secure: "true",
+    }
+
+  # -- `monitoring` (Prometheus metrics/Datadog) K8s-level configurations
   # @default -- (see individual values in `values.yaml`)
   monitoring:
-    port: 8080
-
     # -- Whether to enable Prometheus metrics for all services on the RIME cluster
     enabled: true
+    # -- Port to expose Prometheus metrics on
+    port: 8080
+    # -- Whether to enable Datadog autodiscovery tags for all services on the RIME cluster
+    datadogEnabled: true
 
 # -- MongoDB sub-chart. See https://artifacthub.io/packages/helm/bitnami/mongodb for all parameters.
 # @default -- (see individual values in `values`.yaml)
 mongodb:
   enabled: true
+  priorityClassName: "system-node-critical"
   image:
     registry: "docker.io"
     repository: "robustintelligencehq/mongodb"
     tag: "5.0.9-debian-11-r7"
-    pullSecrets:
-      - rimecreds
   architecture: "replicaset"
   replicaCount: 3
   arbiter:
@@ -1187,7 +1254,6 @@ mongodb:
       cpu: "1500m"
     limits:
       memory: "8Gi"
-      cpu: "2000m"
 
   persistence:
     enabled: true
@@ -1206,10 +1272,11 @@ mongodb:
           "hosts": ["%%host%%:%%port%%"],
           "database": "rime-store",
           "additional_metrics": ["collection"],
-          "collections": ["project", "docstore-notif-setting", "docstore-firewall", "UserV0"]
+          "collections": ["TestRuns", "ModelRegistry", "DatasetRegistry", "User", "APITokenV0", "Project", "RimeJob"]
         }
       ]
     ad.datadoghq.com/mongodb.logs: '[{"source":"mongodb","service":"mongodb"}]'
+
   # # -- Uncomment if enabling mutual TLS for MongoDB (see `tls.mongoEnabled`)
   # tls:
   #   image:
@@ -1228,6 +1295,7 @@ mongodb:
 # -- Ingress-nginx controller sub-chart. See https://artifacthub.io/packages/helm/ingress-nginx/ingress-nginx for all parameters.
 # @default -- (see individual values in `values`.yaml)
 ingress-nginx:
+  enabled: true
   imagePullSecrets:
     - name: rimecreds
   controller:
@@ -1290,12 +1358,11 @@ vault:
     # These Resource Limits are in line with node requirements in the
     # Vault Reference Architecture for a Small Cluster
     resources:
+      limits:
+        memory: 500Mi
       requests:
         memory: 64Mi
         cpu: 250m
-      limits:
-        memory: 128Mi
-        cpu: 500m
     # For HA configuration and because we need to manually init the vault,
     # we need to define custom readiness/liveness Probe settings
     readinessProbe:
@@ -1368,6 +1435,8 @@ external:
     namespace: ""
     ## -- The vault kv version
     kvVersion: ""
+    ## -- The vault mount path
+    mountPath: ""
   # -- Whether to use an external MongoDB instance
   mongo:
     enabled: false
@@ -1389,8 +1458,22 @@ external:
 
 
 tls:
-  # -- Whether to enable the cert-manager service for issuing and managing TLS certificates within the cluster
+  # Whether to enable the cert-manager service for issuing and managing TLS certificates within the cluster
   enableCertManager: false
+  # -- `spec` for Certificate object (https://cert-manager.io/docs/usage/certificate/).
+  certificateSpec:
+    # -- See https://cert-manager.io/docs/reference/api-docs/#cert-manager.io/v1.CertificateSpec
+    # Attributed listed below are the minimum required for the `subject` property.
+    subject:
+      organizations:
+        - RobustIntelligence
+    # -- See https://cert-manager.io/docs/reference/api-docs/#cert-manager.io/v1.CertificateSpec
+    # Attributes listed below are the minimum required `issuerRef` property.
+    issuerRef:
+      # -- Will default to `rime-{{ .Release.Namespace }}-ca-issuer`.
+      name: ""
+      kind: Issuer
+      group: cert-manager.io
   # -- Whether to automatically rotate TLS certificates for services
   # (`enableCertManager` must be true to enable)
   autorotateEnabled: false
