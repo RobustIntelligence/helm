@@ -34,6 +34,7 @@ spec:
         {{- with .Values.rime.featureFlagServer.deployment.annotations }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
+        {{- include "rime.monitoringAnnotations" (dict "monitoring" .Values.rime.monitoring "name" .Values.rime.featureFlagServer.name ) | nindent 8 }}
         checksum/config: {{ include (print $.Template.BasePath "/feature-flag-server/configmap.yaml") . | sha256sum }}
     spec:
       {{- with .Values.rime.images.imagePullSecrets }}
@@ -100,16 +101,9 @@ spec:
             - "/rime/rime"
           args:
             - "start-feature-flag-server"
-            {{- if .Values.tls.grpcEnabled }}
-            - "--auth-mode=tls"
-            {{ end }}
             - "--server-config-path=/config/server.config"
             - "--feature-flag-port={{ .Values.rime.featureFlagServer.port }}"
             - "--feature-flag-rest-port={{ .Values.rime.featureFlagServer.restPort }}"
-            {{- if .Values.rime.monitoring.enabled }}
-            - "--metrics-exposition-enabled=true"
-            - "--metrics-exposition-port={{ .Values.rime.monitoring.port }}"
-            {{- end }}
           volumeMounts:
             - name: {{ include "rime.fullname" . }}-{{ .Values.rime.featureFlagServer.name }}-config
               mountPath: "/config"
