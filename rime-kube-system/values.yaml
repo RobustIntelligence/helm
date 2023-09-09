@@ -11,7 +11,9 @@ rimeSystem:
   # -- Whether to install the Kubernetes Metrics Server Helm chart.
   # For full reference, see https://github.com/kubernetes-sigs/metrics-server/tree/v0.6.1
   metricsServer: false
-
+  # -- Whether to install the ingress-nginx Helm chart.
+  # For full reference, see See https://artifacthub.io/packages/helm/ingress-nginx/ingress-nginx
+  ingressNginx: false
 # -- For full reference, see https://github.com/cert-manager/cert-manager/tree/v1.10.0
 # @default -- (see individual values in `values`.yaml)
 cert-manager:
@@ -104,3 +106,51 @@ cert-manager:
 #     tag: "v0.6.1"
 #   imagePullSecrets:
 #     - rimecreds
+
+# -- Ingress-nginx controller sub-chart. See https://artifacthub.io/packages/helm/ingress-nginx/ingress-nginx for all parameters.
+# @default -- (see individual values in `values`.yaml)
+# ingress-nginx:
+#  enabled: true
+#  imagePullSecrets:
+#    - name: rimecreds
+#  controller:
+#    image:
+#      registry: "docker.io"
+#      image: "robustintelligencehq/ingress-nginx-controller"
+#      tag: "v1.8.1"
+#      digest: "sha256:bd54c330f73b17d0bf19f3ec3832b285d43a4c9fa5fe15f5a7accd3de706b438"
+#    scope:
+#      enabled: true
+#      # -- K8s namespace for the ingress
+#      namespace: ""
+#    ingressClassResource:
+#      name: ri
+#      controllerValue: k8s.io/ri
+#    admissionWebhooks:
+#      enabled: false
+#    service:
+#      targetPorts:
+#        http: http
+#        https: http
+#      # -- For full list of annotations, see
+#      # https://kubernetes-sigs.github.io/aws-load-balancer-controller/v2.2/guide/service/annotations/
+#      annotations:
+#        # -- Specifies the ARN of one or more certificates managed by the AWS Certificate Manager.
+#        service.beta.kubernetes.io/aws-load-balancer-ssl-cert: ""
+#        # -- NLB specification: either "internal" or "internet-facing"
+#        service.beta.kubernetes.io/aws-load-balancer-scheme: "internet-facing"
+#        # # -- Uncomment if using an IP allowlist
+#        # # (Set of CIDR routes to add to the allowlist for all ingresses.
+#        # #  If not specified, all IP addresses are allowed.)
+#        # service.beta.kubernetes.io/aws-load-balancer-target-group-attributes: preserve_client_ip.enabled=true
+#        # Specifies the frontend ports with TLS listeners.
+#        service.beta.kubernetes.io/aws-load-balancer-ssl-ports: "https"
+#        service.beta.kubernetes.io/aws-load-balancer-connection-idle-timeout: "3600"
+#        service.beta.kubernetes.io/aws-load-balancer-backend-protocol: "tcp"
+#        # Load balancer type: either "external" or "nlb-ip"
+#        service.beta.kubernetes.io/aws-load-balancer-type: "external"
+#        # Needed for routing to pod IP
+#        service.beta.kubernetes.io/aws-load-balancer-nlb-target-type: "ip"
+#    config:
+#      force-ssl-redirect: "false"
+#      ssl-redirect: "false"
