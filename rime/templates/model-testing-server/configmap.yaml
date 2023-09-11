@@ -10,6 +10,3 @@ data:
         allow_external_custom_images: true
       spark:
         allowSparkJobs: {{ contains "rime-testing-engine-spark" .Values.rime.images.modelTestingImage.name }}
-      crossServiceKeyRef:
-        secretName: {{ include "rime.generatedSecretsName" . }}
-        key: crossServiceKey

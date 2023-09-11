@@ -37,6 +37,7 @@ data:
             {{- with .Values.rime.imageRegistryServer.imageRegistryJob.annotations }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
+            {{- include "rime.monitoringAnnotations" (dict "monitoring" .Values.rime.monitoring "name" .Values.rime.imageRegistryServer.imageRegistryJob.name ) | nindent 12 }}
         spec:
           {{- with .Values.rime.images.imagePullSecrets }}
           imagePullSecrets:
@@ -80,6 +81,7 @@ data:
             #  * DESTINATION - destination repo uri (without the version tag).
             #  * DESTINATION_AUTH_MODE - auth mode for writing the destination image.
             #  * VERSION - version for the source and destination image.
+            #  * AUTH_TOKEN - the auth token for internal APIs.
             # to configure the target image being built.
             command:
               - "/builder/build_image.sh"
@@ -105,6 +107,7 @@ data:
               - "--key_path=/var/tmp/{{ .Values.rime.imageRegistryServer.imageRegistryJob.name }}-tls/tls.key"
               - "--image_registry_addr={{ include "rime.fullname" . }}-{{ .Values.rime.imageRegistryServer.name }}:{{ .Values.rime.imageRegistryServer.restPort }}"
               - "--enable_cert_manager={{ .Values.tls.enableCertManager }}"
+              - "--auth_token=$(AUTH_TOKEN)"
             volumeMounts:
               # This mounts the docker credentials used for pulling the base image from Docker.
               # This is only mounted if a dockerSecretName is provided to the image registry module.
