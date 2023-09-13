@@ -33,6 +33,7 @@ spec:
         {{- with .Values.rime.initClusterMetadata.annotations }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
+        {{- include "rime.monitoringAnnotations" (dict "monitoring" .Values.rime.monitoring "name" .Values.rime.initClusterMetadata.name ) | nindent 8 }}
     spec:
       {{- with .Values.rime.images.imagePullSecrets }}
       imagePullSecrets:
@@ -107,9 +108,6 @@ spec:
             - "/rime/dbworker"
           args:
             - "init-cluster-metadata"
-            {{- if .Values.tls.grpcEnabled }}
-            - "--auth-mode=tls"
-            {{ end }}
             - "--server-config-path=/config/worker.config"
             - "-overwrite-feature-flags={{ .Values.rime.initClusterMetadata.overwriteLicense }}"
             {{if .Values.rime.imageRegistryServer.enabled }}

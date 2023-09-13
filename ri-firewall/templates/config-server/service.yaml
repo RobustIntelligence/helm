@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "ri-firewall.fullname" . }}-{{ .Values.riFirewall.configServer.name }}
+  labels:
+    {{- with .Values.riFirewall.configServer.service.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  annotations:
+    {{- include "ri-firewall.annotations" . | nindent 4 }}
+    {{- with .Values.riFirewall.configServer.service.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  type: {{ .Values.riFirewall.configServer.service.type }}
+  ports:
+    - port: {{ .Values.riFirewall.configServer.port }}
+      targetPort: {{ .Values.riFirewall.configServer.port }}
+      protocol: TCP
+      name: fwconf
+    - port: {{ .Values.riFirewall.configServer.restPort }}
+      targetPort: {{ .Values.riFirewall.configServer.restPort }}
+      protocol: TCP
+      name: fwconf-rest
+  selector:
+    app: {{ .Values.riFirewall.configServer.name }}
