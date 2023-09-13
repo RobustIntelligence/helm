@@ -15,6 +15,7 @@ Kubernetes: `>=1.20.0-0`
 | https://kubernetes-sigs.github.io/external-dns/ | external-dns | 1.10.1 |
 | https://kubernetes-sigs.github.io/metrics-server/ | metrics-server | 3.8.2 |
 | https://kubernetes.github.io/autoscaler | cluster-autoscaler | 9.28.0 |
+| https://kubernetes.github.io/ingress-nginx | ingress-nginx | 4.7.1 |
 
 ## Values
 
@@ -24,6 +25,7 @@ Kubernetes: `>=1.20.0-0`
 | rimeSystem.awsLoadBalancerController | bool | `false` | Whether to install the AWS Load Balancer Controller Helm chart. For full reference, see https://github.com/kubernetes-sigs/aws-load-balancer-controller/tree/v2.4.2 |
 | rimeSystem.clusterAutoscaler | bool | `false` | Whether to install the Kubernetes Autoscaler Helm chart. For full reference, see https://github.com/kubernetes/autoscaler/tree/cluster-autoscaler-1.21.0/cluster-autoscaler/cloudprovider |
 | rimeSystem.externalDns | bool | `false` | Whether to install the ExternalDNS Helm chart. For full reference, see https://github.com/kubernetes-sigs/external-dns/tree/v0.12.0/charts/external-dns |
+| rimeSystem.ingressNginx | bool | `false` | Whether to install the ingress-nginx Helm chart. For full reference, see See https://artifacthub.io/packages/helm/ingress-nginx/ingress-nginx |
 | rimeSystem.metricsServer | bool | `false` | Whether to install the Kubernetes Metrics Server Helm chart. For full reference, see https://github.com/kubernetes-sigs/metrics-server/tree/v0.6.1 |
 
 ----------------------------------------------
