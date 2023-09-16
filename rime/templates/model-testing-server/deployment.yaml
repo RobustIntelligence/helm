@@ -34,6 +34,7 @@ spec:
         {{- with .Values.rime.modelTestingServer.deployment.annotations }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
+        {{- include "rime.monitoringAnnotations" (dict "monitoring" .Values.rime.monitoring "name" .Values.rime.uploadServer.name ) | nindent 8 }}
         checksum/config: {{ include (print $.Template.BasePath "/model-testing-server/configmap.yaml") . | sha256sum }}
     spec:
       {{- with .Values.rime.images.imagePullSecrets }}
@@ -108,19 +109,9 @@ spec:
             - "/rime/rime"
           args:
             - "start-model-testing-server"
-            {{- if .Values.tls.grpcEnabled }}
-            - "--auth-mode=tls"
-            {{ end }}
             - "--server-config-path=/config/server.config"
             - "--model-testing-port={{ .Values.rime.modelTestingServer.port }}"
             - "--model-testing-rest-port={{ .Values.rime.modelTestingServer.restPort }}"
-            {{- if .Values.rime.verbose }}
-            - "--verbose"
-            {{- end }}
-            {{- if .Values.rime.monitoring.enabled }}
-            - "--metrics-exposition-enabled=true"
-            - "--metrics-exposition-port={{ .Values.rime.monitoring.port }}"
-            {{- end }}
           volumeMounts:
             - name: {{ include "rime.fullname" . }}-{{ .Values.rime.modelTestingServer.name }}-config
               mountPath: "/config"

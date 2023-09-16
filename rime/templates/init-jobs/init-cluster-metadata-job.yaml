@@ -33,10 +33,14 @@ spec:
         {{- with .Values.rime.initClusterMetadata.annotations }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
+        {{- include "rime.monitoringAnnotations" (dict "monitoring" .Values.rime.monitoring "name" .Values.rime.initClusterMetadata.name ) | nindent 8 }}
     spec:
       {{- with .Values.rime.images.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if .Values.rime.featureFlagServer.fetchLicenseFromS3 }}
+      serviceAccountName:  {{ include "rime.featureFlagServer.serviceAccountName" . }}
       {{- end }}
       {{- with .Values.rime.initClusterMetadata.securityContext }}
       securityContext:
@@ -46,6 +50,7 @@ spec:
         - name: {{ .Values.rime.initClusterMetadata.name }}
           env:
             {{- include "rime.commonEnv" . | nindent 12 }}
+            {{- include "rime.featureFlagEnv" . | nindent 12 }}
             {{- include "rime.webAppHostEnv" . | nindent 12 }}
             - name: SMTP_EMAIL
               valueFrom:
@@ -107,9 +112,6 @@ spec:
             - "/rime/dbworker"
           args:
             - "init-cluster-metadata"
-            {{- if .Values.tls.grpcEnabled }}
-            - "--auth-mode=tls"
-            {{ end }}
             - "--server-config-path=/config/worker.config"
             - "-overwrite-feature-flags={{ .Values.rime.initClusterMetadata.overwriteLicense }}"
             {{if .Values.rime.imageRegistryServer.enabled }}
