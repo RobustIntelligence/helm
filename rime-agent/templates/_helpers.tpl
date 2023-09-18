@@ -49,7 +49,10 @@ helm.sh/chart: {{ include "rime-agent.chart" . }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{- if .Values.rimeAgent.commonLabels}}
+{{ toYaml .Values.rimeAgent.commonLabels }}
 {{- end }}
+{{- end -}}
 
 {{/*
 Common annotations added to all resources.
@@ -62,8 +65,23 @@ app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
 app.kubernetes.io/part-of: {{ template "rime-agent.name" . }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
+app.kubernetes.io/owned-by: "ri"
 {{- if .Values.rimeAgent.commonAnnotations}}
 {{ toYaml .Values.rimeAgent.commonAnnotations }}
+{{- end }}
+{{- end -}}
+
+{{/*
+Monitoring annotations to add to pods.
+*/}}
+{{- define "rime-agent.monitoringAnnotations"  -}}
+{{- if .monitoring.enabled}}
+prometheus.io/scrape: "true"
+prometheus.io/path: "/metrics"
+prometheus.io/port: "{{ .monitoring.port }}"
+{{- end }}
+{{- if .monitoring.datadogEnabled }}
+tags.datadoghq.com/service: {{ .name }}
 {{- end }}
 {{- end -}}
 
@@ -77,7 +95,13 @@ common:
         caPath: "/var/tmp/tls/common/ca.crt"
         certPath: "/var/tmp/tls/common/tls.crt"
         keyPath: "/var/tmp/tls/common/tls.key"
+        grpcTLSEnabled: true
     {{- end }}
+    logging:
+        verbose: {{ .Values.rimeAgent.verbose }}
+    metrics:
+        enabled: {{ .Values.rimeAgent.monitoring.enabled }}
+        port: {{ .Values.rimeAgent.monitoring.port }}
     connections:
         addresses:
             {{- if .Values.rimeAgent.connections.agentManagerAddress}}
@@ -87,9 +111,28 @@ common:
             uploadServerAddr: {{ .Values.rimeAgent.connections.uploadServerAddress }}
             {{- end }}
 dataplane:
+    agentID: {{ .Values.rimeAgent.id }}
     isInternal: {{ .Values.rimeAgent.isInternal }}
     platformAddress: {{ .Values.rimeAgent.connections.platformAddress }}
+
+    connections:
+        addresses:
+            crossPlaneServerAddr: "{{ include "rime-agent.fullname" . }}-{{ .Values.rimeAgent.rimeCrossPlaneServer.name }}:{{ .Values.rimeAgent.rimeCrossPlaneServer.port }}"
+            {{- if .Values.rimeAgent.fileServer.enabled }}
+            dataPlaneFileServerAddr: "{{ include "rime-agent.fullname" . }}-{{ .Values.rimeAgent.fileServer.name }}:{{ .Values.rimeAgent.fileServer.port }}"
+            {{- end }}
 {{- end }}
+
+{{/*
+Return the service account name used by the register agent hook.
+*/}}
+{{- define "rime-agent.registerAgent.serviceAccountName" -}}
+{{- if .Values.rimeAgent.registerAgent.serviceAccount.create -}}
+    {{ default (printf "%s-%s" (include "rime-agent.fullname" .) .Values.rimeAgent.registerAgent.name) .Values.rimeAgent.registerAgent.serviceAccount.name | trunc 63 | trimSuffix "-" }}
+{{- else -}}
+    {{ default "default" .Values.rimeAgent.registerAgent.serviceAccount.name }}
+{{- end -}}
+{{- end -}}
 
 {{/*
 Return the service account name used by the operator controller manager.
@@ -99,6 +142,17 @@ Return the service account name used by the operator controller manager.
     {{ default (printf "%s-%s" (include "rime-agent.fullname" .) .Values.rimeAgent.launcher.name) .Values.rimeAgent.launcher.serviceAccount.name | trunc 63 | trimSuffix "-" }}
 {{- else -}}
     {{ default "default" .Values.rimeAgent.launcher.serviceAccount.name }}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Return the service account name used by the rimeServer.
+*/}}
+{{- define "rime-agent.rimeServer.serviceAccountName" -}}
+{{- if .Values.rimeAgent.rimeCrossPlaneServer.serviceAccount.create -}}
+    {{ default (printf "%s-%s" (include "rime-agent.fullname" .) .Values.rimeAgent.rimeCrossPlaneServer.name) .Values.rimeAgent.rimeCrossPlaneServer.serviceAccount.name | trunc 63 | trimSuffix "-" }}
+{{- else -}}
+    {{ default "default" .Values.rimeAgent.rimeCrossPlaneServer.serviceAccount.name }}
 {{- end -}}
 {{- end -}}
 
@@ -118,7 +172,7 @@ access to read S3 buckets.
 Return the name used for secrets containing credentials used by agent services.
 */}}
 {{- define "rime-agent.secretName" -}}
-{{ include "rime-agent.fullname" . }}-secret
+{{- default (printf "%s-secret" (include "rime-agent.fullname" .)) .Values.rimeAgent.existingSecretName }}
 {{- end -}}
 
 {{/*
@@ -154,3 +208,32 @@ Return the service account name used by the operator controller manager.
     {{ default "default" .Values.rimeAgent.operator.serviceAccount.name }}
 {{- end -}}
 {{- end -}}
+
+{{/*
+Return the service account name used by the file server.
+*/}}
+{{- define "rime-agent.fileServer.serviceAccountName" -}}
+{{- if .Values.rimeAgent.fileServer.serviceAccount.create -}}
+    {{ default (printf "%s-%s" (include "rime-agent.fullname" .) .Values.rimeAgent.fileServer.name) .Values.rimeAgent.operator.serviceAccount.name | trunc 63 | trimSuffix "-" }}
+{{- else -}}
+    {{ default "default" .Values.rimeAgent.fileServer.serviceAccount.name }}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Return the name of the secret containing generated secrets for the Internal Agent.
+*/}}
+{{- define "rime-agent.generatedSecretsName" -}}
+rime-generated-secrets
+{{- end }}
+
+{{/*
+Return the appropriate apiVersion for Horizontal Pod Autoscaler.
+*/}}
+{{- define "rime-agent.hpa.apiVersion" -}}
+{{- if $.Capabilities.APIVersions.Has "autoscaling/v2/HorizontalPodAutoscaler" }}
+{{- print "autoscaling/v2" }}
+{{- else }}
+{{- print "autoscaling/v2beta2" }}
+{{- end }}
+{{- end }}
