@@ -34,6 +34,12 @@ rules:
 - apiGroups:
   - ""
   resources:
+  - events
+  verbs:
+  - list
+- apiGroups:
+  - ""
+  resources:
   - pods
   verbs:
   - get
@@ -46,6 +52,58 @@ rules:
   verbs:
   - get
   - list
+- apiGroups:
+  - rbst.io
+  resources:
+  - continuoustestjobs
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - rbst.io
+  resources:
+  - continuoustestjobs/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - rbst.io
+  resources:
+  - continuoustestjobs/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - rbst.io
+  resources:
+  - crossplanerpcjobs
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - rbst.io
+  resources:
+  - crossplanerpcjobs/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - rbst.io
+  resources:
+  - crossplanerpcjobs/status
+  verbs:
+  - get
+  - patch
+  - update
 - apiGroups:
   - rbst.io
   resources:
