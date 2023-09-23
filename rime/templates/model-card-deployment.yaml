@@ -1,0 +1,104 @@
+{{- if .Values.modelCard.create }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "rime.fullname" . }}-model-card
+  labels:
+    app: model-card
+    {{- include "rime.labels" . | nindent 4 }}
+    tags.datadoghq.com/service: model-card
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      app: model-card
+      {{- include "rime.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        app: model-card
+        {{- include "rime.selectorLabels" . | nindent 8 }}
+        tags.datadoghq.com/service: model-card
+      annotations:
+        {{- include "prometheusScrapingAnnotations" . | nindent 8 }}
+        {{- if .Values.rime.datadogTagPodAnnotation }}
+        ad.datadoghq.com/tags: '{{ .Values.rime.datadogTagPodAnnotation }}'
+        {{- end }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: {{ .Chart.Name }}
+          env:
+            {{- include "rime.commonEnv" . | nindent 12 }}
+          image: "{{ .Values.backendImage.name }}"
+          imagePullPolicy: {{ .Values.backendImage.pullPolicy }}
+          ports:
+            - name: model-card
+              containerPort: {{ .Values.ports.modelCardServer }}
+              protocol: TCP
+            - name: model-card-rest
+              containerPort: {{ .Values.ports.modelCardREST }}
+              protocol: TCP
+            - name: modelcard-debug
+              containerPort: 6060
+              protocol: TCP
+          livenessProbe:
+            exec:
+              command: ["/bin/grpc_health_probe", "-tls", "-tls-no-verify", "-addr=:{{ .Values.ports.modelCardServer }}"]
+            periodSeconds: 5
+          readinessProbe:
+            exec:
+              command: ["/bin/grpc_health_probe", "-tls", "-tls-no-verify", "-addr=:{{ .Values.ports.modelCardServer }}"]
+            periodSeconds: 5
+          startupProbe:
+            exec:
+              command: ["/bin/grpc_health_probe", "-tls", "-tls-no-verify", "-addr=:{{ .Values.ports.modelCardServer }}"]
+            failureThreshold: 60
+            periodSeconds: 5
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          command:
+            - "/rime/rime"
+          args:
+            - "start-model-card-server"
+            - "--model-card-auth-mode=tls"
+            - "--model-card-certificate-path=/var/tmp/model-card-tls/tls.crt"
+            - "--model-card-key-path=/var/tmp/model-card-tls/tls.key"
+            - "--model-card-ca-path=/var/tmp/model-card-tls/ca.crt"
+            - "--server-config-path=/config/server.config"
+            - "--database-url={{ include "rime.fullname" . }}-mongodb-headless/?tls=false"
+            - "--database-url-prefix=mongodb+srv://"
+            - "--model-card-port={{ .Values.ports.modelCardServer }}"
+            - "--model-card-rest-port={{ .Values.ports.modelCardREST }}"
+            - "--replica-set-name={{ .Values.mongodb.replicaSetName }}"
+            {{- if .Values.rime.verbose }}
+            - "--verbose"
+            {{- end }}
+            {{- if .Values.prometheusMetricsExposition.enabled }}
+            - "--metrics-exposition-enabled=true"
+            - "--metrics-exposition-port={{ .Values.prometheusMetricsExposition.port }}"
+            {{- end }}
+          volumeMounts:
+          - name: {{ include "rime.fullname" . }}-model-card-config
+            mountPath: "/config"
+            readOnly: true
+          - name: {{ include "rime.fullname" . }}-model-card-tls
+            mountPath: "/var/tmp/model-card-tls"
+            readOnly: true
+      volumes:
+      # Volumes are defined at the Pod level, then mounted into containers within that Pod
+      - name: {{ include "rime.fullname" . }}-model-card-config
+        configMap:
+          name: {{ include "rime.fullname" . }}-model-card-conf
+          items:
+          - key: "server.config"
+            path: "server.config"
+      - name: {{ include "rime.fullname" . }}-model-card-tls
+        secret:
+          secretName: {{ include "rime.fullname" . }}-model-card-tls
+  {{- end }}

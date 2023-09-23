@@ -1,0 +1,12 @@
+{{- if .Values.kong.ingressController.enabled }}
+kind: KongIngress
+apiVersion: configuration.konghq.com/v1
+metadata:
+  annotations:
+    kubernetes.io/ingress.class: "kong"
+  name: long-timeout-kong-ingress
+proxy:
+  connect_timeout: 300000      # ms
+  read_timeout: 300000
+  write_timeout: 300000
+{{- end}}

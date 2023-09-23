@@ -1,0 +1,14 @@
+{{- if .Values.rimeAgent.launcher.rbac.create}}
+# Binds Launcher service account to a role providing write access to k8s jobs
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "rime-agent.launcher.fullname" . }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ include "rime-agent.jobWriterRole.fullname" . }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "rime-agent.launcher.serviceAccountName" . }}
+{{- end }}

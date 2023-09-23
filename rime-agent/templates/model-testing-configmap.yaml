@@ -1,0 +1,11 @@
+# This ConfigMap is used by the Model Test Job template. Values here will be injected into the RIME Engine container
+# as environment variables.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "rime-agent.modelTestJob.configMapName" . }}
+data:
+  upload_server: {{ .Values.rimeAgent.platformAddress | default .Values.rimeAgent.modelTestJob.uploadServerAddr}}
+  firewall_server: {{ .Values.rimeAgent.platformAddress | default .Values.rimeAgent.modelTestJob.firewallServerAddr}}
+  data_collector: {{ .Values.rimeAgent.platformAddress | default .Values.rimeAgent.modelTestJob.dataCollectorAddr}}
+  disable_tls: {{ if .Values.rimeAgent.platformAddress }} "false" {{ else }} "true" {{ end }}

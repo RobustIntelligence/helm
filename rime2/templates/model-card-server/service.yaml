@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "rime.fullname" . }}-{{.Values.rime.modelCardServer.name}}
+  labels:
+    {{- include "rime.labels" . | nindent 4 }}
+    {{- with .Values.rime.modelCardServer.service.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  annotations:
+    {{- include "rime.annotations" . | nindent 4 }}
+    {{- with .Values.rime.modelCardServer.service.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  type: {{ .Values.rime.modelCardServer.service.type }}
+  ports:
+    - port: {{ .Values.rime.modelCardServer.port }}
+      targetPort: {{ .Values.rime.modelCardServer.port }}
+      protocol: TCP
+      name: mc
+    - port: {{ .Values.rime.modelCardServer.restPort }}
+      targetPort: {{ .Values.rime.modelCardServer.restPort }}
+      protocol: TCP
+      name: mc-rest
+  selector:
+    app: {{.Values.rime.modelCardServer.name}}
+    {{- include "rime.labels" . | nindent 4 }}

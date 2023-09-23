@@ -1,0 +1,21 @@
+{{- if .Values.rime.requestQueueProxy.hpa.enabled }}
+apiVersion: autoscaling/v2beta1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ include "rime.fullname" . }}-{{.Values.rime.requestQueueProxy.name}}
+  labels:
+    app: {{.Values.rime.requestQueueProxy.name}}
+    {{- include "rime.labels" . | nindent 4 }}
+    {{- with .Values.rime.requestQueueProxy.hpa.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ include "rime.fullname" . }}{{.Values.rime.requestQueueProxy.name}}
+  minReplicas: {{ .Values.rime.requestQueueProxy.hpa.minReplicas }}
+  maxReplicas: {{ .Values.rime.requestQueueProxy.hpa.maxReplicas }}
+  metrics:
+{{ toYaml .Values.rime.requestQueueProxy.hpa.metrics | indent 4 }}
+{{- end }}

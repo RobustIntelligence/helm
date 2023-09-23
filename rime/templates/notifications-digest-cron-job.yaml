@@ -1,0 +1,42 @@
+{{- if .Values.notifications.digestCRON.create }}
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: {{ include "rime.fullname" . }}-digest-notif-worker
+  labels:
+    tags.datadoghq.com/service: digest-notif-worker
+spec:
+  schedule: "{{ .Values.notifications.digestCRON.schedule }}"
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            tags.datadoghq.com/service: digest-notif-worker
+          annotations:
+            {{- if .Values.rime.datadogTagPodAnnotation }}
+            ad.datadoghq.com/tags: '{{ .Values.rime.datadogTagPodAnnotation }}'
+            {{- end }}
+        spec:
+          {{- with .Values.imagePullSecrets }}
+          imagePullSecrets:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          containers:
+            - name: "digest-notif-worker"
+              env:
+                {{- include "rime.webAppHostEnv" . | nindent 16 }}
+              image: "{{ .Values.backendImage.name }}"
+              imagePullPolicy: "{{ .Values.backendImage.pullPolicy }}"
+              command:
+                - "/rime/digest_notif_worker"
+                - "-database-name=rime-store"
+                - "--database-url-prefix=mongodb+srv://"
+                - "--database-url={{ include "rime.fullname" . }}-mongodb-headless/?tls=false"
+                - "-replica-set-name={{ .Values.mongodb.replicaSetName }}"
+                - "-redis-addr={{ include "rime.fullname" . }}-redis-headless:6379"
+                {{- if .Values.rime.verbose }}
+                - "-verbose"
+                {{- end }}
+          restartPolicy: Never
+{{- end }}
