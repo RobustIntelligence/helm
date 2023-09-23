@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "rime.fullname" . }}-{{.Values.rime.firewallServer.name}}
+  labels:
+    {{- include "rime.labels" . | nindent 4 }}
+    {{- with .Values.rime.firewallServer.service.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  annotations:
+    {{- include "rime.annotations" . | nindent 4 }}
+    {{- with .Values.rime.firewallServer.service.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  type: {{ .Values.rime.firewallServer.service.type }}
+  ports:
+    - port: {{ .Values.rime.firewallServer.port }}
+      targetPort: {{ .Values.rime.firewallServer.port }}
+      protocol: TCP
+      name: fw
+    - port: {{ .Values.rime.firewallServer.restPort }}
+      targetPort: {{ .Values.rime.firewallServer.restPort }}
+      protocol: TCP
+      name: fw-rest
+  selector:
+    app: {{.Values.rime.firewallServer.name}}
+    {{- include "rime.labels" . | nindent 4 }}

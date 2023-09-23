@@ -1,0 +1,100 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "rime.fullname" . }}-dataset-manager
+  labels:
+    app: dataset-manager
+    {{- include "rime.labels" . | nindent 4 }}
+    tags.datadoghq.com/service: dataset-manager
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      app: dataset-manager
+      {{- include "rime.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        app: dataset-manager
+        {{- include "rime.selectorLabels" . | nindent 8 }}
+        tags.datadoghq.com/service: dataset-manager
+      annotations:
+        {{- include "prometheusScrapingAnnotations" . | nindent 8 }}
+        {{- if .Values.rime.datadogTagPodAnnotation }}
+        ad.datadoghq.com/tags: '{{ .Values.rime.datadogTagPodAnnotation }}'
+        {{- end }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if .Values.datasetManager.useFileUploadService }}
+      serviceAccountName: {{ template "blobStoreAccount.name" . }}
+      {{- end }}
+      containers:
+        - name: {{ .Chart.Name }}
+          env:
+            {{- include "rime.commonEnv" . | nindent 12 }}
+          image: "{{ .Values.backendImage.name }}"
+          imagePullPolicy: {{ .Values.backendImage.pullPolicy }}
+          ports:
+            - name: dataset-manager
+              containerPort: {{ .Values.ports.datasetManagerServer }}
+              protocol: TCP
+            - name: dataset-rest
+              containerPort: {{ .Values.ports.datasetManagerREST }}
+              protocol: TCP
+            - name: dataset-debug
+              containerPort: 6060
+              protocol: TCP
+          livenessProbe:
+            exec:
+              command: ["/bin/grpc_health_probe", "-addr=:{{ .Values.ports.datasetManagerServer }}"]
+            periodSeconds: 5
+          readinessProbe:
+            exec:
+              command: ["/bin/grpc_health_probe", "-addr=:{{ .Values.ports.datasetManagerServer }}"]
+            periodSeconds: 5
+          startupProbe:
+            exec:
+              command: ["/bin/grpc_health_probe", "-addr=:{{ .Values.ports.datasetManagerServer }}"]
+            failureThreshold: 60
+            periodSeconds: 5
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          command: 
+            - "/rime/rime"
+          args: 
+            - "start-dataset-manager-server"
+            - "--server-config-path=/config/server.config"
+            - "--database-url={{ include "rime.fullname" . }}-mongodb-headless/?tls=false"
+            - "--database-url-prefix=mongodb+srv://"
+            - "--dataset-manager-port={{ .Values.ports.datasetManagerServer }}"
+            - "--dataset-manager-rest-port={{ .Values.ports.datasetManagerREST }}"
+            - "--replica-set-name={{ .Values.mongodb.replicaSetName }}"
+            {{- if .Values.datasetManager.useFileUploadService }}
+            - "--blob-store-bucket-name={{ .Values.blobStore.storageBucketName }}"
+            - "--blob-store-bucket-endpoint={{ .Values.blobStore.endpoint }}"
+            - "--blob-store-service-type={{ .Values.blobStore.type }}"
+            {{- end }}
+            {{- if .Values.rime.verbose }}
+            - "--verbose"
+            {{- end }}
+            {{- if .Values.prometheusMetricsExposition.enabled }}
+            - "--metrics-exposition-enabled=true"
+            - "--metrics-exposition-port={{ .Values.prometheusMetricsExposition.port }}"
+            {{- end }}
+          volumeMounts:
+          - name: {{ include "rime.fullname" . }}-dataset-manager-config
+            mountPath: "/config"
+            readOnly: true
+      volumes:
+      # Volumes are defined at the Pod level, then mounted into containers within that Pod
+      - name: {{ include "rime.fullname" . }}-dataset-manager-config
+        configMap:
+          name: {{ include "rime.fullname" . }}-dataset-manager-conf
+          items:
+          - key: "server.config"
+            path: "server.config"

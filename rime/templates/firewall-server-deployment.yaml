@@ -1,0 +1,97 @@
+{{ if .Values.firewall.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "rime.fullname" . }}-firewall-server
+  labels:
+    app: firewall-server
+    {{- include "rime.labels" . | nindent 4 }}
+    tags.datadoghq.com/service: firewall-server
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      app: firewall-server
+      {{- include "rime.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        app: firewall-server
+        {{- include "rime.selectorLabels" . | nindent 8 }}
+        tags.datadoghq.com/service: firewall-server
+      annotations:
+        {{- include "prometheusScrapingAnnotations" . | nindent 8 }}
+        {{- if .Values.rime.datadogTagPodAnnotation }}
+        ad.datadoghq.com/tags: '{{ .Values.rime.datadogTagPodAnnotation }}'
+        {{- end }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: {{ .Chart.Name }}
+          env:
+            {{- include "rime.webAppHostEnv" . | nindent 12 }}
+            {{- include "rime.commonEnv" . | nindent 12 }}
+          image: "{{ .Values.backendImage.name }}"
+          imagePullPolicy: {{ .Values.backendImage.pullPolicy }}
+          ports:
+            - name: firewall-server
+              containerPort: {{ .Values.ports.firewallServer }}
+              protocol: TCP
+            - name: firewall-rest
+              containerPort: {{ .Values.ports.firewallREST }}
+              protocol: TCP
+            - name: firewall-debug
+              containerPort: 6060
+              protocol: TCP
+          livenessProbe:
+            exec:
+              command: ["/bin/grpc_health_probe", "-addr=:{{ .Values.ports.firewallServer }}"]
+            periodSeconds: 5
+          readinessProbe:
+            exec:
+              command: ["/bin/grpc_health_probe", "-addr=:{{ .Values.ports.firewallServer }}"]
+            periodSeconds: 5
+          startupProbe:
+            exec:
+              command: ["/bin/grpc_health_probe", "-addr=:{{ .Values.ports.firewallServer }}"]
+            failureThreshold: 60
+            periodSeconds: 5
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          command: 
+            - "/rime/rime"
+          args: 
+            - "start-firewall-server"
+            - "--server-config-path=/config/server.config"
+            - "--firewall-port={{ .Values.ports.firewallServer }}"
+            - "--firewall-rest-port={{ .Values.ports.firewallREST }}"
+            - "--database-url={{ include "rime.fullname" . }}-mongodb-headless/?tls=false"
+            - "--database-url-prefix=mongodb+srv://"
+            - "--replica-set-name={{ .Values.mongodb.replicaSetName }}"
+            - "--feature-flag-addr={{ include "rime.fullname" . }}-feature-flag-server:{{ .Values.ports.featureFlagServer }}"
+            - "--auth-server-addr={{ include "rime.fullname" . }}-auth-server:{{ .Values.ports.userServer }}"
+            {{- if .Values.rime.verbose }}
+            - "--verbose"
+            {{- end }}
+            {{- if .Values.prometheusMetricsExposition.enabled }}
+            - "--metrics-exposition-enabled=true"
+            - "--metrics-exposition-port={{ .Values.prometheusMetricsExposition.port }}"
+            {{- end }}
+          volumeMounts:
+          - name: {{ include "rime.fullname" . }}-firewall-config
+            mountPath: "/config"
+            readOnly: true
+      volumes:
+      # Volumes are defined at the Pod level, then mounted into containers within that Pod
+      - name: {{ include "rime.fullname" . }}-firewall-config
+        configMap:
+          name: {{ include "rime.fullname" . }}-firewall-conf
+          items:
+          - key: "server.config"
+            path: "server.config"
+{{ end }}

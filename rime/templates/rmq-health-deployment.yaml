@@ -1,0 +1,53 @@
+{{- if .Values.rmqHealth.create }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "rime.fullname" . }}-rmq-health
+  labels:
+    app: rmq-health
+    {{- include "rime.labels" . | nindent 4 }}
+    tags.datadoghq.com/service: rmq-health
+spec:
+  selector:
+    matchLabels:
+      app: rmq-health
+      {{- include "rime.selectorLabels" . | nindent 6 }}
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: rmq-health
+        {{- include "rime.selectorLabels" . | nindent 8 }}
+        tags.datadoghq.com/service: rmq-health
+      annotations:
+        {{- include "prometheusScrapingAnnotations" . | nindent 8 }}
+        {{- if .Values.rime.datadogTagPodAnnotation }}
+        ad.datadoghq.com/tags: '{{ .Values.rime.datadogTagPodAnnotation }}'
+        {{- end }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.backendImage.name }}"
+          imagePullPolicy: {{ .Values.backendImage.pullPolicy }}
+          command:
+            - "/rime/rmq-health"
+          args:
+            - "--redis-addr={{ include "rime.fullname" . }}-redis-headless:6379"
+            {{- if .Values.rime.verbose }}
+            - "--verbose"
+            {{- end }}
+            {{- if .Values.rmqHealth.resourceCleaner.create }}
+            - "--run-cleaner"
+            - "--cleaner-frequency={{ .Values.rmqHealth.resourceCleaner.frequency }}"
+            {{- end }}
+            {{- if and .Values.rmqHealth.metricsUpdater.create .Values.prometheusMetricsExposition.enabled }}
+            - "--run-metrics-updater"
+            - "--metrics-update-frequency={{ .Values.rmqHealth.metricsUpdater.frequency }}"
+            - "--metrics-exposition-enabled=true"
+            - "--metrics-exposition-port={{ .Values.prometheusMetricsExposition.port }}"
+            {{- end }}
+{{- end }}

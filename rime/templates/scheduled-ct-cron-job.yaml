@@ -1,0 +1,40 @@
+{{- if .Values.scheduledCT.scheduledCTCRON.create }}
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: {{ include "rime.fullname" . }}-scheduled-ct-worker
+  labels:
+    tags.datadoghq.com/service: scheduled-ct-worker
+spec:
+  schedule: "{{ .Values.scheduledCT.scheduledCTCRON.schedule }}"
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            tags.datadoghq.com/service: scheduled-ct-worker
+          annotations:
+            {{- if .Values.rime.datadogTagPodAnnotation }}
+            ad.datadoghq.com/tags: '{{ .Values.rime.datadogTagPodAnnotation }}'
+            {{- end }}
+        spec:
+          {{- with .Values.imagePullSecrets }}
+          imagePullSecrets:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          containers:
+            - name: "scheduled-ct-worker"
+              env:
+                {{- include "rime.commonEnv" . | nindent 16 }}
+              image: "{{ .Values.backendImage.name }}"
+              imagePullPolicy: "{{ .Values.backendImage.pullPolicy }}"
+              command:
+                - "/rime/scheduled_ct_worker"
+                - "--database-url={{ include "rime.fullname" . }}-mongodb-headless/?tls=false"
+                - "--database-url-prefix=mongodb+srv://"
+                - "--model-testing-server-addr={{ include "rime.fullname" . }}-model-testing:{{ .Values.ports.modelTestingServer }}"
+                {{- if .Values.rime.verbose }}
+                - "-verbose"
+                {{- end }}
+          restartPolicy: Never
+  {{- end }}

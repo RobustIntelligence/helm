@@ -4,321 +4,221 @@ metadata:
   name: {{ include "rime.fullname" . }}-ingress
   labels:
     {{- include "rime.labels" . | nindent 4 }}
-    {{- with .Values.rime.ingress.labels }}
-    {{- toYaml . | nindent 4 }}
-    {{- end }}
   annotations:
     kubernetes.io/ingress.class: "nginx"
-    {{- if .Values.tls.restEnabled }}
-    nginx.ingress.kubernetes.io/auth-url: https://{{ include "rime.fullname" . }}-{{ .Values.rime.authServer.name }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.rime.authServer.port}}/v1/auth/validate
-    {{- else }}
-    nginx.ingress.kubernetes.io/auth-url: http://{{ include "rime.fullname" . }}-{{ .Values.rime.authServer.name }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.rime.authServer.port}}/v1/auth/validate
+    external-dns.alpha.kubernetes.io/hostname: "rime.{{ .Values.rime.domain }}"
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    {{- if .Values.rime.ipAllowlist }}
+    nginx.ingress.kubernetes.io/whitelist-source-range: '{{ join "," .Values.rime.ipAllowlist }}'
     {{- end }}
+    nginx.ingress.kubernetes.io/auth-url: http://{{ include "rime.fullname" . }}-auth-server.{{.Release.Namespace}}.svc.cluster.local:{{.Values.ports.authServer}}/v1/auth/validate
     nginx.ingress.kubernetes.io/auth-method: POST
     nginx.ingress.kubernetes.io/auth-response-headers: X-Rime-User, X-Rime-Api-Key, X-Rime-Api-Key-Name, X-Rime-Workspace
-    {{- if .Values.tls.restEnabled }}
-    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
-    nginx.ingress.kubernetes.io/proxy-ssl-secret: "{{.Release.Namespace}}/{{ include "rime.fullname" . }}-ingress-tls"
-    nginx.ingress.kubernetes.io/proxy-ssl-name: "{{ include "rime.fullname" . }}-ingress-server"
-    {{- end }}
-    nginx.ingress.kubernetes.io/proxy-connect-timeout: "360"
-    nginx.ingress.kubernetes.io/proxy-send-timeout: "360"
-    nginx.ingress.kubernetes.io/proxy-read-timeout: "360"
-    {{- with .Values.rime.ingress.annotations }}
-    {{- toYaml . | nindent 4 }}
-    {{- end }}
+    nginx.ingress.kubernetes.io/proxy-read-timeout:	"120"
 spec:
-  {{- with .Values.rime.ingress.tls }}
+  {{ if .Values.rime.certificateSecretName}}
   tls:
-    {{- toYaml . | nindent 4 }}
-  {{- end }}
+    - hosts:
+        - "*.{{ .Values.rime.domain }}"
+    - secretName: {{ .Values.rime.certificateSecretName }}
+  {{ end }}
   rules:
     - http:
         paths:
-          - path: /internal/images
-            pathType: Prefix
-            backend:
-              service:
-                name: {{ include "rime.fullname" . }}-{{ .Values.rime.imageRegistryServer.name }}
-                port:
-                  number: {{ .Values.rime.imageRegistryServer.restPort }}
-          - path: /internal/secrets
-            pathType: Prefix
-            backend:
-              service:
-                name: {{ include "rime.fullname" . }}-{{ .Values.rime.webServer.name }}
-                port:
-                  number: {{ .Values.rime.webServer.grpcRestPort }}
-          - path: /v1/registry
-            pathType: Prefix
-            backend:
-              service:
-                name: {{ include "rime.fullname" . }}-{{ .Values.rime.uploadServer.name }}
-                port:
-                  number:  {{ .Values.rime.uploadServer.restPort }}
-          - path: /internal/file-scan-results
-            pathType: Prefix
-            backend:
-              service:
-                name: {{ include "rime.fullname" . }}-{{ .Values.rime.uploadServer.name }}
-                port:
-                  number:  {{ .Values.rime.uploadServer.restPort }}
-          - path: /internal/result-synth
-            pathType: Prefix
-            backend:
-              service:
-                name: {{ include "rime.fullname" . }}-{{ .Values.rime.uploadServer.name }}
-                port:
-                  number:  {{ .Values.rime.uploadServer.restPort }}
           - path: /v1/users
             pathType: Prefix
             backend:
               service:
-                name: {{ include "rime.fullname" . }}-{{ .Values.rime.authServer.name }}
+                name: {{ include "rime.fullname" . }}-auth-server
                 port:
-                  number: {{ .Values.rime.authServer.grpcRestPort }}
+                  name: user-rest
           - path: /v1/batch-results
             pathType: Prefix
             backend:
               service:
-                name: {{ include "rime.fullname" . }}-{{ .Values.rime.webServer.name }}
+                name: {{ include "rime.fullname" . }}-grpc-web-server
                 port:
-                  number: {{ .Values.rime.webServer.grpcRestPort }}
-          - path: /v1-beta/datasets
+                  number: {{ .Values.ports.grpcWebREST }}
+          - path: /v1/datasets
             pathType: Prefix
             backend:
               service:
-                name: {{ include "rime.fullname" . }}-{{ .Values.rime.datasetManagerServer.name }}
+                name: {{ include "rime.fullname" . }}-dataset-manager
                 port:
-                  number: {{ .Values.rime.datasetManagerServer.restPort }}
-          - path: /v1-beta/models
+                  number: {{ .Values.ports.datasetManagerREST }}
+          - path: /v1/models
             pathType: Prefix
             backend:
               service:
-                name: {{ include "rime.fullname" . }}-{{ .Values.rime.datasetManagerServer.name }}
+                name: {{ include "rime.fullname" . }}-dataset-manager
                 port:
-                  number: {{ .Values.rime.datasetManagerServer.restPort }}
-          - path: /v1-beta/uploaded-file-urls
+                  number: {{ .Values.ports.datasetManagerREST }}
+          - path: /v1/uploaded-file-urls
             pathType: Prefix
             backend:
               service:
-                name: {{ include "rime.fullname" . }}-{{ .Values.rime.datasetManagerServer.name }}
+                name: {{ include "rime.fullname" . }}-dataset-manager
                 port:
-                  number: {{ .Values.rime.datasetManagerServer.restPort }}
+                  number: {{ .Values.ports.datasetManagerREST }}
           - path: /v1/feature-results
             pathType: Prefix
             backend:
               service:
-                name: {{ include "rime.fullname" . }}-{{ .Values.rime.webServer.name }}
+                name: {{ include "rime.fullname" . }}-grpc-web-server
                 port:
-                  number: {{ .Values.rime.webServer.grpcRestPort }}
+                  number: {{ .Values.ports.grpcWebREST }}
           - path: /v1/summary-tests
             pathType: Prefix
             backend:
               service:
-                name: {{ include "rime.fullname" . }}-{{ .Values.rime.webServer.name }}
+                name: {{ include "rime.fullname" . }}-grpc-web-server
                 port:
-                  number: {{ .Values.rime.webServer.grpcRestPort }}
+                  number: {{ .Values.ports.grpcWebREST }}
           - path: /v1/feature-flags
-            pathType: Prefix
-            backend:
-              service:
-                name: {{ include "rime.fullname" . }}-{{ .Values.rime.featureFlagServer.name }}
-                port:
-                  number: {{ .Values.rime.featureFlagServer.restPort }}
-          - path: /internal/feature-flags
             pathType: Prefix
             backend:
               service:
                 name: {{ include "rime.fullname" . }}-feature-flag-server
                 port:
-                  number: {{ .Values.rime.featureFlagServer.restPort }}
+                  number: {{ .Values.ports.featureFlagServerREST }}
           - path: /v1/agents
             pathType: Prefix
             backend:
               service:
-                name: {{ include "rime.fullname" . }}-{{ .Values.rime.agentManagerServer.name }}
+                name: {{ include "rime.fullname" . }}-agent-manager-server
                 port:
-                  number: {{ .Values.rime.agentManagerServer.restPort }}
-          - path: /internal/agents
-            pathType: Prefix
-            backend:
-              service:
-                name: {{ include "rime.fullname" . }}-{{ .Values.rime.agentManagerServer.name }}
-                port:
-                  number: {{ .Values.rime.agentManagerServer.restPort }}
-          - path: /internal/statedb
-            pathType: Prefix
-            backend:
-              service:
-                name: {{ include "rime.fullname" . }}-{{ .Values.rime.uploadServer.name }}
-                port:
-                  number: {{ .Values.rime.uploadServer.restPort }}
+                  number: {{ .Values.ports.agentManagerREST }}
           - path: /v1/notif-settings
             pathType: Prefix
             backend:
               service:
-                name: {{ include "rime.fullname" . }}-{{ .Values.rime.webServer.name }}
+                name: {{ include "rime.fullname" . }}-grpc-web-server
                 port:
-                  number: {{ .Values.rime.webServer.grpcRestPort }}
-          - path: /v1-beta/data-collector
+                  number: {{ .Values.ports.grpcWebREST }}
+          - path: /v1/datacollector/datapoints
             pathType: Prefix
             backend:
               service:
-                name: {{ include "rime.fullname" . }}-{{ .Values.rime.dataCollectorServer.name }}
+                name: {{ include "rime.fullname" . }}-data-collector-server
                 port:
-                  number: {{ .Values.rime.dataCollectorServer.restPort }}
-          - path: /v1-beta/firewall
-            pathType: Prefix
-            backend:
-              service:
-                name: {{ include "rime.fullname" . }}-{{ .Values.rime.firewallServer.name }}
-                port:
-                  number: {{ .Values.rime.firewallServer.restPort }}
+                  number: {{ .Values.ports.dataCollectorREST }}
           - path: /v1/firewall
             pathType: Prefix
             backend:
               service:
-                name: {{ include "rime.fullname" . }}-{{ .Values.rime.firewallServer.name }}
+                name: {{ include "rime.fullname" . }}-firewall-server
                 port:
-                  number: {{ .Values.rime.firewallServer.restPort }}
-          - path: /v1-beta/monitors
+                  number: {{ .Values.ports.firewallREST }}
+          - path: /v1/firewall/data
             pathType: Prefix
             backend:
               service:
-                name: {{ include "rime.fullname" . }}-{{ .Values.rime.firewallServer.name }}
+                name: {{ include "rime.fullname" . }}-model-testing
                 port:
-                  number: {{ .Values.rime.firewallServer.restPort }}
-          - path: /v1-beta/custom-monitors
+                  number: {{ .Values.ports.modelTestingREST }}
+          - path: /v1/firewall/incremental
             pathType: Prefix
             backend:
               service:
-                name: {{ include "rime.fullname" . }}-{{ .Values.rime.firewallServer.name }}
+                name: {{ include "rime.fullname" . }}-model-testing
                 port:
-                  number: {{ .Values.rime.firewallServer.restPort }}
-          - path: /v1-beta/detection-events
+                  number: {{ .Values.ports.modelTestingREST }}
+          - path: /v1/firewall/reference
             pathType: Prefix
             backend:
               service:
-                name: {{ include "rime.fullname" . }}-{{ .Values.rime.firewallServer.name }}
+                name: {{ include "rime.fullname" . }}-model-testing
                 port:
-                  number: {{ .Values.rime.firewallServer.restPort }}
-          - path: /v1-beta/file-scans
+                  number: {{ .Values.ports.modelTestingREST }}
+          - path: /v1/file-scans
             pathType: Prefix
             backend:
               service:
-                name: {{ include "rime.fullname" . }}-{{ .Values.rime.modelTestingServer.name }}
+                name: {{ include "rime.fullname" . }}-model-testing
                 port:
-                  number: {{ .Values.rime.modelTestingServer.restPort }}
-          - path: /v1/logs
+                  number: {{ .Values.ports.modelTestingREST }}
+          - path: /v1/modelcards
             pathType: Prefix
             backend:
               service:
-                name: {{ include "rime.fullname" . }}-{{ .Values.rime.modelTestingServer.name }}
+                name: {{ include "rime.fullname" . }}-model-card
                 port:
-                  number: {{ .Values.rime.modelTestingServer.restPort }}
-          - path: /v1-beta/modelcards
-            pathType: Prefix
-            backend:
-              service:
-                name: {{ include "rime.fullname" . }}-{{ .Values.rime.webServer.name }}
-                port:
-                  number: {{ .Values.rime.webServer.grpcRestPort }}
+                  number: {{ .Values.ports.modelCardREST }}
           - path: /v1/images
             pathType: Prefix
             backend:
               service:
-                name: {{ include "rime.fullname" . }}-{{ .Values.rime.imageRegistryServer.name }}
+                name: {{ include "rime.fullname" . }}-image-registry
                 port:
-                  number: {{ .Values.rime.imageRegistryServer.restPort }}
-          - path: /v1-beta/jobs
+                  number: {{ .Values.ports.imageRegistryREST }}
+          - path: /v1/logs
             pathType: Prefix
             backend:
               service:
-                name: {{ include "rime.fullname" . }}-{{ .Values.rime.webServer.name }}
+                name: {{ include "rime.fullname" . }}-model-testing
                 port:
-                  number: {{ .Values.rime.webServer.grpcRestPort }}
+                  number: {{ .Values.ports.modelTestingREST }}
+          - path: /v1/jobs
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "rime.fullname" . }}-grpc-web-server
+                port:
+                  number: {{ .Values.ports.grpcWebREST }}
           - path: /v1/organizations
             pathType: Prefix
             backend:
               service:
-                name: {{ include "rime.fullname" . }}-{{ .Values.rime.webServer.name }}
+                name: {{ include "rime.fullname" . }}-grpc-web-server
                 port:
-                  number: {{ .Values.rime.webServer.grpcRestPort }}
+                  number: {{ .Values.ports.grpcWebREST }}
           - path: /v1/projects
             pathType: Prefix
             backend:
               service:
-                name: {{ include "rime.fullname" . }}-{{ .Values.rime.webServer.name }}
+                name: {{ include "rime.fullname" . }}-grpc-web-server
                 port:
-                  number: {{ .Values.rime.webServer.grpcRestPort }}
+                  number: {{ .Values.ports.grpcWebREST }}
           - path: /v1/stress-tests
             pathType: Prefix
             backend:
               service:
-                name: {{ include "rime.fullname" . }}-{{ .Values.rime.modelTestingServer.name }}
+                name: {{ include "rime.fullname" . }}-model-testing
                 port:
-                  number: {{ .Values.rime.modelTestingServer.restPort }}
-          - path: /v1/continuous-tests
-            pathType: Prefix
-            backend:
-              service:
-                name: {{ include "rime.fullname" . }}-{{ .Values.rime.modelTestingServer.name }}
-                port:
-                  number: {{ .Values.rime.modelTestingServer.restPort }}
+                  number: {{ .Values.ports.modelTestingREST }}
           - path: /v1/test-cases
             pathType: Prefix
             backend:
               service:
-                name: {{ include "rime.fullname" . }}-{{ .Values.rime.webServer.name }}
+                name: {{ include "rime.fullname" . }}-grpc-web-server
                 port:
-                  number: {{ .Values.rime.webServer.grpcRestPort }}
+                  number: {{ .Values.ports.grpcWebREST }}
           - path: /v1/test-runs
             pathType: Prefix
             backend:
               service:
-                name: {{ include "rime.fullname" . }}-{{ .Values.rime.webServer.name }}
+                name: {{ include "rime.fullname" . }}-grpc-web-server
                 port:
-                  number: {{ .Values.rime.webServer.grpcRestPort }}
+                  number: {{ .Values.ports.grpcWebREST }}
           - path: /v1/workspace
             pathType: Prefix
             backend:
               service:
-                name: {{ include "rime.fullname" . }}-{{ .Values.rime.webServer.name }}
+                name: {{ include "rime.fullname" . }}-grpc-web-server
                 port:
-                  number: {{ .Values.rime.webServer.grpcRestPort }}
-          - path: /v1-beta/integrations
+                  number: {{ .Values.ports.grpcWebREST }}
+          - path: /v1/data-sources
             pathType: Prefix
             backend:
               service:
-                name: {{ include "rime.fullname" . }}-{{ .Values.rime.webServer.name }}
+                name: {{ include "rime.fullname" . }}-grpc-web-server
                 port:
-                  number: {{ .Values.rime.webServer.grpcRestPort }}
-          - path: /internal/config-validator
-            pathType: Prefix
-            backend:
-              service:
-                name: {{ include "rime.fullname" . }}-{{ .Values.rime.webServer.name }}
-                port:
-                  number: {{ .Values.rime.webServer.grpcRestPort }}
+                  number: {{ .Values.ports.grpcWebREST }}
           - path: /v1
             pathType: Prefix
             backend:
               service:
-                name: {{ include "rime.fullname" . }}-{{ .Values.rime.webServer.name }}
+                name: {{ include "rime.fullname" . }}-grpc-web-server
                 port:
-                  number: {{ .Values.rime.webServer.port }}
-          - path: /socket.io
-            pathType: Prefix
-            backend:
-              service:
-                name: {{ include "rime.fullname" . }}-{{ .Values.rime.frontendServer.name }}
-                port:
-                  number: {{ .Values.rime.frontendServer.port }}
-          - path: /bff
-            pathType: Prefix
-            backend:
-              service:
-                name: {{ include "rime.fullname" . }}-{{ .Values.rime.frontendServer.name }}
-                port:
-                  number: {{ .Values.rime.frontendServer.port }}
+                  name: nativerestweb
+

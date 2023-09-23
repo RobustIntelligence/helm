@@ -1,0 +1,111 @@
+{{- if .Values.databaseSetup.initClusterMetadataHook.enabled }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "rime.fullname" . }}-init-cluster-metadata
+  annotations:
+    # This is what defines this resource as a hook. Without this line, the
+    # job is considered part of the release.
+    # NOTE: post-upgrade relies on the database-setup script being idempotent.
+    "helm.sh/hook": post-install,post-upgrade
+    # Hooks are sorted in ascending order -> this should run after the index creation job.
+    "helm.sh/hook-weight": "2"
+    "helm.sh/hook-delete-policy": before-hook-creation
+spec:
+  template:
+    metadata:
+      labels:
+        tags.datadoghq.com/service: init-cluster-metadata
+      annotations:
+        {{- if .Values.rime.datadogTagPodAnnotation }}
+        ad.datadoghq.com/tags: '{{ .Values.rime.datadogTagPodAnnotation }}'
+        {{- end }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: init-cluster-metadata
+          env:
+            {{- include "rime.commonEnv" . | nindent 12 }}
+            {{- include "rime.webAppHostEnv" . | nindent 12 }}
+            - name: SMTP_EMAIL
+              valueFrom:
+                secretKeyRef:
+                  name: rime-notifications-secret
+                  key: smtp_email
+                  optional: true
+            - name: SMTP_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: rime-notifications-secret
+                  key: smtp_password
+                  optional: true
+            - name: SMTP_SERVER
+              valueFrom:
+                secretKeyRef:
+                  name: rime-notifications-secret
+                  key: smtp_server
+                  optional: true
+            - name: SMTP_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: rime-notifications-secret
+                  key: smtp_port
+                  optional: true
+            - name: ADMIN_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name:  {{ template "rime.secrets" . }}
+                  key: admin-username
+                  optional: true
+            - name: ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ template "rime.secrets" . }}
+                  key: admin-password
+                  optional: true
+            - name: OIDC_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: rime-oidc-secret
+                  key: client_id
+                  optional: true
+            - name: OIDC_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: rime-oidc-secret
+                  key: client_secret
+                  optional: true
+            - name: OIDC_WELL_KNOWN_URL
+              valueFrom:
+                secretKeyRef:
+                  name: rime-oidc-secret
+                  key: well_known_url
+                  optional: true
+          image: "{{ .Values.backendImage.name }}"
+          imagePullPolicy: "{{ .Values.backendImage.pullPolicy }}"
+          command:
+            - "/rime/dbworker"
+          args:
+            - "init-cluster-metadata"
+            - "-database-name=rime-store"
+            - "--database-url={{ include "rime.fullname" . }}-mongodb-headless/?tls=false"
+            - "--database-url-prefix=mongodb+srv://"
+            - "-replica-set-name={{ .Values.mongodb.replicaSetName }}"
+            - "-overwrite-feature-flags={{ .Values.databaseSetup.initClusterMetadataHook.overwriteLicense }}"
+            {{if .Values.imageRegistry.create}}
+            - "--image-registry-addr={{ include "rime.fullname" . }}-image-registry:{{ .Values.ports.imageRegistryServer }}"
+            {{end }}
+            # 4 minute timeout because the maximum execution time for a helm chart hook is 5 min.
+            - "-timeout=4m"
+            {{- if .Values.rime.verbose }}
+            - "-verbose"
+            {{- end }}
+            {{- if .Values.databaseSetup.debug }}
+            - "-debug"
+            {{- end}}
+      restartPolicy: OnFailure
+  backoffLimit: {{ .Values.databaseSetup.initClusterMetadataHook.backoffLimit }}
+{{- end }}

@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "rime-agent.jobMonitor.fullname" . }}
+  labels:
+    app: {{ include "rime-agent.jobMonitor.appName" . }}
+    {{- include "rime-agent.labels" . | nindent 4 }}
+    tags.datadoghq.com/service: {{ include "rime-agent.jobMonitor.appName" . }}
+spec:
+  # TODO (QuantumWombat) [RIME-7695] : figure out how to scale the job monitor horizontally.
+  # This will require divvying up the work between watchers, or having a single
+  # watcher and then a message queue with multiple consumers to process job events.
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ include "rime-agent.jobMonitor.appName" . }}
+      {{- include "rime-agent.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "rime-agent.jobMonitor.appName" . }}
+        {{- include "rime-agent.selectorLabels" . | nindent 8 }}
+        tags.datadoghq.com/service: {{ include "rime-agent.jobMonitor.appName" . }}
+      annotations:
+        {{- if .Values.rimeAgent.datadogTagPodAnnotation }}
+        ad.datadoghq.com/tags: '{{ .Values.rimeAgent.datadogTagPodAnnotation }}'
+        {{- end }}
+    spec:
+      imagePullSecrets:
+        {{- include "rime-agent.imagePullSecretsYaml" . | nindent 8 }}
+      serviceAccountName: {{ include "rime-agent.jobMonitor.fullname" . }}
+      containers:
+        - name: {{ .Chart.Name }}
+          image: {{ .Values.rimeAgent.image.name }}
+          imagePullPolicy: {{ .Values.rimeAgent.image.pullPolicy }}
+          resources:
+            {{- toYaml .Values.rimeAgent.jobMonitor.deployment.resources | nindent 12 }}
+          ports:
+            - name: monitor-debug
+              containerPort: 6060
+              protocol: TCP
+          env:
+            - name: API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "rime-agent.apiKeySecretName" .}}
+                  key: api-key
+                  optional: true
+          command:
+            - "/rime/job_monitor"
+          args:
+            - "--job-manager-addr={{ .Values.rimeAgent.jobManagerAddr }}"
+            {{- if .Values.rimeAgent.apiKey }}
+            - "--api-key=$(API_KEY)"
+            {{- end }}
+            {{- if .Values.rimeAgent.platformAddress }}
+            - "--platform-address={{ .Values.rimeAgent.platformAddress }}"
+            {{- end }}
+            {{- if .Values.rimeAgent.id }}
+            - "--id={{ .Values.rimeAgent.id }}"
+            {{- end }}
+            {{- if .Values.rimeAgent.jobMonitor.logArchival.enabled }}
+            - "--blob-store-bucket-name={{ .Values.rimeAgent.jobMonitor.logArchival.storageBucketName }}"
+            - "--blob-store-bucket-endpoint={{ .Values.rimeAgent.jobMonitor.logArchival.endpoint }}"
+            - "--blob-store-service-type={{ .Values.rimeAgent.jobMonitor.logArchival.type }}"
+            {{- end }}

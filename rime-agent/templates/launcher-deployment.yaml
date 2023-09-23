@@ -1,0 +1,78 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "rime-agent.launcher.fullname" . }}
+  labels:
+    app: {{ include "rime-agent.launcher.appName" . }}
+    {{- include "rime-agent.labels" . | nindent 4 }}
+    tags.datadoghq.com/service: {{ include "rime-agent.launcher.appName" . }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ include "rime-agent.launcher.appName" . }}
+      {{- include "rime-agent.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "rime-agent.launcher.appName" . }}
+        {{- include "rime-agent.selectorLabels" . | nindent 8 }}
+        tags.datadoghq.com/service: {{ include "rime-agent.launcher.appName" . }}
+      annotations:
+        {{- if .Values.rimeAgent.datadogTagPodAnnotation }}
+        ad.datadoghq.com/tags: '{{ .Values.rimeAgent.datadogTagPodAnnotation }}'
+        {{- end }}
+    spec:
+      imagePullSecrets:
+        {{- include "rime-agent.imagePullSecretsYaml" .  | nindent 8 }}
+      serviceAccountName: {{ include "rime-agent.launcher.fullname" . }}
+      containers:
+        - name: {{ .Chart.Name }}
+          image: {{ .Values.rimeAgent.image.name }}
+          imagePullPolicy: {{ .Values.rimeAgent.image.pullPolicy }}
+          resources:
+            {{- toYaml .Values.rimeAgent.launcher.deployment.resources | nindent 12 }}
+          env:
+            - name: API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "rime-agent.apiKeySecretName" .}}
+                  key: api-key
+                  optional: true
+          command:
+            - "/rime/launcher"
+          args:
+            - "--request-queue-proxy-addr={{ .Values.rimeAgent.launcher.requestQueueProxyAddr }}"
+            - "--job-service-account={{ template "rime-agent.modelTestJob.serviceAccountName" . }}"
+            {{- if (gt (len .Values.rimeAgent.imagePullSecrets) 0) -}}
+            {{- range .Values.rimeAgent.imagePullSecrets}}
+            - "--job-image-pull-secret={{ .name }}"
+            {{- end }}
+            {{- else }}
+            - "--job-image-pull-secret={{include "rime-agent.dockerSecretName" .}}"
+            {{- end }}
+            {{- if .Values.rimeAgent.jobManagerAddr }}
+            - "--job-manager-addr={{ .Values.rimeAgent.jobManagerAddr }}"
+            {{- end }}
+            {{- if .Values.rimeAgent.grpcWebServerAddr }}
+            - "--grpc-web-server-addr={{ .Values.rimeAgent.grpcWebServerAddr }}"
+            {{- end }}
+            {{- if .Values.rimeAgent.agentManagerAddr}}
+            - "--agent-manager-addr={{ .Values.rimeAgent.agentManagerAddr }}"
+            {{- end }}
+            {{- if .Values.rimeAgent.apiKey }}
+            - "--api-key=$(API_KEY)"
+            {{- end }}
+            {{- if .Values.rimeAgent.platformAddress }}
+            - "--platform-address={{ .Values.rimeAgent.platformAddress }}"
+            {{- end }}
+            {{- if .Values.rimeAgent.id }}
+            - "--id={{ .Values.rimeAgent.id }}"
+            {{- end }}
+            {{- if .Values.rimeAgent.local.enabled }}
+            - "--local-data-mount-path={{ .Values.rimeAgent.local.mountPath}}"
+            - "--local-data-host-path={{ .Values.rimeAgent.local.hostPath}}"
+            {{- end }}
+            {{- if .Values.rimeAgent.verbose }}
+            - "--verbose"
+            {{- end }}

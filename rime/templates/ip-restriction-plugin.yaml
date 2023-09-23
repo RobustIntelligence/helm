@@ -1,0 +1,12 @@
+{{- if and .Values.rime.ipAllowlist .Values.kong.ingressController.enabled }}
+apiVersion: configuration.konghq.com/v1
+kind: KongPlugin
+metadata:
+  name: ip-restriction
+config:
+  allow:
+  {{- range .Values.rime.ipAllowlist}}
+  - {{ . }}
+  {{- end }}
+plugin: ip-restriction
+{{- end }}

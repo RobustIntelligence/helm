@@ -1,0 +1,13 @@
+{{- if .Values.kong.ingressController.enabled }}
+apiVersion: configuration.konghq.com/v1
+kind: KongPlugin
+metadata:
+  name: custom-key-auth
+config:
+  validation_endpoint: http://{{ include "rime.fullname" . }}-auth-server.{{.Release.Namespace}}.svc.cluster.local:{{.Values.ports.authServer}}/v1/auth/validate
+  map_headers:
+  - X-Rime-Api-Key-Name:rime-api-key-name
+  - X-Rime-Workspace:x-rime-workspace
+  - X-Rime-User:x-rime-user
+plugin: custom-key-auth
+{{- end }}
