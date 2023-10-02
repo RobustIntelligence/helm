@@ -34,6 +34,7 @@ spec:
         {{- with .Values.rime.dataCollectorServer.deployment.annotations }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
+        {{- include "rime.monitoringAnnotations" (dict "monitoring" .Values.rime.monitoring "name" .Values.rime.dataCollectorServer.name ) | nindent 8 }}
         checksum/config: {{ include (print $.Template.BasePath "/data-collector-server/configmap.yaml") . | sha256sum }}
     spec:
       {{- with .Values.rime.images.imagePullSecrets }}
@@ -100,16 +101,9 @@ spec:
             - "/rime/rime"
           args:
             - "start-data-collector-server"
-            {{- if .Values.tls.grpcEnabled }}
-            - "--auth-mode=tls"
-            {{ end }}
             - "--server-config-path=/config/server.config"
             - "--data-collector-port={{ .Values.rime.dataCollectorServer.port }}"
             - "--data-collector-rest-port={{ .Values.rime.dataCollectorServer.restPort }}"
-            {{- if .Values.rime.monitoring.enabled }}
-            - "--metrics-exposition-enabled=true"
-            - "--metrics-exposition-port={{ .Values.rime.monitoring.port }}"
-            {{- end }}
           volumeMounts:
             - name: {{ include "rime.fullname" . }}-{{ .Values.rime.dataCollectorServer.name }}-config
               mountPath: "/config"
@@ -126,8 +120,13 @@ spec:
       volumes:
         # Volumes are defined at the Pod level, then mounted into containers within that Pod
         - name: {{ include "rime.fullname" . }}-{{ .Values.rime.dataCollectorServer.name }}-config
+          {{- if ne .Values.rime.dataCollectorServer.existingConfigSecretName "" }}
+          secret:
+            secretName: {{ .Values.rime.dataCollectorServer.existingConfigSecretName }}
+          {{- else }}
           configMap:
             name: {{ include "rime.fullname" . }}-{{ .Values.rime.dataCollectorServer.name }}-conf
+          {{- end }}
             items:
               - key: "server.config"
                 path: "server.config"

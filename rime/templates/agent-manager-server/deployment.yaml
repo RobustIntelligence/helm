@@ -34,6 +34,7 @@ spec:
         {{- with .Values.rime.agentManagerServer.deployment.annotations }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
+        {{- include "rime.monitoringAnnotations" (dict "monitoring" .Values.rime.monitoring "name" .Values.rime.agentManagerServer.name ) | nindent 8 }}
         checksum/config: {{ include (print $.Template.BasePath "/agent-manager-server/configmap.yaml") . | sha256sum }}
     spec:
       {{- with .Values.rime.images.imagePullSecrets }}
@@ -57,6 +58,7 @@ spec:
                   name: rimecreds
                 {{- end }}
                   key: .dockerconfigjson
+                  optional: true
             {{- with .Values.rime.agentManagerServer.deployment.extraEnv }}
               {{- toYaml . | nindent 12 }}
             {{- end }}
@@ -109,18 +111,11 @@ spec:
             - "/rime/rime"
           args:
             - "start-agent-manager-server"
-            {{- if .Values.tls.grpcEnabled }}
-            - "--auth-mode=tls"
-            {{ end }}
             - "--server-config-path=/config/server.config"
             - "--agent-manager-port={{ .Values.rime.agentManagerServer.port }}"
             - "--agent-manager-rest-port={{ .Values.rime.agentManagerServer.restPort }}"
             - "--docker-creds-json=$(DOCKER_CREDS_JSON)"
             - "--platform-address-domain={{ .Values.rime.domain }}"
-            {{- if .Values.rime.monitoring.enabled }}
-            - "--metrics-exposition-enabled=true"
-            - "--metrics-exposition-port={{ .Values.rime.monitoring.port }}"
-            {{- end }}
           volumeMounts:
             - name: {{ include "rime.fullname" . }}-{{ .Values.rime.agentManagerServer.name }}-config
               mountPath: "/config"
@@ -137,8 +132,13 @@ spec:
       volumes:
         # Volumes are defined at the Pod level, then mounted into containers within that Pod
         - name: {{ include "rime.fullname" . }}-{{ .Values.rime.agentManagerServer.name }}-config
+          {{- if ne .Values.rime.agentManagerServer.existingConfigSecretName "" }}
+          secret:
+            secretName: {{ .Values.rime.agentManagerServer.existingConfigSecretName }}
+          {{- else }}
           configMap:
             name: {{ include "rime.fullname" . }}-{{ .Values.rime.agentManagerServer.name }}-conf
+          {{- end }}
             items:
               - key: "server.config"
                 path: "server.config"
