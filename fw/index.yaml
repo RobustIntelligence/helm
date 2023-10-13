@@ -1,0 +1,88 @@
+apiVersion: v1
+entries:
+  ri-firewall:
+  - apiVersion: v2
+    appVersion: v2.4.0-rc.8
+    created: "2023-10-13T22:39:42.843510085Z"
+    dependencies:
+    - name: ingress-nginx
+      repository: https://kubernetes.github.io/ingress-nginx
+      version: 4.2.0
+    description: A Helm chart for the Robust Intelligence Firewall.
+    digest: 42d28c54a635de164c1007cfc5dc1a202748b77ecaceb60a7bc68657d2da381a
+    kubeVersion: '>=1.20.0-0'
+    name: ri-firewall
+    type: application
+    urls:
+    - https://robustintelligence.github.io/helm/fw/ri-firewall-0.0.1-rc.0.tgz
+    version: 0.0.1-rc.0
+  rime-extras:
+  - apiVersion: v2
+    appVersion: v2.4.0-rc.8
+    created: "2023-10-13T22:39:42.859706949Z"
+    dependencies:
+    - condition: rimeExtras.datadog
+      name: datadog
+      repository: https://helm.datadoghq.com
+      version: 3.32.8
+    - condition: rimeExtras.velero
+      name: velero
+      repository: https://vmware-tanzu.github.io/helm-charts
+      version: 2.23.6
+    - condition: rimeExtras.prometheusNodeExporter
+      name: prometheus-node-exporter
+      repository: https://prometheus-community.github.io/helm-charts
+      version: 4.22.0
+    description: A Helm chart for RIME's extra resources
+    digest: 95b526777ebe6e35583ece8302ef214e970ac2fd41bf190980e53577b169f358
+    name: rime-extras
+    type: application
+    urls:
+    - https://robustintelligence.github.io/helm/fw/rime-extras-0.0.1-rc.0.tgz
+    version: 0.0.1-rc.0
+  rime-kube-system:
+  - apiVersion: v2
+    appVersion: v2.4.0-rc.8
+    created: "2023-10-13T22:39:42.879363248Z"
+    dependencies:
+    - condition: rimeSystem.clusterAutoscaler
+      name: cluster-autoscaler
+      repository: https://kubernetes.github.io/autoscaler
+      version: 9.28.0
+    - condition: rimeSystem.externalDns
+      name: external-dns
+      repository: https://kubernetes-sigs.github.io/external-dns/
+      version: 1.10.1
+    - condition: rimeSystem.awsLoadBalancerController
+      name: aws-load-balancer-controller
+      repository: https://aws.github.io/eks-charts
+      version: 1.5.5
+    - condition: rimeSystem.metricsServer
+      name: metrics-server
+      repository: https://kubernetes-sigs.github.io/metrics-server/
+      version: 3.8.2
+    - condition: cert-manager.enabled
+      name: cert-manager
+      repository: https://charts.jetstack.io
+      version: v1.10.0
+    - condition: rimeSystem.ingressNginx
+      name: ingress-nginx
+      repository: https://kubernetes.github.io/ingress-nginx
+      version: 4.7.1
+    - condition: rimeSystem.awsLoadBalancerController
+      name: aws-load-balancer-crds-2-6-1
+      repository: file://./charts/aws-load-balancer-controller-crds-2-6-1
+      version: v0.0.1
+    - condition: rimeSystem.kserve
+      name: kserve
+      repository: https://robustintelligence.github.io/helm
+      version: v0.11.1
+    description: A Helm chart for RIME's kubesystem resources
+    digest: 769a456d5d6b7b444ae2288f2fc191b9e7540d0dcb16253211befef418813e35
+    kubeVersion: '>=1.24.0-0'
+    name: rime-kube-system
+    type: application
+    urls:
+    - https://robustintelligence.github.io/helm/fw/rime-kube-system-0.0.1-rc.0.tgz
+    version: 0.0.1-rc.0
+generated: "2023-10-13T22:39:42.837530607Z"
