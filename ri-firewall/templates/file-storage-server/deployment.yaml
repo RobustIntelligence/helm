@@ -1,0 +1,81 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "ri-firewall.fullname" . }}-{{ .Values.riFirewall.fileStorageServer.name }}
+  labels:
+    app: {{ .Values.riFirewall.fileStorageServer.name }}
+    {{- with .Values.riFirewall.fileStorageServer.deployment.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  annotations:
+    {{- include "ri-firewall.annotations" . | nindent 4 }}
+    {{- with .Values.riFirewall.fileStorageServer.deployment.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Values.riFirewall.fileStorageServer.name }}
+  {{- if not .Values.riFirewall.fileStorageServer.hpa.enabled }}
+  replicas: {{ .Values.riFirewall.fileStorageServer.deployment.replicaCount }}
+  {{- end }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.riFirewall.fileStorageServer.name }}
+        {{- with .Values.riFirewall.fileStorageServer.deployment.labels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      annotations:
+        {{- include "ri-firewall.annotations" . | nindent 8 }}
+        {{- with .Values.riFirewall.fileStorageServer.deployment.annotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        checksum/config: {{ include (print $.Template.BasePath "/file-storage-server/configmap.yaml") . | sha256sum }}
+    spec:
+      {{- with .Values.riFirewall.images.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "ri-firewall.fileStorageServer.serviceAccountName" . }}
+      containers:
+        - name: {{ .Values.riFirewall.fileStorageServer.name }}
+          image: "{{ .Values.riFirewall.images.backendImage.registry}}/{{ .Values.riFirewall.images.backendImage.name }}"
+          imagePullPolicy: {{ .Values.riFirewall.images.backendImage.pullPolicy }}
+          env:
+            - name: RI_SERVICE_NAME
+              value: {{ .Values.riFirewall.fileStorageServer.name }}
+          ports:
+            - name: fs
+              containerPort: {{ .Values.riFirewall.fileStorageServer.port }}
+              protocol: TCP
+            - name: fs-rest
+              containerPort: {{ .Values.riFirewall.fileStorageServer.restPort }}
+              protocol: TCP
+            - name: fs-debug
+              containerPort: 6060
+              protocol: TCP
+          resources:
+            {{- toYaml .Values.riFirewall.fileStorageServer.deployment.resources | nindent 12 }}
+          command:
+            - "/ri/firewall"
+          args:
+            - "start-file-storage-server"
+            - "--server-config-path=/config/server.config"
+            - "--file-storage-port={{ .Values.riFirewall.fileStorageServer.port }}"
+            - "--file-storage-rest-port={{ .Values.riFirewall.fileStorageServer.restPort }}"
+            - "--blob-store-bucket-name={{ .Values.riFirewall.fileStorageServer.config.storageBucketName }}"
+            - "--blob-store-bucket-endpoint={{ .Values.riFirewall.fileStorageServer.config.endpoint }}"
+            - "--blob-store-service-type={{ .Values.riFirewall.fileStorageServer.config.type }}"
+          volumeMounts:
+            - name: {{ include "ri-firewall.fullname" . }}-{{ .Values.riFirewall.fileStorageServer.name }}-config
+              mountPath: "/config"
+              readOnly: true
+      volumes:
+        # Volumes are defined at the Pod level, then mounted into containers within that Pod
+        - name: {{ include "ri-firewall.fullname" . }}-{{ .Values.riFirewall.fileStorageServer.name }}-config
+          configMap:
+            name: {{ include "ri-firewall.fullname" . }}-{{ .Values.riFirewall.fileStorageServer.name }}-conf
+            items:
+              - key: "server.config"
+                path: "server.config"
