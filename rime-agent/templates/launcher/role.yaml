@@ -6,6 +6,6 @@ metadata:
   name: {{ include "rime-agent.launcher.serviceAccountName" . }}
 rules:
   - apiGroups: ["rbst.io"]
-    resources: [rimejobs]
+    resources: [rimejobs, crossplanerpcjobs]
     verbs: [get, create, update, patch, delete, list]
 {{- end }}

@@ -1,0 +1,250 @@
+riFirewall:
+  # @ignored -- Override for the chart name. If used, this will be appended to the
+  # release name to form the fully qualified app name
+  # (e.g., `rime-${nameOverride}` instead of just `rime`)
+  nameOverride: ""
+  # Common annotations added to all K8s resources
+  commonAnnotations: {}
+  # Common labels added to all K8s resources
+  commonLabels: {}
+
+  secrets:
+    existingIntegrationSecretsName: ""
+    existingAuthSecretsName: ""
+    auth0:
+      domain: ""
+      clientID: ""
+      clientSecret: ""
+      callback: ""
+
+  userFirewallConfig:
+    baseConfig: {}
+
+  # -- Image specification for the RI Firewall.
+  # @default -- (see individual values in `values.yaml`)
+  images:
+    imagePullSecrets:
+      - name: rimecreds
+    backendImage:
+      registry: "docker.io"
+      name: "robustintelligencehq/firewall-backend:latest"
+      pullPolicy: "Always"
+    firewallServerImage:
+      registry: "docker.io"
+      name: "robustintelligencehq/ri-firewall:latest"
+      pullPolicy: "Always"
+
+  firewallServer:
+    name: "firewall-server"
+    proxyPort: 8081
+    firewallServerLocalPort: 50052
+    # -- Account used by services that need access to blob storage.
+    serviceAccount:
+      name: ""
+      annotations: {
+        # -- Specify ARN of IRSA-enabled Blob Storage IAM role here
+        eks.amazonaws.com/role-arn: ""
+      }
+      labels: {}
+    # Service for the firewall-server
+    service:
+      type: ClusterIP
+      annotations: {}
+      labels: {}
+    # Horizontal Pod Autoscaler for the firewall-server.
+    hpa:
+      annotations: {}
+      labels: {}
+      enabled: true
+      minReplicas: 1
+      maxReplicas: 10
+      metrics:
+        - type: Resource
+          resource:
+            name: cpu
+            target:
+              type: Utilization
+              averageUtilization: 60
+    # Deployment for the firewall server.
+    deployment:
+      annotations: {}
+      labels: {}
+      # Replica count for the firewall-server: only use if HPA disabled.
+      replicaCount: 1
+      # Resources for the firewall server container.
+      serverResources:
+        limits:
+          memory: 8000Mi
+        requests:
+          cpu: 500m
+          memory: 8000Mi
+      # Resources for the gRPC-gateway proxy container.
+      proxyResources:
+        limits:
+          memory: 100Mi
+        requests:
+          cpu: 100m
+          memory: 100Mi
+
+  fileStorageServer:
+    name: "file-storage-server"
+    port: 5019
+    restPort: 15019
+    config:
+      # -- The bucket name of the S3 bucket used as the blob storage.
+      storageBucketName: ""
+      endpoint: "s3.amazonaws.com"
+      type: "s3"
+    # -- Account used by services that need access to blob storage.
+    serviceAccount:
+      name: ""
+      annotations: {
+        # -- Specify ARN of IRSA-enabled Blob Storage IAM role here
+        eks.amazonaws.com/role-arn: ""
+      }
+      labels: {}
+    service:
+      type: ClusterIP
+      annotations: {}
+      labels: {}
+    hpa:
+      annotations: {}
+      labels: {}
+      enabled: true
+      minReplicas: 1
+      maxReplicas: 10
+      metrics:
+        - type: Resource
+          resource:
+            name: cpu
+            target:
+              type: Utilization
+              averageUtilization: 60
+    deployment:
+      annotations: {}
+      labels: {}
+      replicaCount: 1
+      resources:
+        limits:
+          memory: 90Mi
+        requests:
+          cpu: 100m
+          memory: 90Mi
+
+  authServer:
+    name: "auth-server"
+    port: 15021
+    service:
+      type: ClusterIP
+      annotations: {}
+      labels: {}
+    hpa:
+      annotations: {}
+      labels: {}
+      enabled: true
+      minReplicas: 1
+      maxReplicas: 10
+      metrics:
+        - type: Resource
+          resource:
+            name: cpu
+            target:
+              type: Utilization
+              averageUtilization: 60
+    deployment:
+      annotations: {}
+      labels: {}
+      replicaCount: 1
+      resources:
+        limits:
+          memory: 90Mi
+        requests:
+          cpu: 100m
+          memory: 90Mi
+    tokenLifetimeHours:
+      userTokenLifetime: 10  # 10 hours
+      systemTokenLifetime: 720  # 30 days
+
+  # The configuration server handles user configuration.
+  # It is responsible for storing user configuration, propagating updates to the
+  # firewall server, and allowing file uploads.
+  configServer:
+    name: "config-server"
+    port: 5022
+    restPort: 15022
+    serviceAccount:
+      create: true
+      # If not set and create is true, a name is generated using the fullname template
+      name:
+      annotations: {}
+      labels: {}
+    service:
+      type: ClusterIP
+      annotations: {}
+      labels: {}
+    hpa:
+      annotations: {}
+      labels: {}
+      enabled: true
+      minReplicas: 1
+      maxReplicas: 10
+      metrics:
+        - type: Resource
+          resource:
+            name: cpu
+            target:
+              type: Utilization
+              averageUtilization: 60
+    deployment:
+      annotations: {}
+      labels: {}
+      replicaCount: 1
+      resources:
+        limits:
+          memory: 90Mi
+        requests:
+          cpu: 100m
+          memory: 90Mi
+
+  ingress:
+    annotations: {}
+    labels: {}
+    tls: []
+    ingressClassName: nginx
+
+  # -- `monitoring` (Prometheus metrics/Datadog) K8s-level configurations
+  monitoring:
+    # -- Whether to enable Prometheus metrics for all services on the RIME cluster
+    enabled: true
+    # -- Port to expose Prometheus metrics on
+    port: 8080
+
+ingress-nginx:
+  imagePullSecrets:
+    - name: rimecreds
+  controller:
+    image:
+      registry: "docker.io"
+      image: "robustintelligencehq/ingress-nginx-controller"
+      tag: "v1.3.0"
+      digest: "sha256:067673df26a65ec5c2d5b30f25db869bad4d7d391fc81882250134577e581ef0"
+    scope:
+      enabled: true
+      # -- K8s namespace for the ingress
+      namespace: ""
+    ingressClassResource:
+      enabled: true
+      default: false
+    admissionWebhooks:
+      enabled: false
+    service:
+      targetPorts:
+        http: http
+        https: http
+      # -- For full list of annotations, see
+      # https://kubernetes-sigs.github.io/aws-load-balancer-controller/v2.2/guide/service/annotations/
+      annotations: {}
+      enableHttp: false
+    config:
+      force-ssl-redirect: "false"
+      ssl-redirect: "false"
