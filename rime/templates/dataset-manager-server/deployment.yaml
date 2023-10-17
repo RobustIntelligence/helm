@@ -35,8 +35,10 @@ spec:
         {{- with .Values.rime.datasetManagerServer.deployment.annotations }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
+        {{- include "rime.monitoringAnnotations" (dict "monitoring" .Values.rime.monitoring "name" .Values.rime.datasetManagerServer.name ) | nindent 8 }}
         checksum/config: {{ include (print $.Template.BasePath "/dataset-manager-server/configmap.yaml") . | sha256sum }}
     spec:
+      priorityClassName: {{ .Values.rime.datasetManagerServer.deployment.priorityClassName }}
       {{- with .Values.rime.images.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
@@ -102,19 +104,12 @@ spec:
             - "/rime/rime"
           args:
             - "start-dataset-manager-server"
-            {{- if .Values.tls.grpcEnabled }}
-            - "--auth-mode=tls"
-            {{ end }}
             - "--server-config-path=/config/server.config"
             - "--dataset-manager-port={{ .Values.rime.datasetManagerServer.port }}"
             - "--dataset-manager-rest-port={{ .Values.rime.datasetManagerServer.restPort }}"
             - "--blob-store-bucket-name={{ .Values.rime.datasetManagerServer.config.storageBucketName }}"
             - "--blob-store-bucket-endpoint={{ .Values.rime.datasetManagerServer.config.endpoint }}"
             - "--blob-store-service-type={{ .Values.rime.datasetManagerServer.config.type }}"
-            {{- if .Values.rime.monitoring.enabled }}
-            - "--metrics-exposition-enabled=true"
-            - "--metrics-exposition-port={{ .Values.rime.monitoring.port }}"
-            {{- end }}
           volumeMounts:
             - name: {{ include "rime.fullname" . }}-{{ .Values.rime.datasetManagerServer.name }}-config
               mountPath: "/config"
@@ -131,8 +126,13 @@ spec:
       volumes:
         # Volumes are defined at the Pod level, then mounted into containers within that Pod
         - name: {{ include "rime.fullname" . }}-{{ .Values.rime.datasetManagerServer.name }}-config
+          {{- if ne .Values.rime.datasetManagerServer.existingConfigSecretName "" }}
+          secret:
+            secretName: {{ .Values.rime.datasetManagerServer.existingConfigSecretName }}
+          {{- else }}
           configMap:
             name: {{ include "rime.fullname" . }}-{{ .Values.rime.datasetManagerServer.name }}-conf
+          {{- end }}
             items:
               - key: "server.config"
                 path: "server.config"
