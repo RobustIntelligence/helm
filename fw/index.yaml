@@ -3,7 +3,7 @@ entries:
   ri-firewall:
   - apiVersion: v2
     appVersion: v2.4.0-rc.9
-    created: "2023-10-17T09:50:37.011630833Z"
+    created: "2023-10-17T10:28:38.67976671Z"
     dependencies:
     - name: ingress-nginx
       repository: https://kubernetes.github.io/ingress-nginx
@@ -18,7 +18,7 @@ entries:
     version: 0.0.1-rc.5
   - apiVersion: v2
     appVersion: v2.4.0-rc.8
-    created: "2023-10-17T09:50:37.007104583Z"
+    created: "2023-10-17T10:28:38.675199023Z"
     dependencies:
     - name: ingress-nginx
       repository: https://kubernetes.github.io/ingress-nginx
@@ -32,14 +32,14 @@ entries:
     - https://robustintelligence.github.io/helm/fw/ri-firewall-0.0.1-rc.3.tgz
     version: 0.0.1-rc.3
   - apiVersion: v2
-    appVersion: v2.3.3-rc.2
-    created: "2023-10-17T09:50:37.00127252Z"
+    appVersion: v2.3.3
+    created: "2023-10-17T10:28:38.669476038Z"
     dependencies:
     - name: ingress-nginx
       repository: https://kubernetes.github.io/ingress-nginx
       version: 4.2.0
     description: A Helm chart for the Robust Intelligence Firewall.
-    digest: f1cedf34f9b9e71e38ef9f19df2cf093bdcf5edf96b42754eb0ba412759f73c0
+    digest: 5f65de87fd56efdc7137d744501d2a57eb94c3a27bff0009593ed3a6d4bf8ead
     kubeVersion: '>=1.20.0-0'
     name: ri-firewall
     type: application
@@ -49,7 +49,7 @@ entries:
   rime-extras:
   - apiVersion: v2
     appVersion: v2.4.0-rc.9
-    created: "2023-10-17T09:50:37.051408366Z"
+    created: "2023-10-17T10:28:38.719786601Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -72,7 +72,7 @@ entries:
     version: 0.0.1-rc.5
   - apiVersion: v2
     appVersion: v2.4.0-rc.8
-    created: "2023-10-17T09:50:37.037852518Z"
+    created: "2023-10-17T10:28:38.705746139Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -94,8 +94,8 @@ entries:
     - https://robustintelligence.github.io/helm/fw/rime-extras-0.0.1-rc.3.tgz
     version: 0.0.1-rc.3
   - apiVersion: v2
-    appVersion: v2.3.3-rc.2
-    created: "2023-10-17T09:50:37.024596474Z"
+    appVersion: v2.3.3
+    created: "2023-10-17T10:28:38.693070274Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -110,7 +110,7 @@ entries:
       repository: https://prometheus-community.github.io/helm-charts
       version: 4.22.0
     description: A Helm chart for RIME's extra resources
-    digest: 24c892618d61fdb48b20afaddf3abef99d13916c258f016c91d0e58cf577c18b
+    digest: bfa52351af29eac8b919e24513964979b5ae97be58c4f9d933fdc156c89619f0
     name: rime-extras
     type: application
     urls:
@@ -119,7 +119,7 @@ entries:
   rime-kube-system:
   - apiVersion: v2
     appVersion: v2.4.0-rc.9
-    created: "2023-10-17T09:50:37.114290351Z"
+    created: "2023-10-17T10:28:38.765000078Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -163,7 +163,7 @@ entries:
     version: 0.0.1-rc.5
   - apiVersion: v2
     appVersion: v2.4.0-rc.8
-    created: "2023-10-17T09:50:37.095864351Z"
+    created: "2023-10-17T10:28:38.748939122Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -206,8 +206,8 @@ entries:
     - https://robustintelligence.github.io/helm/fw/rime-kube-system-0.0.1-rc.3.tgz
     version: 0.0.1-rc.3
   - apiVersion: v2
-    appVersion: v2.3.3-rc.2
-    created: "2023-10-17T09:50:37.071777688Z"
+    appVersion: v2.3.3
+    created: "2023-10-17T10:28:38.732808166Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -238,11 +238,11 @@ entries:
       repository: file://./charts/aws-load-balancer-controller-crds-2-5-4
       version: v0.0.1
     description: A Helm chart for RIME's kubesystem resources
-    digest: d9e81d4283ac9da0de2d6313d7683a064a13f4a9c4a98b17a3946c7c199ef21c
+    digest: 3bd7dcb6701f9e894885b43b809c67e45142deee4301148fbdf4b13b1f27e882
     kubeVersion: '>=1.24.0-0'
     name: rime-kube-system
     type: application
     urls:
     - https://robustintelligence.github.io/helm/fw/rime-kube-system-0.0.1-rc.0.tgz
     version: 0.0.1-rc.0
-generated: "2023-10-17T09:50:36.996354566Z"
+generated: "2023-10-17T10:28:38.664764051Z"
