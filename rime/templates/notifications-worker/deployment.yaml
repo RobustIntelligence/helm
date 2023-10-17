@@ -34,6 +34,7 @@ spec:
         {{- with .Values.rime.notificationsWorker.deployment.annotations }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
+        {{- include "rime.monitoringAnnotations" (dict "monitoring" .Values.rime.monitoring "name" .Values.rime.notificationsWorker.name ) | nindent 8 }}
         checksum/config: {{ include (print $.Template.BasePath "/notifications-worker/configmap.yaml") . | sha256sum }}
     spec:
       {{- with .Values.rime.images.imagePullSecrets }}
@@ -60,10 +61,6 @@ spec:
           args:
             - "start-notifications-worker"
             - "--server-config-path=/config/server.config"
-            {{- if .Values.rime.monitoring.enabled }}
-            - "--metrics-exposition-enabled=true"
-            - "--metrics-exposition-port={{ .Values.rime.monitoring.port }}"
-            {{- end }}
           volumeMounts:
             - name: {{ include "rime.fullname" . }}-{{ .Values.rime.notificationsWorker.name }}-config
               mountPath: "/config"
@@ -80,8 +77,13 @@ spec:
       volumes:
         # Volumes are defined at the Pod level, then mounted into containers within that Pod
         - name: {{ include "rime.fullname" . }}-{{ .Values.rime.notificationsWorker.name }}-config
+          {{- if ne .Values.rime.notificationsWorker.existingConfigSecretName "" }}
+          secret:
+            secretName: {{ .Values.rime.notificationsWorker.existingConfigSecretName }}
+          {{- else }}
           configMap:
             name: {{ include "rime.fullname" . }}-{{ .Values.rime.notificationsWorker.name }}-conf
+          {{- end }}
             items:
               - key: "server.config"
                 path: "server.config"
