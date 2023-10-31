@@ -1,3 +1,4 @@
+{{- if eq .Values.rime.firewallServer.existingConfigSecretName "" }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -5,4 +6,5 @@ metadata:
 data:
   server.config: |
 {{ include "rime.serverArgs" . | indent 4 }}
-    firewall: {}
+{{ include "rime.firewallServer.serverArgs" . | indent 4 }}
+{{- end }}
