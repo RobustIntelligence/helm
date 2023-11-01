@@ -34,6 +34,7 @@ spec:
         {{- with .Values.rime.uploadServer.deployment.annotations }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
+        {{- include "rime.monitoringAnnotations" (dict "monitoring" .Values.rime.monitoring "name" .Values.rime.uploadServer.name ) | nindent 8 }}
         checksum/config: {{ include (print $.Template.BasePath "/upload-server/configmap.yaml") . | sha256sum }}
     spec:
       {{- with .Values.rime.images.imagePullSecrets }}
@@ -53,6 +54,8 @@ spec:
             {{- with .Values.rime.uploadServer.deployment.extraEnv }}
               {{- toYaml . | nindent 12 }}
             {{- end }}
+            - name: RI_SERVICE_NAME
+              value: {{ .Values.rime.uploadServer.name }}
           image: "{{ .Values.rime.images.backendImage.registry}}/{{ .Values.rime.images.backendImage.name }}"
           imagePullPolicy: {{ .Values.rime.images.backendImage.pullPolicy }}
           ports:
@@ -107,15 +110,8 @@ spec:
             - "/rime/rime"
           args:
             - "start-upload-server"
-            {{- if .Values.tls.grpcEnabled }}
-            - "--auth-mode=tls"
-            {{ end }}
             - "--server-config-path=/config/server.config"
             - "--upload-port={{ .Values.rime.uploadServer.port }}"
-            {{- if .Values.rime.monitoring.enabled }}
-            - "--metrics-exposition-enabled=true"
-            - "--metrics-exposition-port={{ .Values.rime.monitoring.port }}"
-            {{- end }}
           volumeMounts:
             - name: {{ include "rime.fullname" . }}-{{ .Values.rime.uploadServer.name }}-config
               mountPath: "/config"
@@ -132,8 +128,13 @@ spec:
       volumes:
         # Volumes are defined at the Pod level, then mounted into containers within that Pod
         - name: {{ include "rime.fullname" . }}-{{ .Values.rime.uploadServer.name }}-config
+          {{- if ne .Values.rime.uploadServer.existingConfigSecretName "" }}
+          secret:
+            secretName: {{ .Values.rime.uploadServer.existingConfigSecretName }}
+          {{- else }}
           configMap:
             name: {{ include "rime.fullname" . }}-{{ .Values.rime.uploadServer.name }}-conf
+          {{- end }}
             items:
               - key: "server.config"
                 path: "server.config"
