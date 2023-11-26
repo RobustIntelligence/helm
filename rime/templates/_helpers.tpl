@@ -65,8 +65,31 @@ app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
 app.kubernetes.io/part-of: {{ template "rime.name" . }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
+app.kubernetes.io/owned-by: "ri"
 {{- if .Values.rime.commonAnnotations}}
 {{ toYaml .Values.rime.commonAnnotations }}
+{{- end }}
+{{- end -}}
+
+{{/*
+Monitoring annotations to add to pods.
+*/}}
+{{- define "rime.monitoringAnnotations"  -}}
+{{- if .monitoring.enabled}}
+prometheus.io/scrape: "true"
+prometheus.io/path: "/metrics"
+prometheus.io/port: "{{ .monitoring.port }}"
+{{- end }}
+{{- if .monitoring.datadogEnabled }}
+tags.datadoghq.com/service: "{{ .name }}"
+ad.datadoghq.com/{{ .name }}.instances: |
+  [
+    {
+      "collect_counters_with_distributions": true,
+      "send_distribution_counts_as_monotonic": true,
+      "metrics": ["*"],
+    }
+  ]
 {{- end }}
 {{- end -}}
 
@@ -85,6 +108,7 @@ common:
         mongoTLSEnabled: {{ .Values.tls.mongoEnabled }}
         restTLSEnabled: {{ .Values.tls.restEnabled }}
         vaultTLSDisabled: {{ .Values.tls.vaultDisabled }}
+        grpcTLSEnabled: {{ .Values.tls.grpcEnabled }}
     mongo:
         databaseName: {{ default "rime-store" .Values.external.mongo.databaseName }}
         urlPrefix: {{ default "mongodb+srv://" .Values.external.mongo.urlPrefix }}
@@ -114,7 +138,11 @@ common:
         {{- else }}
         url: "{{ include "rime.fullname" . }}-vault-0.{{ include "rime.fullname" . }}-vault-internal:8200"
         {{- end }}
+        {{- if .Values.external.vault.mountPath }}
+        mountPath: {{ .Values.external.vault.mountPath }}
+        {{- else }}
         mountPath: "secret/"
+        {{- end }}
         {{- if .Values.external.vault.roleName }}
         roleName: {{ .Values.external.vault.roleName }}
         {{- end }}
@@ -136,11 +164,11 @@ common:
         externalVaultCaPath: "/var/tmp/tls/external/vault/ca.crt"
         externalVaultCertPath: "/var/tmp/tls/external/vault/tls.crt"
         externalVaultKeyPath: "/var/tmp/tls/external/vault/tls.key"
+    logging:
+        verbose: {{ .Values.rime.verbose }}
     metrics:
-        enabled: "{{ .Values.rime.monitoring.enabled }}"
-        port: "{{ .Values.rime.monitoring.port }}"
-    configuration:
-        verbose: "{{ .Values.rime.verbose }}"
+        enabled: {{ .Values.rime.monitoring.enabled }}
+        port: {{ .Values.rime.monitoring.port }}
     connections:
         addresses:
             agentManagerServerAddr: "{{ include "rime.fullname" . }}-{{ .Values.rime.agentManagerServer.name }}:{{ .Values.rime.agentManagerServer.port }}"
@@ -149,11 +177,107 @@ common:
             firewallServerAddr: "{{ include "rime.fullname" . }}-{{ .Values.rime.firewallServer.name }}:{{ .Values.rime.firewallServer.port }}"
             grpcWebServerAddr: "{{ include "rime.fullname" . }}-{{ .Values.rime.webServer.name }}:{{ .Values.rime.webServer.grpcPort }}"
             uploadServerAddr: "{{ include "rime.fullname" . }}-{{ .Values.rime.uploadServer.name }}:{{ .Values.rime.uploadServer.port }}"
+            cacheServerAddr: "{{ include "rime.fullname" . }}-{{ .Values.rime.cacheServer.name }}:{{ .Values.rime.cacheServer.port }}"
             {{- if .Values.rime.imageRegistryServer.enabled }}
             imageRegistryServerAddr: "{{ include "rime.fullname" . }}-{{ .Values.rime.imageRegistryServer.name }}:{{ .Values.rime.imageRegistryServer.port }}"
             {{- end }}
             modelTestingServerAddr: "{{ include "rime.fullname" . }}-{{ .Values.rime.modelTestingServer.name }}:{{ .Values.rime.modelTestingServer.port }}"
+    crossServiceKeyRef:
+        secretName: {{ include "rime.generatedSecretsName" . }}
+        key: crossServiceKey
 {{- end }}
+
+{{/*
+Unique additions to the agentManagerServer's ConfigMap.
+*/}}
+{{- define "rime.agentManagerServer.serverArgs" -}}
+agentManager: {}
+{{- end -}}
+
+{{/*
+Unique additions to the authServer's ConfigMap.
+*/}}
+{{- define "rime.authServer.serverArgs" -}}
+auth: {}
+{{- end -}}
+
+{{/*
+Unique additions to the cacheServer's ConfigMap.
+*/}}
+{{- define "rime.cacheServer.serverArgs" -}}
+cache: {}
+{{- end -}}
+
+{{/*
+Unique additions to the dataCollectorServer's ConfigMap.
+*/}}
+{{- define "rime.dataCollectorServer.serverArgs" -}}
+dataCollector: {}
+{{- end -}}
+
+{{/*
+Unique additions to the datasetManagerServer's ConfigMap.
+*/}}
+{{- define "rime.datasetManagerServer.serverArgs" -}}
+datasetManager: {}
+{{- end -}}
+
+{{/*
+Unique additions to the featureFlagServer's ConfigMap.
+*/}}
+{{- define "rime.featureFlagServer.serverArgs" -}}
+featureFlag: {}
+{{- end -}}
+
+{{/*
+Unique additions to the firewallServer's ConfigMap.
+*/}}
+{{- define "rime.firewallServer.serverArgs" -}}
+firewall: {}
+{{- end -}}
+
+{{/*
+Due to their large size, "rime.imageRegistryServer.*" ConfigMaps are defined directly in the main ConfigMap template.
+*/}}
+
+{{/*
+Unique additions to initVault's ConfigMap.
+*/}}
+{{- define "rime.initVault.serverArgs" -}}
+initVault: {}
+{{- end -}}
+
+{{/*
+Unique additions to the modelTestingServer's ConfigMap.
+*/}}
+{{- define "rime.modelTestingServer.serverArgs" -}}
+modelTests:
+  managedImages:
+    allow_external_custom_images: true
+  spark:
+    allowSparkJobs: {{ contains "rime-testing-engine-spark" .Values.rime.images.modelTestingImage.name }}
+{{- end -}}
+
+{{/*
+Unique additions to the notificationsWorker's ConfigMap.
+*/}}
+{{- define "rime.notificationsWorker.serverArgs" -}}
+notificationsWorker: {}
+{{- end -}}
+
+{{/*
+Unique additions to the uploadServer's ConfigMap.
+*/}}
+{{- define "rime.uploadServer.serverArgs" -}}
+upload: {}
+{{- end -}}
+
+{{/*
+Unique additions to the webServer's ConfigMap.
+*/}}
+{{- define "rime.webServer.serverArgs" -}}
+webServer: {}
+{{- end -}}
 
 {{/*
 Return the service account name used by the services that need blob storage.
@@ -166,6 +290,16 @@ the user to specify the service account name.
     {{ default (printf "%s-%s" (include "rime.fullname" .) .Values.rime.datasetManagerServer.name) .Values.rime.datasetManagerServer.serviceAccount.name | trunc 63 | trimSuffix "-" }}
 {{- else -}}
     {{ default "default" .Values.rime.datasetManagerServer.serviceAccount.name }}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Return the service account name used by the feature flag server to fetch
+license files from s3, if enabled.
+*/}}
+{{- define "rime.featureFlagServer.serviceAccountName" -}}
+{{- if .Values.rime.featureFlagServer.fetchLicenseFromS3 -}}
+    {{ default (printf "%s-%s" (include "rime.fullname" .) .Values.rime.featureFlagServer.name) .Values.rime.featureFlagServer.serviceAccount.name | trunc 63 | trimSuffix "-" }}
 {{- end -}}
 {{- end -}}
 
@@ -277,7 +411,14 @@ provides a name, we expect the secret to already exist.
 Return the name of the secret containing generated secrets used by RIME services
 */}}
 {{- define "rime.generatedSecretsName" -}}
-{{- printf "%s-generated-secrets" (include "rime.fullname" .) }}
+rime-generated-secrets
+{{- end }}
+
+{{/*
+Name of the issuer to be used for cert-manager Certificates for RIME services.
+*/}}
+{{- define "tls.certificateIssuerName" -}}
+{{- default (printf "rime-%s-ca-issuer" .Release.Namespace) .Values.tls.certificateSpec.issuerRef.name }}
 {{- end }}
 
 {{/*
@@ -294,6 +435,18 @@ Common environment variables used in all RIME services.
     secretKeyRef:
       name: {{ include "rime.generatedSecretsName" . }}
       key: crossServiceKey
+- name: RIME_CUSTOMER_NAME
+  value: {{ .Values.rime.customerName }}
+{{- end }}
+
+{{/*
+Environment variables used in the feature flag services.
+*/}}
+{{- define "rime.featureFlagEnv" -}}
+{{- if .Values.rime.featureFlagServer.fetchLicenseFromS3 }}
+- name: RIME_S3_HOSTED_LICENSE_BUCKET
+  value: {{ .Values.rime.featureFlagServer.config.storageBucketName }}
+{{- end }}
 {{- end }}
 
 {{/*
