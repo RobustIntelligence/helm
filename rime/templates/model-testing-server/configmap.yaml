@@ -1,3 +1,4 @@
+{{- if eq .Values.rime.modelTestingServer.existingConfigSecretName "" }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -5,11 +6,5 @@ metadata:
 data:
   server.config: |
 {{ include "rime.serverArgs" . | indent 4 }}
-    modelTests:
-      managedImages:
-        allow_external_custom_images: true
-      spark:
-        allowSparkJobs: {{ contains "rime-testing-engine-spark" .Values.rime.images.modelTestingImage.name }}
-      crossServiceKeyRef:
-        secretName: {{ include "rime.generatedSecretsName" . }}
-        key: crossServiceKey
+{{ include "rime.modelTestingServer.serverArgs" . | indent 4 }}
+{{- end }}

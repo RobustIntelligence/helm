@@ -14,7 +14,7 @@ metadata:
     # NOTE: post-upgrade relies on the database-setup script being idempotent.
     "helm.sh/hook": post-install,post-upgrade
     # Hooks are sorted in ascending order.
-    "helm.sh/hook-weight": "6"
+    "helm.sh/hook-weight": "4"
     "helm.sh/hook-delete-policy": before-hook-creation
     {{- include "rime.annotations" . | nindent 4 }}
     {{- with .Values.rime.initVault.annotations }}
@@ -33,6 +33,7 @@ spec:
         {{- with .Values.rime.initVault.annotations }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
+        {{- include "rime.monitoringAnnotations" (dict "monitoring" .Values.rime.monitoring "name" .Values.rime.uploadServer.name ) | nindent 8 }}
     spec:
       {{- with .Values.rime.images.imagePullSecrets }}
       imagePullSecrets:
@@ -69,8 +70,13 @@ spec:
       {{- if .Values.tls.enableCertManager }}
       volumes:
         - name: {{ include "rime.fullname" . }}-{{ .Values.rime.initVault.name }}-config
+          {{- if ne .Values.rime.initVault.existingConfigSecretName "" }}
+          secret:
+            secretName: {{ .Values.rime.initVault.existingConfigSecretName }}
+          {{- else }}
           configMap:
             name: {{ include "rime.fullname" . }}-{{ .Values.rime.initVault.name }}-conf
+          {{- end }}
             items:
               - key: "worker.config"
                 path: "worker.config"
