@@ -1,3 +1,4 @@
+{{- if eq .Values.rime.dataCollectorServer.existingConfigSecretName "" }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -5,4 +6,5 @@ metadata:
 data:
   server.config: |
 {{ include "rime.serverArgs" . | indent 4 }}
-    dataCollector: {}
+{{ include "rime.dataCollectorServer.serverArgs" . | indent 4 }}
+{{- end }}

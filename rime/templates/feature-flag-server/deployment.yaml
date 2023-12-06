@@ -34,6 +34,7 @@ spec:
         {{- with .Values.rime.featureFlagServer.deployment.annotations }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
+        {{- include "rime.monitoringAnnotations" (dict "monitoring" .Values.rime.monitoring "name" .Values.rime.featureFlagServer.name ) | nindent 8 }}
         checksum/config: {{ include (print $.Template.BasePath "/feature-flag-server/configmap.yaml") . | sha256sum }}
     spec:
       {{- with .Values.rime.images.imagePullSecrets }}
@@ -44,13 +45,19 @@ spec:
       securityContext:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      {{- if .Values.rime.featureFlagServer.fetchLicenseFromS3 }}
+      serviceAccountName:  {{ include "rime.featureFlagServer.serviceAccountName" . }}
+      {{- end }}
       containers:
         - name: {{ .Values.rime.featureFlagServer.name }}
           env:
             {{- include "rime.commonEnv" . | nindent 12 }}
+            {{- include "rime.featureFlagEnv" . | nindent 12 }}
             {{- with .Values.rime.featureFlagServer.deployment.extraEnv }}
               {{- toYaml . | nindent 12 }}
             {{- end }}
+            - name: RI_SERVICE_NAME
+              value: {{ .Values.rime.featureFlagServer.name }}
           image: "{{ .Values.rime.images.backendImage.registry}}/{{ .Values.rime.images.backendImage.name }}"
           imagePullPolicy: {{ .Values.rime.images.backendImage.pullPolicy }}
           ports:
@@ -100,16 +107,9 @@ spec:
             - "/rime/rime"
           args:
             - "start-feature-flag-server"
-            {{- if .Values.tls.grpcEnabled }}
-            - "--auth-mode=tls"
-            {{ end }}
             - "--server-config-path=/config/server.config"
             - "--feature-flag-port={{ .Values.rime.featureFlagServer.port }}"
             - "--feature-flag-rest-port={{ .Values.rime.featureFlagServer.restPort }}"
-            {{- if .Values.rime.monitoring.enabled }}
-            - "--metrics-exposition-enabled=true"
-            - "--metrics-exposition-port={{ .Values.rime.monitoring.port }}"
-            {{- end }}
           volumeMounts:
             - name: {{ include "rime.fullname" . }}-{{ .Values.rime.featureFlagServer.name }}-config
               mountPath: "/config"
@@ -126,8 +126,13 @@ spec:
       volumes:
         # Volumes are defined at the Pod level, then mounted into containers within that Pod
         - name: {{ include "rime.fullname" . }}-{{ .Values.rime.featureFlagServer.name }}-config
+          {{- if ne .Values.rime.featureFlagServer.existingConfigSecretName "" }}
+          secret:
+            secretName: {{ .Values.rime.featureFlagServer.existingConfigSecretName }}
+          {{- else }}
           configMap:
             name: {{ include "rime.fullname" . }}-{{ .Values.rime.featureFlagServer.name }}-conf
+          {{- end }}
             items:
               - key: "server.config"
                 path: "server.config"
