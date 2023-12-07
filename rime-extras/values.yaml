@@ -3,6 +3,8 @@ rimeExtras:
   datadog: false
   # -- Whether to install the Velero Helm charts for disaster recovery
   velero: false
+  # -- Whether to install the Prometheus Node Exporter Helm charts for observability
+  prometheusNodeExporter: false
 
 # -- For full reference, see https://github.com/DataDog/helm-charts/tree/datadog-2.20.3/charts/datadog
 # @default -- (see individual values in `values`.yaml)
@@ -19,10 +21,16 @@ datadog:
       # Restricts prometheus metrics scraping to only our custom containers.
       additionalConfigs:
         -
+          configurations:
+          - send_distribution_buckets: true
+          - histogram_buckets_as_distributions: true
           autodiscovery:
-            kubernetes_container_names:
-              - rime
-              - rime-agent
+            kubernetes_annotations:
+              include:
+                prometheus.io/scrape: "true"
+                app.kubernetes.io/owned-by: "ri"
+              exclude:
+                prometheus.io/scrape: "false"
     # Ignore auto-configuration for `kubernetes_state` (because we disable kube-state-metrics) and `redisdb`
     # See https://docs.datadoghq.com/agent/guide/auto_conf/
     ignoreAutoConfig:
@@ -77,13 +85,13 @@ datadog:
       repository: "robustintelligencehq/datadog-agent"
       pullSecrets:
         - name: rimecreds
-      tag: 7.32.3
+      tag: 7.46.0
   clusterAgent:
     image:
       repository: "robustintelligencehq/datadog-cluster-agent"
       pullSecrets:
         - name: rimecreds
-      tag: 1.14.0
+      tag: 7.46.0
 
 # -- For full reference, see https://github.com/vmware-tanzu/helm-charts/tree/velero-2.23.6/charts/velero
 # @default -- (see individual values in `values`.yaml)
@@ -135,8 +143,8 @@ velero:
   schedules:
     mongodb-backup:
       disabled: false
-      # -- Default: daily at 2:00am
-      schedule: "0 2 * * *"
+      # -- Default: every four hours starting at 12:00 AM
+      schedule: "0 */4 * * *"
       useOwnerReferencesInBackup: false
       template:
         # -- Backup horizon. Default is 336h (i.e., 2 weeks)
@@ -146,4 +154,21 @@ velero:
           - pv
         # -- At minimum, should include the RIME namespace(s) (all namespaces recommended)
         includedNamespaces:
-          - ""
+          - "*"
+
+# -- For full reference, see https://github.com/prometheus-community/helm-charts/tree/main/charts/prometheus-node-exporter
+# @default -- (see individual values in `values`.yaml)
+prometheus-node-exporter:
+  image:
+    tag: v1.6.0
+  extraArgs:
+    - --collector.disable-defaults
+    - --collector.cpu
+    - --collector.meminfo
+    - --collector.filefd
+    - --collector.loadavg
+    - --collector.netstat
+    - --collector.stat
+    - --collector.vmstat
+  podAnnotations:
+    prometheus.io/scrape: "true"
