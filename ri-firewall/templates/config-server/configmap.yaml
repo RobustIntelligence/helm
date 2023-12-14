@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "ri-firewall.fullname" . }}-{{ .Values.riFirewall.configServer.name }}-conf
+data:
+  server.config: |
+{{ include "ri-firewall.serverArgs" . | indent 4 }}
+    configServer:
+      firewallConfigName: {{ include "ri-firewall.firewallSystemConfigMapName" . }}
+      firewallDeploymentName: {{ include "ri-firewall.fullname" . }}-{{ .Values.riFirewall.firewallServer.name }}
