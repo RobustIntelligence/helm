@@ -1,0 +1,32 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "ri-firewall.fullname" . }}-auth-ingress
+  labels:
+    {{- with .Values.riFirewall.ingress.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  annotations:
+    {{- include "ri-firewall.annotations" . | nindent 4 }}
+    {{- with .Values.riFirewall.ingress.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  ingressClassName: {{ .Values.riFirewall.ingress.ingressClassName }}
+  rules:
+    - http:
+        paths:
+          - path: /v1/auth
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "ri-firewall.fullname" . }}-{{ .Values.riFirewall.authServer.name }}
+                port:
+                  number: {{ .Values.riFirewall.authServer.port }}
+          - path: /v1-beta/version
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "ri-firewall.fullname" . }}-{{ .Values.riFirewall.configServer.name }}
+                port:
+                  number: {{ .Values.riFirewall.configServer.restPort }}
