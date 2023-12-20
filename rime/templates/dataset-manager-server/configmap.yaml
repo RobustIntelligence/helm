@@ -1,4 +1,5 @@
 {{- if .Values.rime.datasetManagerServer.enabled }}
+{{- if eq .Values.rime.datasetManagerServer.existingConfigSecretName "" }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -6,5 +7,6 @@ metadata:
 data:
   server.config: |
 {{ include "rime.serverArgs" . | indent 4 }}
-    datasetManager: {}
+{{ include "rime.datasetManagerServer.serverArgs" . | indent 4 }}
+{{- end }}
 {{- end }}
