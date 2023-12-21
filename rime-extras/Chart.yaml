@@ -15,10 +15,26 @@ appVersion: "v9"
 
 dependencies:
   - name: "datadog"
-    version: "2.20.3"
+    version: "3.32.8"
     repository: "https://helm.datadoghq.com"
     condition: rimeExtras.datadog
   - name: "velero"
     version: "2.23.6"
     repository: "https://vmware-tanzu.github.io/helm-charts"
     condition: rimeExtras.velero
+  - name: "prometheus-node-exporter"
+    version: "4.22.0"
+    repository: "https://prometheus-community.github.io/helm-charts"
+    condition: rimeExtras.prometheusNodeExporter
+  - name: "prometheus"
+    version: "25.6.0"
+    repository: "https://prometheus-community.github.io/helm-charts"
+    condition: rimeExtras.prometheusServer
+  - name: "prometheus-cloudwatch-exporter"
+    version: "0.25.2"
+    repository: "https://prometheus-community.github.io/helm-charts"
+    condition: rimeExtras.prometheusCloudwatchExporter
+  - name: "humio-helm-charts"
+    version: "0.9.5"
+    repository: "https://humio.github.io/humio-helm-charts"
+    condition: rimeExtras.humioFluentBit
