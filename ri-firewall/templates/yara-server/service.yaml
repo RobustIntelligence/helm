@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "ri-firewall.fullname" . }}-{{ .Values.riFirewall.yaraServer.name }}
+  labels:
+    {{- with .Values.riFirewall.yaraServer.service.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  annotations:
+    {{- include "ri-firewall.annotations" . | nindent 4 }}
+    {{- with .Values.riFirewall.yaraServer.service.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  type: {{ .Values.riFirewall.yaraServer.service.type }}
+  ports:
+    - port: {{ .Values.riFirewall.yaraServer.port }}
+      targetPort: {{ .Values.riFirewall.yaraServer.port }}
+      protocol: TCP
+      name: yara
+    - port: {{ .Values.riFirewall.yaraServer.restPort }}
+      targetPort: {{ .Values.riFirewall.yaraServer.restPort }}
+      protocol: TCP
+      name: yara-rest
+  selector:
+    app: {{ .Values.riFirewall.yaraServer.name }}

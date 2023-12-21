@@ -1,6 +1,7 @@
 # Robust Intelligence Helm Charts
 <picture>
- <source srcset="https://assets-global.website-files.com/62a7e9e01c9610dd11622fc6/62a8d4255468bd5859438043_logo-ri-white.svg">
+ <source  media="(prefers-color-scheme: dark)" srcset="https://assets-global.website-files.com/62a7e9e01c9610dd11622fc6/62a8d4255468bd5859438043_logo-ri-white.svg">
+ <source  media="(prefers-color-scheme: light)" height="70px" srcset="https://www.ai-expo.net/northamerica/wp-content/uploads/2022/07/RI-Logo-Stacked-Dark-Transparent.jpg">
  <img alt="Robust Intelligence Logo" src="YOUR-DEFAULT-IMAGE">
 </picture>
 
@@ -27,7 +28,7 @@ Detailed READMEs for each chart are in the subfolders.
 **For a standard installation, you need only install the `rime-agent` chart in a K8s namespace, which is auto-configured during the guided installation process.**
 
 Please refer to Installation in the product documentation for details:
-- [Installation](https://docs.rime.dev/en/2.0.0/installation/index.html)
+- [Installation](https://docs.robustintelligence.com/en/2.3-stable/deployment/index.html)
 
 For **Self-Hosted** deployments, see below.
 
@@ -37,7 +38,7 @@ For **Self-Hosted** deployments, see below.
 For a standalone Robust Intelligence cluster, both the `rime` and `rime-agent` charts are necessary, and it is recommended to install both `rime-extras` and `rime-kube-system` (unless the contained functionalities already exist in your K8s cluster).
 
 ### General Prerequisites
-1. A Kubernetes cluster (version 1.23 or greater)
+1. A Kubernetes cluster (version 1.24 or greater)
     - (AWS EKS) enable [IAM roles for service accounts (IRSA)](https://docs.aws.amazon.com/emr/latest/EMR-on-EKS-DevelopmentGuide/setting-up-enable-IAM.html)
     - (GCP GKE) enable [Workload Identity](https://cloud.google.com/kubernetes-engine/docs/how-to/workload-identity)
     - (Azure AKS) enable [Workload Identity](https://learn.microsoft.com/en-us/azure/aks/workload-identity-overview) (recommended)
@@ -62,7 +63,7 @@ NOTE: Resources for the `rime-kube-system` pertain to infrastructure services li
 1. Permissions to create resources in the `kube-system` namespace
 2. [Cluster Autoscaler](https://github.com/kubernetes/autoscaler/tree/cluster-autoscaler-1.21.0/cluster-autoscaler/cloudprovider) prerequisites (recommended)
 3. [External DNS](https://github.com/kubernetes-sigs/external-dns/tree/v0.12.0/charts/external-dns) prerequisites (recommended)
-4. [AWS Load Balancer Controller](https://github.com/kubernetes-sigs/aws-load-balancer-controller/tree/v2.4.2) prerequisites (recommended, AWS-only)
+4. [AWS Load Balancer Controller](https://kubernetes-sigs.github.io/aws-load-balancer-controller/v2.6/) prerequisites (recommended, AWS-only)
 5. [Metrics Server](https://github.com/kubernetes-sigs/metrics-server/tree/v0.6.1) prerequisites (recommended, necessary for autoscaling)
 
 #### GCP (GKE)
@@ -74,7 +75,7 @@ NOTE: The [Cluster Autoscaler](https://github.com/kubernetes/autoscaler/tree/clu
 </details>
 
 ### Configuring Parameters
-For a detailed overview of this chart's values, see the `rime-kube-system` README [here](). Your Solutions Architect will assist with configuring parameters during deployment.
+For a detailed overview of this chart's values, see the `rime-kube-system` README [here](./rime-kube-system). Your Solutions Architect will assist with configuring parameters during deployment.
 
 Note that if deploying [cert-manager](https://github.com/cert-manager/cert-manager/tree/v1.10.0) for internal TLS (recommended), CRDs will be created. These CRDS must be created *before* deploying any other Robust Intelligence charts.
 
@@ -88,6 +89,7 @@ helm upgrade -i rime-kube-system robustintelligence/rime-kube-system \
   --debug \
   --dry-run
 ```
+
 
 #### Uninstalling the Chart
 ```
@@ -122,7 +124,7 @@ helm uninstall rime-kube-system -n kube-system
 </details>
 
 ### Configuring Parameters
-For a detailed overview of this chart's values, see the `rime` README [here](). Your Solutions Architect will assist with configuring parameters during deployment.
+For a detailed overview of this chart's values, see the `rime` README [here](./rime). Your Solutions Architect will assist with configuring parameters during deployment.
 
 Some of the main sections to configure include:
 1. `rime.secrets`: application secrets for product license, admin one-time credentials, etc.
@@ -175,9 +177,16 @@ helm uninstall rime -n $RI_NAMESPACE
 </details>
 
 ### Configuring Parameters
-For a detailed overview of this chart's values, see the `rime-agent` README [here](). Your Solutions Architect will assist with configuring parameters during deployment.
+For a detailed overview of this chart's values, see the `rime-agent` README [here](./rime-agent). Your Solutions Architect will assist with configuring parameters during deployment.
 
-Generally, the only setup needed for the `rime-agent` is to identify the authorization for the `rime-agent-model-tester` ServiceAccount under `rimeAgent.modelTestJob.serviceAccount`.
+Generally, there are two main setup steps for the `rime-agent` Helm chart:
+1. Identify the authorization for the `rime-agent-model-tester` ServiceAccount under `rimeAgent.modelTestJob.serviceAccount`.
+2. Configure endpoints in the `rimeAgent.connections` section.
+    - For **internal** agents (i.e., within the same cluster, which is the default for Self-Hosted deployments):
+        - Each endpoint takes the form `${RIME_RELEASE_NAME}-${SERVER_NAME}.${RIME_NAMESPACE}:${PORT}` (e.g., `rime-acme-agent-manager-server.acme:5016`).
+        - If enabling mutual TLS within the cluster, the `*RestAddress` endpoints must have HTTPS enabled (e.g., `https://rime-acme-agent-manager-server.acme:5016`).
+    - For **external** agents (i.e., outside of the cluster):
+        - Only specify `rimeAgent.connections.platformAddress`, which should be the domain of your web application.
 
 ### Installing the Chart
 ```
@@ -209,7 +218,7 @@ It's recommended to deploy the `rime-extras` chart in a separate namespace (e.g.
 </details>
 
 ### Configuring Parameters
-For a detailed overview of this chart's values, see the `rime-extras` README [here](). Your Solutions Architect will assist with configuring parameters during deployment.
+For a detailed overview of this chart's values, see the `rime-extras` README [here](./rime-extras). Your Solutions Architect will assist with configuring parameters during deployment.
 
 For DataDog, you may wish to configure the log masking logic specified in `datadog.datadog.env`.
 
