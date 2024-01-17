@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "ri-firewall.firewallUserConfigMapName" . }}
+data:
+  # Always read from pre-existing configMap to avoid overwriting user changes
+  {{- $existingConfigMap := (lookup "v1" "ConfigMap" .Release.Namespace (include "ri-firewall.firewallUserConfigMapName" .) ) | default dict }}
+  {{- $existingConfigData := (get $existingConfigMap "data") | default dict }}
+  config: {{ (get $existingConfigData "config") | default "{}" | quote }}

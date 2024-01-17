@@ -1,0 +1,84 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "ri-firewall.fullname" . }}-{{ .Values.riFirewall.operator.name }}
+  annotations:
+    {{- include "ri-firewall.annotations" . | nindent 4 }}
+    {{- with .Values.riFirewall.operator.deployment.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+    checksum/config: {{ include (print $.Template.BasePath "/operator/configmap.yaml") . | sha256sum }}
+  labels:
+    {{- include "ri-firewall.labels" . | nindent 4 }}
+    {{- with .Values.riFirewall.operator.deployment.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ include "ri-firewall.fullname" . }}-{{ .Values.riFirewall.operator.name }}
+  replicas: 1
+  template:
+    metadata:
+      annotations:
+        {{- include "ri-firewall.annotations" . | nindent 8 }}
+        {{- with .Values.riFirewall.operator.deployment.annotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      labels:
+        app: {{ include "ri-firewall.fullname" . }}-{{ .Values.riFirewall.operator.name }}
+        {{- include "ri-firewall.labels" . | nindent 8 }}
+        {{- with .Values.riFirewall.operator.deployment.labels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.riFirewall.images.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "ri-firewall.operator.serviceAccountName" . }}
+      containers:
+      - name: controller-manager
+        image: "{{ .Values.riFirewall.images.backendImage.registry}}/{{ .Values.riFirewall.images.backendImage.name }}"
+        imagePullPolicy: {{ .Values.riFirewall.images.backendImage.pullPolicy }}
+        resources:
+            {{- toYaml .Values.riFirewall.operator.deployment.resources | nindent 12 }}
+        command:
+        - "/ri/firewall"
+        args:
+        - "start-operator"
+        - "--app-name={{ include "ri-firewall.fullname" . }}"
+        - "--configmap-template-path=/config/firewall-instance-configmap.config"
+        - "--deployment-template-path=/config/firewall-instance-deployment.config"
+        - "--ingress-template-path=/config/firewall-instance-ingress.config"
+        - "--service-template-path=/config/firewall-instance-service.config"
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8081
+          initialDelaySeconds: 15
+          periodSeconds: 20
+        readinessProbe:
+          httpGet:
+            path: /readyz
+            port: 8081
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        volumeMounts:
+        - name: {{ include "ri-firewall.fullname" . }}-{{ .Values.riFirewall.operator.name }}-config
+          mountPath: "/config"
+          readOnly: true
+      terminationGracePeriodSeconds: 10
+      volumes:
+        - name: {{ include "ri-firewall.fullname" . }}-{{ .Values.riFirewall.operator.name }}-config
+          configMap:
+            name: {{ include "ri-firewall.fullname" . }}-{{ .Values.riFirewall.operator.name }}-conf
+            items:
+              - key: "firewall-instance-configmap.config"
+                path: "firewall-instance-configmap.config"
+              - key: "firewall-instance-deployment.config"
+                path: "firewall-instance-deployment.config"
+              - key: "firewall-instance-service.config"
+                path: "firewall-instance-service.config"
+              - key: "firewall-instance-ingress.config"
+                path: "firewall-instance-ingress.config"
