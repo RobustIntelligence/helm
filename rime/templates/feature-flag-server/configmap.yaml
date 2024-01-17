@@ -1,3 +1,4 @@
+{{- if eq .Values.rime.featureFlagServer.existingConfigSecretName "" }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -5,4 +6,5 @@ metadata:
 data:
   server.config: |
 {{ include "rime.serverArgs" . | indent 4 }}
-    featureFlag: {}
+{{ include "rime.featureFlagServer.serverArgs" . | indent 4 }}
+{{- end }}
