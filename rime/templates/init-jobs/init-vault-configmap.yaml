@@ -1,3 +1,4 @@
+{{- if eq .Values.rime.initVault.existingConfigSecretName "" }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -5,4 +6,5 @@ metadata:
 data:
   worker.config: |
 {{ include "rime.serverArgs" . | indent 4 }}
-    initVault: {}
+{{ include "rime.initVault.serverArgs" . | indent 4 }}
+{{- end }}
