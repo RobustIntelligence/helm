@@ -7,9 +7,9 @@ spec:
   secretName: {{ include "rime.fullname" . }}-{{ .Values.rime.imageRegistryServer.name }}-tls
   duration: 4320h # 180d
   renewBefore: 744h # 31d
-  subject:
-    organizations:
-      - RobustIntelligence
+{{- with .Values.tls.certificateSpec.subject }}
+  subject: {{ toYaml . | nindent 4 }}
+{{- end}}
   isCA: false
   privateKey:
     algorithm: RSA
@@ -23,7 +23,7 @@ spec:
     - {{ include "rime.fullname" . }}-{{ .Values.rime.imageRegistryServer.name }}
     - localhost
   issuerRef:
-    name: rime-{{ .Release.Namespace }}-ca-issuer
-    kind: Issuer
-    group: cert-manager.io
+    name: {{ include "tls.certificateIssuerName" . }}
+    kind: {{ .Values.tls.certificateSpec.issuerRef.kind }}
+    group: {{ .Values.tls.certificateSpec.issuerRef.group }}
 {{- end }}
