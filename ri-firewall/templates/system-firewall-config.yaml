@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "ri-firewall.firewallSystemConfigMapName" . }}
+data:
+  systemConf: |
+    maxRequestTokens: {{ .Values.riFirewall.firewallSystemConfig.maxRequestTokens }}
+    yara_config:
+        enable_yara: {{ .Values.riFirewall.firewallSystemConfig.enableYara }}
+        yara_server_address: "{{ include "ri-firewall.fullname" . }}-{{ .Values.riFirewall.yaraServer.name }}:{{ .Values.riFirewall.yaraServer.port }}"
+    azure_openai_model_provider:
+      api_base_url: {{ .Values.riFirewall.firewallSystemConfig.azureOpenaiModelProvider.apiBaseURL }}
+      api_version: {{ .Values.riFirewall.firewallSystemConfig.azureOpenaiModelProvider.apiVersion }}
+      chat_model_deployment_name: {{ .Values.riFirewall.firewallSystemConfig.azureOpenaiModelProvider.chatModelDeploymentName }}
+      # We do not use embeddings model for firewall, so leave it empty.
+      embeddings_model_deployment_name: ""
