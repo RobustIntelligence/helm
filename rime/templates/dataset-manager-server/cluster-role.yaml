@@ -1,0 +1,10 @@
+{{- if .Values.rime.datasetManagerServer.serviceAccount.create -}}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "rime.datasetManagerServer.serviceAccountName" . }}
+rules:
+  - apiGroups: [""]
+    resources: ["persistentvolumes"]
+    verbs: ["*"]
+{{- end }}
