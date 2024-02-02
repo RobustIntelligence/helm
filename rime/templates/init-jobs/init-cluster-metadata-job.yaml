@@ -14,7 +14,7 @@ metadata:
     # NOTE: post-upgrade relies on the database-setup script being idempotent.
     "helm.sh/hook": post-install,post-upgrade
     # Hooks are sorted in ascending order -> this should run after the index creation job.
-    "helm.sh/hook-weight": "4"
+    "helm.sh/hook-weight": "5"
     "helm.sh/hook-delete-policy": before-hook-creation
     {{- include "rime.annotations" . | nindent 4 }}
     {{- with .Values.rime.initClusterMetadata.annotations }}
@@ -33,10 +33,14 @@ spec:
         {{- with .Values.rime.initClusterMetadata.annotations }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
+        {{- include "rime.monitoringAnnotations" (dict "monitoring" .Values.rime.monitoring "name" .Values.rime.initClusterMetadata.name ) | nindent 8 }}
     spec:
       {{- with .Values.rime.images.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if .Values.rime.featureFlagServer.fetchLicenseFromS3 }}
+      serviceAccountName:  {{ include "rime.featureFlagServer.serviceAccountName" . }}
       {{- end }}
       {{- with .Values.rime.initClusterMetadata.securityContext }}
       securityContext:
@@ -46,6 +50,7 @@ spec:
         - name: {{ .Values.rime.initClusterMetadata.name }}
           env:
             {{- include "rime.commonEnv" . | nindent 12 }}
+            {{- include "rime.featureFlagEnv" . | nindent 12 }}
             {{- include "rime.webAppHostEnv" . | nindent 12 }}
             - name: SMTP_EMAIL
               valueFrom:
@@ -101,15 +106,18 @@ spec:
                   name: {{ include "rime.commonSecretName" . }}
                   key: oidcIssuerURL
                   optional: true
+            - name: OPENAI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "rime.commonSecretName" . }}
+                  key: openaiApiKey
+                  optional: true
           image: "{{ .Values.rime.images.backendImage.registry}}/{{ .Values.rime.images.backendImage.name }}"
           imagePullPolicy: "{{ .Values.rime.images.backendImage.pullPolicy }}"
           command:
             - "/rime/dbworker"
           args:
             - "init-cluster-metadata"
-            {{- if .Values.tls.grpcEnabled }}
-            - "--auth-mode=tls"
-            {{ end }}
             - "--server-config-path=/config/worker.config"
             - "-overwrite-feature-flags={{ .Values.rime.initClusterMetadata.overwriteLicense }}"
             {{if .Values.rime.imageRegistryServer.enabled }}
@@ -136,8 +144,13 @@ spec:
       restartPolicy: OnFailure
       volumes:
         - name: {{ include "rime.fullname" . }}-worker-config
+        {{- if ne .Values.rime.internalWorkerJobs.existingConfigSecretName "" }}
+          secret:
+            secretName: {{ .Values.rime.internalWorkerJobs.existingConfigSecretName }}
+        {{- else }}
           configMap:
             name: {{ include "rime.fullname" . }}-worker-conf
+        {{- end }}
             items:
               - key: "worker.config"
                 path: "worker.config"

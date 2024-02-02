@@ -1,0 +1,12 @@
+{{- if .Values.rime.cacheServer.enabled }}
+{{- if eq .Values.rime.cacheServer.existingConfigSecretName "" }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "rime.fullname" . }}-{{ .Values.rime.cacheServer.name }}-conf
+data:
+  server.config: |
+{{ include "rime.serverArgs" . | indent 4 }}
+{{ include "rime.cacheServer.serverArgs" . | indent 4 }}
+{{- end }}
+{{- end }}
