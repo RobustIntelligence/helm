@@ -1,3 +1,4 @@
+{{- if eq .Values.rime.internalWorkerJobs.existingConfigSecretName "" }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -5,3 +6,4 @@ metadata:
 data:
   worker.config: |
 {{ include "rime.serverArgs" . | indent 4 }}
+{{- end }}
