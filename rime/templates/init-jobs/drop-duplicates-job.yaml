@@ -33,6 +33,7 @@ spec:
         {{- with .Values.rime.dropDuplicates.annotations }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
+        {{- include "rime.monitoringAnnotations" (dict "monitoring" .Values.rime.monitoring "name" .Values.rime.dropDuplicates.name ) | nindent 8 }}
     spec:
       {{- with .Values.rime.images.imagePullSecrets }}
       imagePullSecrets:
@@ -72,8 +73,13 @@ spec:
       restartPolicy: OnFailure
       volumes:
         - name: {{ include "rime.fullname" . }}-worker-config
+          {{- if ne .Values.rime.internalWorkerJobs.existingConfigSecretName "" }}
+          secret:
+            secretName: {{ .Values.rime.internalWorkerJobs.existingConfigSecretName }}
+          {{- else }}
           configMap:
             name: {{ include "rime.fullname" . }}-worker-conf
+          {{- end }}
             items:
               - key: "worker.config"
                 path: "worker.config"
