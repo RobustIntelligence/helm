@@ -1,0 +1,12 @@
+{{- if .Values.riFirewall.instanceManagerServer.serviceAccount.create }}
+# A Role granting access to write operations on k8s resources for the
+# configuration server.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ include "ri-firewall.instanceManagerServer.serviceAccountName" . }}
+rules:
+  - apiGroups: ["fw.rbst.io"]
+    resources: [firewallinstances]
+    verbs: ["*"]
+{{- end }}
