@@ -44,9 +44,6 @@ spec:
               imagePullPolicy: {{ .Values.rime.images.backendImage.pullPolicy }}
               command:
                 - "/rime/digest_notif_worker"
-                {{- if .Values.tls.grpcEnabled }}
-                - "--auth-mode=tls"
-                {{ end }}
                 - "--server-config-path=/config/worker.config"
               volumeMounts:
                 - name: {{ include "rime.fullname" . }}-worker-config
@@ -60,8 +57,13 @@ spec:
                 {{- include "rime.externalTLSSecretVolumeMounts" . | nindent 16 }}
           volumes:
             - name: {{ include "rime.fullname" . }}-worker-config
+              {{- if ne .Values.rime.internalWorkerJobs.existingConfigSecretName "" }}
+              secret:
+                secretName: {{ .Values.rime.internalWorkerJobs.existingConfigSecretName }}
+              {{- else }}
               configMap:
                 name: {{ include "rime.fullname" . }}-worker-conf
+              {{- end }}
                 items:
                   - key: "worker.config"
                     path: "worker.config"
