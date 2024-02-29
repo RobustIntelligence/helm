@@ -1,6 +1,7 @@
 # Robust Intelligence Helm Charts
 <picture>
- <source srcset="https://assets-global.website-files.com/62a7e9e01c9610dd11622fc6/62a8d4255468bd5859438043_logo-ri-white.svg">
+ <source  media="(prefers-color-scheme: dark)" srcset="https://assets-global.website-files.com/62a7e9e01c9610dd11622fc6/62a8d4255468bd5859438043_logo-ri-white.svg">
+ <source  media="(prefers-color-scheme: light)" height="70px" srcset="https://www.ai-expo.net/northamerica/wp-content/uploads/2022/07/RI-Logo-Stacked-Dark-Transparent.jpg">
  <img alt="Robust Intelligence Logo" src="YOUR-DEFAULT-IMAGE">
 </picture>
 
@@ -10,91 +11,68 @@
 ```
 helm repo add robustintelligence https://robustintelligence.github.io/helm --force-update
 ```
-This repository contains 4 Helm charts:
-- `rime`
-  - Core application services (i.e., the *control plane*)
-- `rime-agent`
-  - Model Testing agent (i.e., the *data plane*)
+This repository contains 3 Helm charts:
+- `ri-firewall`
+  - AI Firewall installation
+- `rime-kube-system`
+  - K8s Cluster and ML infrastructure services, such as [External DNS](https://github.com/kubernetes-sigs/external-dns/tree/master/charts/external-dns) and kServe
 - `rime-extras` (recommended)
-  - 3rd-party add-ons like Velero backups or DataDog monitoring
-- `rime-kube-system` (recommended)
-  - K8s Cluster infrastructure services, such as [External DNS](https://github.com/kubernetes-sigs/external-dns/tree/master/charts/external-dns)
+  - 3rd-party add-ons like DataDog monitoring
 
 Detailed READMEs for each chart are in the subfolders.
 
-# Installation
-
-**For a standard installation, you need only install the `rime-agent` chart in a K8s namespace, which is auto-configured during the guided installation process.**
-
-Please refer to Installation in the product documentation for details:
-- [Installation](https://docs.rime.dev/en/2.0.0/installation/index.html)
-
-For **Self-Hosted** deployments, see below.
-
----
-
 # Self-Hosted Installation
-For a standalone Robust Intelligence cluster, both the `rime` and `rime-agent` charts are necessary, and it is recommended to install both `rime-extras` and `rime-kube-system` (unless the contained functionalities already exist in your K8s cluster).
+For a standalone Robust Intelligence Firewall, both the `ri-firewall` and `rime-kube-system` charts are necessary.
 
 ### General Prerequisites
-1. A Kubernetes cluster (version 1.23 or greater)
+1. A Kubernetes cluster (version 1.24 or greater)
     - (AWS EKS) enable [IAM roles for service accounts (IRSA)](https://docs.aws.amazon.com/emr/latest/EMR-on-EKS-DevelopmentGuide/setting-up-enable-IAM.html)
-    - (GCP GKE) enable [Workload Identity](https://cloud.google.com/kubernetes-engine/docs/how-to/workload-identity)
-    - (Azure AKS) enable [Workload Identity](https://learn.microsoft.com/en-us/azure/aks/workload-identity-overview) (recommended)
 2. A dedicated K8s namespace for Robust Intelligence
-3. [Helm](https://helm.sh/) (version 3)
-4. [kubectl](https://kubernetes.io/docs/reference/kubectl/kubectl/)
-5. A read token for the Robust Intelligence artifact repository as a [K8s secret](https://kubernetes.io/docs/concepts/configuration/secret/#docker-config-secrets) (will be provided by your Solutions Architect)
+3. Access to the kube-system namespace in this K8s cluster
+4. [Helm](https://helm.sh/) (version 3)
+5. [kubectl](https://kubernetes.io/docs/reference/kubectl/kubectl/)
+6. A read token for the Robust Intelligence artifact repository as a [K8s secret](https://kubernetes.io/docs/concepts/configuration/secret/#docker-config-secrets) (will be provided by your Solutions Architect)
+7. Ensure that the following URLs have been whitelisted for your K8s cluster.
+   - Robust Intelligence Private Dockerhub Repositories: https://hub.docker.com/repository/docker/robustintelligencehq/
+   - Robust Intelligence Private Github Repository for YARA signatures: https://github.com/RobustIntelligence/rime-yara
+   - Robust Intelligence Private Huggingface Model Hub: https://huggingface.co/robustintelligence/
 
-### Recommended K8s Cluster Configuration
-The core charts (`rime` and `rime-agent`) can be deployed to a single namespace.
-Additionally, we recommend the following:
-1. A dedicated node group (with autoscaling) for the `rime-agent` workloads
-    - Label: `dedicated=model-testing`, Taint: `dedicated=model-testing:NoSchedule`
-2. An expandable and encrypted [StorageClass](https://kubernetes.io/docs/concepts/storage/storage-classes/) for services in the Robust Intelligence namespace
-
-## `rime-kube-system` (Recommended)
+## `rime-kube-system`
 NOTE: Resources for the `rime-kube-system` pertain to infrastructure services like the [Cluster Autoscaler](https://github.com/kubernetes/autoscaler/tree/cluster-autoscaler-1.21.0/cluster-autoscaler/cloudprovider) or [External DNS](https://github.com/kubernetes-sigs/external-dns/tree/v0.12.0/charts/external-dns); therefore, they are deployed in the `kube-system` namespace.
 
 <details>
 <summary><h3>Prerequisites</h3></summary>
 
 1. Permissions to create resources in the `kube-system` namespace
-2. [Cluster Autoscaler](https://github.com/kubernetes/autoscaler/tree/cluster-autoscaler-1.21.0/cluster-autoscaler/cloudprovider) prerequisites (recommended)
-3. [External DNS](https://github.com/kubernetes-sigs/external-dns/tree/v0.12.0/charts/external-dns) prerequisites (recommended)
-4. [AWS Load Balancer Controller](https://github.com/kubernetes-sigs/aws-load-balancer-controller/tree/v2.4.2) prerequisites (recommended, AWS-only)
-5. [Metrics Server](https://github.com/kubernetes-sigs/metrics-server/tree/v0.6.1) prerequisites (recommended, necessary for autoscaling)
-
-#### GCP (GKE)
-NOTE: The [Cluster Autoscaler](https://github.com/kubernetes/autoscaler/tree/cluster-autoscaler-1.21.0/cluster-autoscaler/cloudprovider) and [Metrics Server](https://github.com/kubernetes-sigs/metrics-server/tree/v0.6.1) come configured by default with GKE clusters, so no additional configuration is necessary.
-
-#### Azure (AKS)
-NOTE: The [Cluster Autoscaler](https://github.com/kubernetes/autoscaler/tree/cluster-autoscaler-1.21.0/cluster-autoscaler/cloudprovider) and [Metrics Server](https://github.com/kubernetes-sigs/metrics-server/tree/v0.6.1) come configured by default with AKS clusters, so no additional configuration is necessary.
+2. [kserve](https://github.com/kserve/kserve) prerequisites
+3. [Cluster Autoscaler](https://github.com/kubernetes/autoscaler/tree/cluster-autoscaler-1.21.0/cluster-autoscaler/cloudprovider) prerequisites (recommended)
+4. [External DNS](https://github.com/kubernetes-sigs/external-dns/tree/v0.12.0/charts/external-dns) prerequisites (recommended)
+5. [AWS Load Balancer Controller](https://kubernetes-sigs.github.io/aws-load-balancer-controller/v2.6/) prerequisites (recommended, AWS-only)
+6. [Metrics Server](https://github.com/kubernetes-sigs/metrics-server/tree/v0.6.1) prerequisites (recommended, necessary for autoscaling)
 
 </details>
 
 ### Configuring Parameters
-For a detailed overview of this chart's values, see the `rime-kube-system` README [here](). Your Solutions Architect will assist with configuring parameters during deployment.
-
-Note that if deploying [cert-manager](https://github.com/cert-manager/cert-manager/tree/v1.10.0) for internal TLS (recommended), CRDs will be created. These CRDS must be created *before* deploying any other Robust Intelligence charts.
+For a detailed overview of this chart's values, see the `rime-kube-system` README [here](./rime-kube-system). Your Solutions Architect will assist with configuring parameters during deployment.
 
 ### Installing the Chart
 ```
 # When ready to deploy, remove --dry-run
 helm upgrade -i rime-kube-system robustintelligence/rime-kube-system \
-  --version $RI_VERSION \
+  --version $RI_FIREWALL_VERSION \
   --values $RIME_KUBE_SYSTEM_VALUES_FILE \
   --namespace kube-system \
   --debug \
   --dry-run
 ```
 
+
 #### Uninstalling the Chart
 ```
 helm uninstall rime-kube-system -n kube-system
 ```
 
-## `rime`
+## `ri-firewall`
 <details>
 <summary><h3>Prerequisites</h3></summary>
 
@@ -106,40 +84,26 @@ helm uninstall rime-kube-system -n kube-system
 #### AWS (EKS)
 1. A domain for your service managed by [Route53](https://aws.amazon.com/route53/)
     - A TLS certificate in ACM
-2. **Managed Images** prerequisites (add-on feature)
-    - An Elastic Container Registry (ECR)
-    - IAM permissions for Image Builder role
-    - IAM permissions for Repo Manager role
-
-#### GCP (GKE)
-1. A domain for your service managed by [Cloud DNS](https://cloud.google.com/dns/)
-    - A TLS certificate as a [K8s secret](https://kubernetes.io/docs/concepts/configuration/secret/#tls-secrets)
-
-#### Azure (AKS)
-1. A domain for your service
-    - A TLS certificate as a [K8s secret](https://kubernetes.io/docs/concepts/configuration/secret/#tls-secrets)
 
 </details>
 
 ### Configuring Parameters
-For a detailed overview of this chart's values, see the `rime` README [here](). Your Solutions Architect will assist with configuring parameters during deployment.
+For a detailed overview of this chart's values, see the `ri-firewall` README [here](./ri-firewall). Your Solutions Architect will assist with configuring parameters during deployment.
 
 Some of the main sections to configure include:
-1. `rime.secrets`: application secrets for product license, admin one-time credentials, etc.
-    - (use `rime.secrets.existingSecretName` to specify these values through a K8s secret)
-2. `rime.datasetManagerServer`: settings for the **Managed Blob Storage** feature (AWS-only)
-    - If enabling this feature, set `rime.datasetManagerServer.enabled: true` and specify the Managed Blob Storage IAM role
-3. `rime.imageRegistryServer`: settings for the **Managed Images** feature (AWS-only)
-    - If enabling this feature, set `rime.imageRegistryServer.enabled: true` and specify the Image Builder and Repo Manager IAM roles
-4. `ingress-nginx`: settings for the [Ingress-NGINX Controller](https://artifacthub.io/packages/helm/ingress-nginx/ingress-nginx)
+1. `riFirewall.secrets`: application secrets for auth0-based authentication and RI-provided keys.
+    - Your Solutions Architect will guide you through the creation process of the K8s secret for `rime.secrets.existingIntegrationSecretsName`
+    - If enabling auth0, parameters and secrets can be provided via the `riFirewall.secrets.auth0` fields or via a pre-created K8s secret with name specified in `rime.secrets.existingAuthSecretsName`
+2. `riFirewall.yaraServer.gitRepoToken`: read-only access to an RI-managed github repository of YARA signatures (recommended)
+    - Your Solutions Architect will provide a token.
+3. `ingress-nginx`: settings for the [Ingress-NGINX Controller](https://artifacthub.io/packages/helm/ingress-nginx/ingress-nginx)
     - Specify `ingress-nginx.controller.service.annotations` for your load balancing configuration
-5. `tls`: whether to enable internal TLS for specific services
 
 ### Installing the Chart
 ```
 # When ready to deploy, remove --dry-run
-helm upgrade -i rime robustintelligence/rime \
-  --version $RI_VERSION \
+helm upgrade -i ri-firewall robustintelligence/ri-firewall \
+  --version $RI_FIREWALL_VERSION \
   --values $RIME_VALUES_FILE \
   --namespace $RI_NAMESPACE \
   --debug \
@@ -148,51 +112,7 @@ helm upgrade -i rime robustintelligence/rime \
 
 #### Uninstalling the Chart
 ```
-helm uninstall rime -n $RI_NAMESPACE
-```
-
-## `rime-agent`
-<details>
-<summary><h3>Prerequisites</h3></summary>
-
-#### General
-1. A blob storage entity
-2. An authorization policy allowing read access to ^
-
-#### AWS (EKS)
-1. A blob storage entity ([S3 bucket](https://docs.aws.amazon.com/AmazonS3/latest/userguide/UsingBucket.html))
-2. An authorization policy allowing read access to ^ ([IAM role](https://docs.aws.amazon.com/eks/latest/userguide/associate-service-account-role.html))
-
-#### GCP (GKE)
-1. A blob storage entity ([Cloud Storage bucket](https://cloud.google.com/storage/docs/buckets))
-2. An authorization policy allowing read access to ^ ([Service Account](https://cloud.google.com/kubernetes-engine/docs/how-to/workload-identity))
-
-#### Azure (AKS)
-1. A [Storage Account](https://learn.microsoft.com/en-us/azure/storage/common/storage-account-overview)
-2. A blob storage entity ([Blob Storage Container](https://learn.microsoft.com/en-us/azure/storage/blobs/blob-containers-portal))
-3. An authorization policy allowing read access to ^ ([Managed Identity](https://learn.microsoft.com/en-us/azure/aks/learn/tutorial-kubernetes-workload-identity#create-a-managed-identity-and-grant-permissions-to-access-the-secret))
-
-</details>
-
-### Configuring Parameters
-For a detailed overview of this chart's values, see the `rime-agent` README [here](). Your Solutions Architect will assist with configuring parameters during deployment.
-
-Generally, the only setup needed for the `rime-agent` is to identify the authorization for the `rime-agent-model-tester` ServiceAccount under `rimeAgent.modelTestJob.serviceAccount`.
-
-### Installing the Chart
-```
-# When ready to deploy, remove --dry-run
-helm upgrade -i rime-agent robustintelligence/rime-agent \
-  --version $RI_VERSION \
-  --values $RIME_AGENT_VALUES_FILE \
-  --namespace $RI_NAMESPACE \
-  --debug \
-  --dry-run
-```
-
-#### Uninstalling the Chart
-```
-helm uninstall rime-agent -n $RI_NAMESPACE
+helm uninstall ri-firewall -n $RI_NAMESPACE
 ```
 
 ## `rime-extras` (Recommended)
@@ -203,13 +123,10 @@ It's recommended to deploy the `rime-extras` chart in a separate namespace (e.g.
 
 1. [DataDog](https://github.com/DataDog/helm-charts/tree/datadog-2.20.3/charts/datadog) prerequisites
     - A DataDog API key (will be provided by your Solutions Architect)
-2. [Velero](https://github.com/vmware-tanzu/helm-charts/tree/velero-2.23.6/charts/velero) prerequisites
-    - Follow the [setup instructions](https://velero.io/docs/v1.6/supported-providers/) for your provider
-
 </details>
 
 ### Configuring Parameters
-For a detailed overview of this chart's values, see the `rime-extras` README [here](). Your Solutions Architect will assist with configuring parameters during deployment.
+For a detailed overview of this chart's values, see the `rime-extras` README [here](./rime-extras). Your Solutions Architect will assist with configuring parameters during deployment.
 
 For DataDog, you may wish to configure the log masking logic specified in `datadog.datadog.env`.
 
@@ -235,7 +152,7 @@ helm uninstall rime-extras -n $RIME_EXTRAS_NAMESPACE
 
 ## License
 
-Copyright &copy; 2023 Robust Intelligence
+Copyright &copy; 2024 Robust Intelligence
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.
 
