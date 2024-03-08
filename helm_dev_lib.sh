@@ -36,7 +36,7 @@ controlplane_install_or_upgrade() {
   fi
 
   helm -n "${namespace}" dependency update &&
-  helm -n "${namespace}" "${cmd}" --debug --values "../../aws/workspaces_cluster/tenants/${namespace}_values/values_${namespace}.yaml" \
+  helm -n "${namespace}" "${cmd}" --debug --values "../../aws/workspaces_cluster/tenants/${namespace}_values/values_${namespace}.yaml" --values "../../aws/workspaces_cluster/tenants/workspaces_overrides_values.yaml"\
   "rime-${namespace}" ./ \
   "${set_image_options[@]}"
 
@@ -62,9 +62,6 @@ sub_controlplane_uninstall() {
 # AGENT
 agent_install_or_upgrade() {
   echo "---------Installing Agent-------------"
-  echo "Generating operator manifests"
-  make gen_operator_manifests
-
   local cmd="$1"
   local namespace="$2"
   go_to_namespace $namespace
