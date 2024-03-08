@@ -34,6 +34,7 @@ spec:
         {{- with .Values.rime.frontendServer.deployment.annotations }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
+        {{- include "rime.monitoringAnnotations" (dict "monitoring" .Values.rime.monitoring "name" .Values.rime.frontendServer.name ) | nindent 8 }}
     spec:
       {{- with .Values.rime.images.imagePullSecrets }}
       imagePullSecrets:
@@ -52,6 +53,8 @@ spec:
             {{- if .Values.tls.restEnabled }}
             - name: REACT_APP_TLS_ENABLED
               value: "true"
+            - name: RIME_WEB_APP_HOST_DOCKER_PROXY
+              value: {{ include "rime.fullname" . }}"-ingress-nginx-controller:443"
             - name: REACT_APP_TLS_CERT_PATH
               value: "/var/tmp/frontend-server-tls/tls.crt"
             - name: REACT_APP_TLS_KEY_PATH
@@ -62,6 +65,8 @@ spec:
             {{- with .Values.rime.frontendServer.deployment.extraEnv }}
               {{- toYaml . | nindent 12 }}
             {{- end }}
+            - name: RI_SERVICE_NAME
+              value: {{ .Values.rime.frontendServer.name }}
           image: "{{ .Values.rime.images.backendImage.registry}}/{{ .Values.rime.images.frontendImage.name }}"
           imagePullPolicy: {{ .Values.rime.images.frontendImage.pullPolicy }}
           ports:
@@ -75,7 +80,8 @@ spec:
               {{- if .Values.tls.restEnabled }}
               scheme: HTTPS
               {{ end }}
-            periodSeconds: 5
+            periodSeconds: 30
+            timeoutSeconds: 15
           readinessProbe:
             httpGet:
               path: /
@@ -83,7 +89,8 @@ spec:
               {{- if .Values.tls.restEnabled }}
               scheme: HTTPS
               {{ end }}
-            periodSeconds: 5
+            periodSeconds: 30
+            timeoutSeconds: 15
           startupProbe:
             httpGet:
               path: /
@@ -92,7 +99,8 @@ spec:
               scheme: HTTPS
               {{ end }}
             failureThreshold: 60
-            periodSeconds: 5
+            periodSeconds: 30
+            timeoutSeconds: 15
           resources:
             {{- toYaml .Values.rime.frontendServer.deployment.resources | nindent 12 }}
           {{- if .Values.tls.enableCertManager }}
