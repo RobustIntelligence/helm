@@ -1,8 +1,0 @@
-{{- if .Values.tls.enableCertManager }}
-apiVersion: cert-manager.io/v1
-kind: ClusterIssuer
-metadata:
-  name: {{ include "rime.fullname" . }}-selfsigned-cluster-issuer
-spec:
-  selfSigned: {}
-{{- end }}
