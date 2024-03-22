@@ -1,0 +1,141 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "rime.fullname" . }}-{{ .Values.rime.frontendServer.name }}
+  labels:
+    app: {{ .Values.rime.frontendServer.name }}
+    {{- include "rime.labels" . | nindent 4 }}
+    {{- with .Values.rime.frontendServer.deployment.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  annotations:
+    {{- include "rime.annotations" . | nindent 4 }}
+    {{- with .Values.rime.frontendServer.deployment.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Values.rime.frontendServer.name }}
+      {{- include "rime.selectorLabels" . | nindent 6 }}
+  {{- if not .Values.rime.frontendServer.hpa.enabled }}
+  replicas: {{ .Values.rime.frontendServer.deployment.replicaCount }}
+  {{- end }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.rime.frontendServer.name }}
+        {{- include "rime.labels" . | nindent 8 }}
+        {{- with .Values.rime.frontendServer.deployment.labels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      annotations:
+        {{- include "rime.annotations" . | nindent 8 }}
+        {{- with .Values.rime.frontendServer.deployment.annotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- include "rime.monitoringAnnotations" (dict "monitoring" .Values.rime.monitoring "name" .Values.rime.frontendServer.name ) | nindent 8 }}
+    spec:
+      {{- with .Values.rime.images.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.rime.frontendServer.deployment.securityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: {{ .Values.rime.frontendServer.name }}
+          env:
+            {{- include "rime.webAppHostEnv" . | nindent 12 }}
+            - name: WEB_STANDALONE_PORT
+              value: "{{ .Values.rime.frontendServer.port }}"
+            {{- if .Values.tls.restEnabled }}
+            - name: REACT_APP_TLS_ENABLED
+              value: "true"
+            - name: REACT_APP_TLS_CERT_PATH
+              value: "/var/tmp/frontend-server-tls/tls.crt"
+            - name: REACT_APP_TLS_KEY_PATH
+              value: "/var/tmp/frontend-server-tls/tls.key"
+            - name: REACT_APP_TLS_CA_PATH
+              value: "/var/tmp/frontend-server-tls/ca.crt"
+            {{ end }}
+            {{- with .Values.rime.frontendServer.deployment.extraEnv }}
+              {{- toYaml . | nindent 12 }}
+            {{- end }}
+            - name: RI_SERVICE_NAME
+              value: {{ .Values.rime.frontendServer.name }}
+          image: "{{ .Values.rime.images.backendImage.registry}}/{{ .Values.rime.images.frontendImage.name }}"
+          imagePullPolicy: {{ .Values.rime.images.frontendImage.pullPolicy }}
+          ports:
+            - name: fe
+              containerPort: {{ .Values.rime.frontendServer.port }}
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /
+              port: {{ .Values.rime.frontendServer.port }}
+              {{- if .Values.tls.restEnabled }}
+              scheme: HTTPS
+              {{ end }}
+            periodSeconds: 30
+            timeoutSeconds: 15
+          readinessProbe:
+            httpGet:
+              path: /
+              port: {{ .Values.rime.frontendServer.port }}
+              {{- if .Values.tls.restEnabled }}
+              scheme: HTTPS
+              {{ end }}
+            periodSeconds: 30
+            timeoutSeconds: 15
+          startupProbe:
+            httpGet:
+              path: /
+              port: {{ .Values.rime.frontendServer.port }}
+              {{- if .Values.tls.restEnabled }}
+              scheme: HTTPS
+              {{ end }}
+            failureThreshold: 60
+            periodSeconds: 30
+            timeoutSeconds: 15
+          resources:
+            {{- toYaml .Values.rime.frontendServer.deployment.resources | nindent 12 }}
+          {{- if .Values.tls.enableCertManager }}
+          volumeMounts:
+            - name: {{ include "rime.fullname" . }}-{{ .Values.rime.frontendServer.name }}-tls
+              mountPath: /var/tmp/{{ .Values.rime.frontendServer.name }}-tls
+              readOnly: true
+          {{- end }}
+          {{- include "rime.externalTLSSecretVolumeMounts" . | nindent 12 }}
+          {{- with .Values.rime.frontendServer.deployment.extraVolumeMounts }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          command: ["/bin/sh"]
+          args:
+            - -c
+            - >-
+                ./env.sh rime-frontend/build &&
+                node rime-server/dist/main
+      volumes:
+        {{- if .Values.tls.enableCertManager }}
+        - name: {{ include "rime.fullname" . }}-{{ .Values.rime.frontendServer.name }}-tls
+          secret:
+            secretName: {{ include "rime.fullname" . }}-{{ .Values.rime.frontendServer.name }}-tls
+        {{- end }}
+        {{- include "rime.externalTLSSecretVolumes" . | nindent 8 }}
+        {{- with .Values.rime.frontendServer.deployment.extraVolumes }}
+          {{- toYaml . | nindent 8 }}
+        {{- end }}
+      {{- with .Values.rime.frontendServer.deployment.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.rime.frontendServer.deployment.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.rime.frontendServer.deployment.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

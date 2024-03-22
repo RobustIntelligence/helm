@@ -1,0 +1,29 @@
+{{- if .Values.tls.enableCertManager }}
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ include "rime.fullname" . }}-ingress-certificate
+spec:
+  secretName: {{ include "rime.fullname" . }}-ingress-tls
+  duration: 4320h # 180d
+  renewBefore: 744h # 31d
+{{- with .Values.tls.certificateSpec.subject }}
+  subject: {{ toYaml . | nindent 4 }}
+{{- end}}
+  isCA: false
+  privateKey:
+    algorithm: RSA
+    encoding: PKCS1
+    size: 2048
+    rotationPolicy: Always
+  usages:
+    - server auth
+    - client auth
+  dnsNames:
+    - {{ include "rime.fullname" . }}-ingress-server
+    - localhost
+  issuerRef:
+    name: {{ include "tls.certificateIssuerName" . }}
+    kind: {{ .Values.tls.certificateSpec.issuerRef.kind }}
+    group: {{ .Values.tls.certificateSpec.issuerRef.group }}
+{{- end }}

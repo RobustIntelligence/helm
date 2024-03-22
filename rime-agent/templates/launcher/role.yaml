@@ -1,0 +1,11 @@
+{{- if .Values.rimeAgent.launcher.serviceAccount.create }}
+# A Role granting access to write operations on k8s jobs. Used by Launcher.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ include "rime-agent.launcher.serviceAccountName" . }}
+rules:
+  - apiGroups: ["rbst.io"]
+    resources: [rimejobs, crossplanerpcjobs]
+    verbs: [get, create, update, patch, delete, list]
+{{- end }}
