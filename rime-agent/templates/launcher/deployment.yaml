@@ -1,0 +1,111 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "rime-agent.fullname" . }}-{{ .Values.rimeAgent.launcher.name }}
+  labels:
+    app: {{ .Values.rimeAgent.launcher.name }}
+    {{- include "rime-agent.labels" . | nindent 4 }}
+    {{- with .Values.rimeAgent.launcher.deployment.labels }}
+    {{- toYaml . | indent 4 }}
+    {{- end }}
+  annotations:
+    {{- include "rime-agent.annotations" . | nindent 4 }}
+    {{- with .Values.rimeAgent.launcher.deployment.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Values.rimeAgent.launcher.name }}
+      {{- include "rime-agent.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.rimeAgent.launcher.name }}
+        {{- include "rime-agent.labels" . | nindent 8 }}
+        {{- with .Values.rimeAgent.launcher.deployment.labels }}
+        {{- toYaml . | indent 8 }}
+        {{- end }}
+      annotations:
+        {{- include "rime-agent.annotations" . | nindent 8 }}
+        {{- with .Values.rimeAgent.launcher.deployment.annotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- include "rime-agent.monitoringAnnotations" (dict "monitoring" .Values.rimeAgent.monitoring "name" .Values.rimeAgent.launcher.name ) | nindent 8 }}
+        checksum/config: {{ include (print $.Template.BasePath "/launcher/configmap.yaml") . | sha256sum }}
+    spec:
+      {{- include "rime-agent.imagePullSecretsYaml" .  | nindent 6 }}
+      {{- with .Values.rimeAgent.launcher.deployment.securityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "rime-agent.launcher.serviceAccountName" . }}
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.rimeAgent.images.agentImage.registry }}/{{ .Values.rimeAgent.images.agentImage.name }}"
+          imagePullPolicy: {{ .Values.rimeAgent.images.agentImage.pullPolicy }}
+          resources:
+            {{- toYaml .Values.rimeAgent.launcher.deployment.resources | nindent 12 }}
+          env:
+            - name: RIME_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "rime-agent.secretName" .}}
+                  key: api-key
+                  optional: true
+            - name: RIME_CROSS_SERVICE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "rime-agent.generatedSecretsName" .}}
+                  key: crossServiceKey
+                  optional: true
+            {{- with.Values.rimeAgent.launcher.deployment.extraEnv }}
+              {{- toYaml . | nindent 12 }}
+            {{- end }}
+            - name: RI_SERVICE_NAME
+              value: {{ .Values.rimeAgent.launcher.name }}
+          command:
+            - "/rime/launcher"
+          args:
+            - "--backend-id-int={{ .Values.rimeAgent.launcher.backendID }}"
+            - "--server-config-path=/config/server.config"
+          volumeMounts:
+            {{- if .Values.tls.crossplaneEnabled }}
+            - name: {{ include "rime-agent.fullname" . }}-{{ .Values.rimeAgent.launcher.name }}-tls
+              mountPath: /var/tmp/tls/common
+              readOnly: true
+            {{- end }}
+            - name: {{ include "rime-agent.fullname" . }}-{{ .Values.rimeAgent.launcher.name }}-config
+              mountPath: "/config"
+              readOnly: true
+            {{- with .Values.rimeAgent.launcher.deployment.extraVolumeMounts }}
+                {{- toYaml . | nindent 12 }}
+            {{- end }}
+      volumes:
+        {{- if .Values.tls.crossplaneEnabled }}
+        - name: {{ include "rime-agent.fullname" . }}-{{ .Values.rimeAgent.launcher.name }}-tls
+          secret:
+            secretName: {{ include "rime-agent.fullname" . }}-{{ .Values.rimeAgent.launcher.name }}-tls
+        {{- end }}
+        {{- with .Values.rimeAgent.launcher.deployment.extraVolumes }}
+          {{- toYaml . | nindent 8 }}
+        {{- end }}
+        - name: {{ include "rime-agent.fullname" . }}-{{ .Values.rimeAgent.launcher.name }}-config
+          configMap:
+            name: {{ include "rime-agent.fullname" . }}-{{ .Values.rimeAgent.launcher.name }}-conf
+            items:
+              - key: "server.config"
+                path: "server.config"
+      {{- with .Values.rimeAgent.launcher.deployment.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.rimeAgent.launcher.deployment.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.rimeAgent.launcher.deployment.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
