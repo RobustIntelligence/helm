@@ -1,0 +1,199 @@
+# Config map that defines templates for Firewall instances.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "ri-firewall.fullname" . }}-{{ .Values.riFirewall.operator.name }}-conf
+data:
+  firewall-instance-configmap.config: |
+    apiVersion: v1
+    kind: ConfigMap
+    metadata:
+      # Controller will set the name based on the firewall instance name.
+      name: PLACEHOLDER
+  firewall-instance-service.config: |
+    apiVersion: v1
+    kind: Service
+    metadata:
+      # Controller will set the name based on the firewall instance name.
+      name: PLACEHOLDER
+      labels:
+        {{- include "ri-firewall.labels" . | nindent 8 }}
+        {{- with .Values.riFirewall.operator.firewallInstanceTemplate.service.labels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      annotations:
+        {{- include "ri-firewall.annotations" . | nindent 8 }}
+        {{- with .Values.riFirewall.operator.firewallInstanceTemplate.service.annotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      type: {{ .Values.riFirewall.operator.firewallInstanceTemplate.service.type }}
+      ports:
+        - port: {{ .Values.riFirewall.operator.firewallInstanceTemplate.proxyPort }}
+          targetPort: {{ .Values.riFirewall.operator.firewallInstanceTemplate.proxyPort }}
+          protocol: TCP
+          name: fw-proxy
+      selector:
+        # Controller needs to fill in this value so the service matches pods
+        # for the firewall instance.
+        app: PLACEHOLDER
+  firewall-instance-deployment.config: |
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      # Controller will set the name based on the firewall instance name.
+      name: PLACEHOLDER
+      labels:
+        {{- include "ri-firewall.labels" . | nindent 8 }}
+        {{- with .Values.riFirewall.operator.firewallInstanceTemplate.deployment.labels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      annotations:
+        {{- include "ri-firewall.annotations" . | nindent 8 }}
+        {{- with .Values.riFirewall.operator.firewallInstanceTemplate.deployment.annotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      selector:
+        matchLabels:
+          # Each Deployment needs its own matchlabels so the firewall instance
+          # replica sets are independent.
+          app: PLACEHOLDER
+      replicas: {{ .Values.riFirewall.operator.firewallInstanceTemplate.deployment.replicaCount }}
+      template:
+        metadata:
+          labels:
+            # Each Deployment needs its own matchlabels so the firewall instance
+            # replica sets are independent.
+            app: PLACEHOLDER
+            {{- include "ri-firewall.labels" . | nindent 12 }}
+            {{- with .Values.riFirewall.operator.firewallInstanceTemplate.deployment.labels }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          annotations:
+            checksum/system-config: {{ include (print $.Template.BasePath "/system-firewall-config.yaml") . | sha256sum }}
+            checksum/model-map-config: {{ include (print $.Template.BasePath "/model-servers/_gen/configmap.yaml") . | sha256sum }}
+            {{- include "ri-firewall.annotations" . | nindent 12 }}
+            {{- with .Values.riFirewall.operator.firewallInstanceTemplate.deployment.annotations }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+        spec:
+          {{- with .Values.riFirewall.images.imagePullSecrets }}
+          imagePullSecrets:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          containers:
+            # gRPC-gateway is a sidecar container that proxies traffic from REST to gRPC.
+            - name: grpc-gateway-proxy
+              image: "{{ .Values.riFirewall.images.backendImage.registry}}/{{ .Values.riFirewall.images.backendImage.name }}"
+              imagePullPolicy: {{ .Values.riFirewall.images.backendImage.pullPolicy }}
+              ports:
+                - name: fw-proxy
+                  containerPort: {{ .Values.riFirewall.operator.firewallInstanceTemplate.proxyPort }}
+                  protocol: TCP
+              resources:
+                {{- toYaml .Values.riFirewall.operator.firewallInstanceTemplate.deployment.proxyResources | nindent 16 }}
+              command:
+                - "/ri/firewall"
+              args:
+                - "start-firewall-gateway-proxy"
+                - "--proxy-addr=:{{ .Values.riFirewall.operator.firewallInstanceTemplate.proxyPort }}"
+                # Use a local port of the other container.
+                # Containers can use the local network to communicate with each other.
+                - "--backend-addr=:{{ .Values.riFirewall.operator.firewallInstanceTemplate.firewallServerLocalPort }}"
+            - name: firewall-server
+              image: "{{ .Values.riFirewall.images.firewallServerImage.registry}}/{{ .Values.riFirewall.images.firewallServerImage.name }}"
+              imagePullPolicy: "{{ .Values.riFirewall.images.firewallServerImage.pullPolicy }}"
+              env:
+                - name: OPENAI_API_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ .Values.riFirewall.secrets.existingIntegrationSecretsName }}
+                      key: openaiAPIKey
+                - name: RI_SERVICE_NAME
+                  value: firewall-server
+                # Purely optional key for local firewall deployments to allow access to remote
+                # model servers.
+                - name: REMOTE_FIREWALL_API_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ .Values.riFirewall.secrets.existingIntegrationSecretsName }}
+                      key: remoteFirewallAPIKey
+                      optional: true
+              resources:
+                {{- toYaml .Values.riFirewall.operator.firewallInstanceTemplate.deployment.serverResources | nindent 16 }}
+              command:
+                - "ri-firewall"
+              args:
+                - "--port={{ .Values.riFirewall.operator.firewallInstanceTemplate.firewallServerLocalPort }}"
+                # This relies on the controller mounting the rule config with this
+                # mount directory and name.
+                - "--user-config-path=/config/ruleConfig"
+                - "--model-connection-config-path=/model-connection-config/model-connection-map.yaml"
+                - "--yaml-system-config-path=/system-config/system-conf.yaml"
+              volumeMounts:
+                - name: {{ include "ri-firewall.modelConnectionConfigMapName" . }}
+                  mountPath: "/model-connection-config"
+                  readOnly: true
+                - name: system-config
+                  mountPath: "/system-config"
+                  readOnly: true
+              startupProbe:
+                httpGet:
+                  path: /healthz
+                  port: {{ .Values.riFirewall.operator.firewallInstanceTemplate.proxyPort }}
+                  httpHeaders:
+                    # There is no auth needed for this check, but the server
+                    # expects this keys to be present in the request headers.
+                    - name: X-Firewall-Api-Key
+                      value: test
+                failureThreshold: 20
+                periodSeconds: 5
+              readinessProbe:
+                httpGet:
+                  path: /healthz
+                  port: {{ .Values.riFirewall.operator.firewallInstanceTemplate.proxyPort }}
+                  httpHeaders:
+                    # There is no auth needed for this check, but the server
+                    # expects this keys to be present in the request headers.
+                  - name: X-Firewall-Api-Key
+                    value: test
+                periodSeconds: 5
+          # The user config will be set by the controller.
+          # The system config and the model connection config should be the same
+          # across all firewall instances.
+          volumes:
+            - name: system-config
+              configMap:
+                name: {{ include "ri-firewall.firewallSystemConfigMapName" . }}
+                optional: true
+                items:
+                  - key: "systemConf"
+                    path: "system-conf.yaml"
+            - name: {{ include "ri-firewall.modelConnectionConfigMapName" . }}
+              configMap:
+                name: {{ include "ri-firewall.modelConnectionConfigMapName" . }}
+                items:
+                  - key: "model-connection-map.yaml"
+                    path: "model-connection-map.yaml"
+  firewall-instance-ingress.config: |
+    apiVersion: networking.k8s.io/v1
+    kind: Ingress
+    metadata:
+      name: {{ include "ri-firewall.fullname" . }}-firewall-instance-ingress
+      namespace: '{{.Release.Namespace}}'
+      labels:
+        {{- include "ri-firewall.labels" . | nindent 8 }}
+        {{- with .Values.riFirewall.ingress.labels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      annotations:
+        {{- include "ri-firewall.annotations" . | nindent 8 }}
+        nginx.ingress.kubernetes.io/auth-url: http://{{ include "ri-firewall.fullname" . }}-{{ .Values.riFirewall.authServer.name }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.riFirewall.authServer.port}}/v1/auth/validate
+        nginx.ingress.kubernetes.io/auth-method: POST
+        {{- with .Values.riFirewall.ingress.annotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      ingressClassName: {{ .Values.riFirewall.ingress.ingressClassName }}
+      # Controller will add rules when creating the ingress.
