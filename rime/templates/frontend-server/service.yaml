@@ -1,0 +1,24 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "rime.fullname" . }}-{{ .Values.rime.frontendServer.name }}
+  labels:
+    {{- include "rime.labels" . | nindent 4 }}
+    {{- with .Values.rime.frontendServer.service.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  annotations:
+    {{- include "rime.annotations" . | nindent 4 }}
+    {{- with .Values.rime.frontendServer.service.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  type: {{ .Values.rime.frontendServer.service.type }}
+  ports:
+    - port: {{ .Values.rime.frontendServer.port }}
+      targetPort: {{ .Values.rime.frontendServer.port }}
+      protocol: TCP
+      name: fe
+  selector:
+    app: {{ .Values.rime.frontendServer.name }}
+    {{- include "rime.labels" . | nindent 4 }}
