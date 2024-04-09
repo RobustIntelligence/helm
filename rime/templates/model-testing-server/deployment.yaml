@@ -1,0 +1,163 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "rime.fullname" . }}-{{ .Values.rime.modelTestingServer.name }}
+  labels:
+    app: {{ .Values.rime.modelTestingServer.name }}
+    {{- include "rime.labels" . | nindent 4 }}
+    {{- with .Values.rime.modelTestingServer.deployment.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  annotations:
+    {{- include "rime.annotations" . | nindent 4 }}
+    {{- with .Values.rime.modelTestingServer.deployment.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Values.rime.modelTestingServer.name }}
+      {{- include "rime.selectorLabels" . | nindent 6 }}
+  {{- if not .Values.rime.modelTestingServer.hpa.enabled }}
+  replicas: {{ .Values.rime.modelTestingServer.deployment.replicaCount }}
+  {{- end }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.rime.modelTestingServer.name }}
+        {{- include "rime.labels" . | nindent 8 }}
+        {{- with .Values.rime.modelTestingServer.deployment.labels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      annotations:
+        {{- include "rime.annotations" . | nindent 8 }}
+        {{- with .Values.rime.modelTestingServer.deployment.annotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- include "rime.monitoringAnnotations" (dict "monitoring" .Values.rime.monitoring "name" .Values.rime.uploadServer.name ) | nindent 8 }}
+        checksum/config: {{ include (print $.Template.BasePath "/model-testing-server/configmap.yaml") . | sha256sum }}
+    spec:
+      {{- with .Values.rime.images.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.rime.modelTestingServer.deployment.securityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "rime.modelTestingServer.serviceAccountName" . }}
+      containers:
+        - name: {{ .Values.rime.modelTestingServer.name }}
+          env:
+            {{- include "rime.webAppHostEnv" . | nindent 12 }}
+            {{- include "rime.commonEnv" . | nindent 12 }}
+            {{- with .Values.rime.modelTestingServer.deployment.extraEnv }}
+              {{- toYaml . | nindent 12 }}
+            {{- end }}
+            - name: RI_SERVICE_NAME
+              value: {{ .Values.rime.modelTestingServer.name }}
+          image: "{{ .Values.rime.images.backendImage.registry}}/{{ .Values.rime.images.backendImage.name }}"
+          imagePullPolicy: {{ .Values.rime.images.backendImage.pullPolicy }}
+          ports:
+            - name: mt
+              containerPort: {{ .Values.rime.modelTestingServer.port }}
+              protocol: TCP
+            - name: mt-rest
+              containerPort: {{ .Values.rime.modelTestingServer.restPort }}
+              protocol: TCP
+            - name: mt-debug
+              containerPort: 6060
+              protocol: TCP
+            {{- if .Values.rime.monitoring.enabled }}
+            - name: metrics
+              containerPort: {{ .Values.rime.monitoring.port }}
+              protocol: TCP
+            {{- end }}
+          {{ if .Values.tls.grpcEnabled }}
+          livenessProbe:
+            exec:
+              command: [ "/bin/grpc_health_probe", "-tls", "-tls-no-verify", "-addr=:{{ .Values.rime.modelTestingServer.port }}" ]
+            periodSeconds: 10
+            timeoutSeconds: 10
+          readinessProbe:
+            exec:
+              command: [ "/bin/grpc_health_probe", "-tls", "-tls-no-verify", "-addr=:{{ .Values.rime.modelTestingServer.port }}" ]
+            periodSeconds: 10
+            timeoutSeconds: 10
+          startupProbe:
+            exec:
+              command: [ "/bin/grpc_health_probe", "-tls", "-tls-no-verify", "-addr=:{{ .Values.rime.modelTestingServer.port }}" ]
+            failureThreshold: 60
+            periodSeconds: 10
+            timeoutSeconds: 10
+          {{ else }}
+          livenessProbe:
+            exec:
+              command: [ "/bin/grpc_health_probe", "-addr=:{{ .Values.rime.modelTestingServer.port }}" ]
+            periodSeconds: 5
+          readinessProbe:
+            exec:
+              command: [ "/bin/grpc_health_probe", "-addr=:{{ .Values.rime.modelTestingServer.port }}" ]
+            periodSeconds: 5
+          startupProbe:
+            exec:
+              command: [ "/bin/grpc_health_probe", "-addr=:{{ .Values.rime.modelTestingServer.port }}" ]
+            failureThreshold: 60
+            periodSeconds: 5
+          {{ end }}
+          resources:
+            {{- toYaml .Values.rime.modelTestingServer.deployment.resources | nindent 12 }}
+          command:
+            - "/rime/rime"
+          args:
+            - "start-model-testing-server"
+            - "--server-config-path=/config/server.config"
+            - "--model-testing-port={{ .Values.rime.modelTestingServer.port }}"
+            - "--model-testing-rest-port={{ .Values.rime.modelTestingServer.restPort }}"
+          volumeMounts:
+            - name: {{ include "rime.fullname" . }}-{{ .Values.rime.modelTestingServer.name }}-config
+              mountPath: "/config"
+              readOnly: true
+            {{- if .Values.tls.enableCertManager }}
+            - name: {{ include "rime.fullname" . }}-{{ .Values.rime.modelTestingServer.name }}-tls
+              mountPath: /var/tmp/tls/common
+              readOnly: true
+            {{- end }}
+            {{- include "rime.externalTLSSecretVolumeMounts" . | nindent 12 }}
+            {{- with .Values.rime.modelTestingServer.deployment.extraVolumeMounts }}
+              {{- toYaml . | nindent 12 }}
+            {{- end }}
+      volumes:
+        # Volumes are defined at the Pod level, then mounted into containers within that Pod
+        - name: {{ include "rime.fullname" . }}-{{ .Values.rime.modelTestingServer.name }}-config
+          {{- if ne .Values.rime.modelTestingServer.existingConfigSecretName "" }}
+          secret:
+            secretName: {{ .Values.rime.modelTestingServer.existingConfigSecretName }}
+          {{- else }}
+          configMap:
+            name: {{ include "rime.fullname" . }}-{{ .Values.rime.modelTestingServer.name }}-conf
+          {{- end }}
+            items:
+              - key: "server.config"
+                path: "server.config"
+        {{- if .Values.tls.enableCertManager }}
+        - name: {{ include "rime.fullname" . }}-{{ .Values.rime.modelTestingServer.name }}-tls
+          secret:
+            secretName: {{ include "rime.fullname" . }}-{{ .Values.rime.modelTestingServer.name }}-tls
+        {{- end }}
+        {{- include "rime.externalTLSSecretVolumes" . | nindent 8 }}
+        {{- with .Values.rime.modelTestingServer.deployment.extraVolumes }}
+          {{- toYaml . | nindent 8 }}
+        {{- end }}
+      {{- with .Values.rime.modelTestingServer.deployment.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.rime.modelTestingServer.deployment.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.rime.modelTestingServer.deployment.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
