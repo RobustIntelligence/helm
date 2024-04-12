@@ -1,0 +1,372 @@
+riFirewall:
+  # @ignored -- Override for the chart name. If used, this will be appended to the
+  # release name to form the fully qualified app name
+  # (e.g., `ri-${nameOverride}` instead of just `ri`)
+  nameOverride: ""
+  # Common annotations added to all K8s resources
+  commonAnnotations: {}
+  # Common labels added to all K8s resources
+  commonLabels: {}
+
+  # -- Values for the internal RI K8 secret used by the Firewall.
+  # @default -- (see individual values in `values`.yaml)
+  secrets:
+    # If existingIntegrationSecretsName is set, the secret will not be created. Must have openaiAPIKey,
+    # and huggingfaceAPIKey keys set.
+    existingIntegrationSecretsName: ""
+    # If existingAuthSecretsName is set, the secret will not be created. Must have domain,
+    # clientID, clientSecret and callback keys set.
+    existingAuthSecretsName: ""
+    # auth0Enabled (bool): Whether to enable Auth0 for the Firewall.
+    auth0Enabled: false
+    auth0:
+      # domain (str): Auth0 domain (optional)
+      domain: ""
+      # clientID (str): Auth0 client ID (optional)
+      clientID: ""
+      # clientSecret (str): Auth0 client secret (optional)
+      clientSecret: ""
+      # callback (str): Auth0 callback URL (optional)
+      callback: ""
+
+  # -- firewallSystemConfig is system configuration for the RI Firewall.
+  firewallSystemConfig:
+    # maxRequestTokens (int): The maximum number of tokens that Firewall accepts from a single API request.
+    maxRequestTokens: 4096
+    # logUserData (bool): Whether to collect raw firewall requests in the logs.
+    # Be careful with this setting! It opens us up to compliance / contract issues.
+    logUserData: true
+    # enableYara (bool): Whether or not to use the YARA rules in firewall rule evaluation.
+    enableYara: true
+    # azureOpenaiModelProvider: This specifies how to connect to Azure OpenAI models for internal rule evaluation.
+    azureOpenaiModelProvider:
+      # apiBaseURL (str): The URL where the firewall can access Azure models.
+      apiBaseURL: ""
+      # apiVersion (str): API version of Azure OpenAI to use.
+      apiVersion: ""
+      # chatModelDeploymentName (str): Name of the chat model deployment to use.
+      # This can be found in the Azure OpenAI console.
+      # We prefer GPT3.5-Turbo for the firewall.
+      chatModelDeploymentName: ""
+
+  # -- firewallLicenseLimits defines the usage limits for the firewall deployment.
+  firewallLicenseLimits:
+    # firewallInstances (int): Maximum number of FirewallInstances that the customer is allowed to
+    # create. If resource quota is enabled, this should be less than firewallInstanceResourceQuota.maxObjectCount.
+    firewallInstances: 10
+    # validateRequestsPerDay (int): Maximum number of /validate calls that the customer can make in one day.
+    validateRequestsPerDay: 500000
+
+  # -- firewallInstanceResourceQuota is configuration for a resource quota to
+  # limit the number of FirewallInstances a user can create in this deployment.
+  firewallInstanceResourceQuota:
+    # enabled (bool): Enable the creation of the resource quota.
+    enabled: true
+    # maxObjectCount (int): The maximum allowed number of FirewallInstances in the namespace.
+    maxObjectCount: 5
+
+  # -- Image specification for the RI Firewall.
+  # @default -- (see individual values in `values.yaml`)
+  images:
+    imagePullSecrets:
+      - name: rimecreds
+    backendImage:
+      registry: "docker.io"
+      name: "robustintelligencehq/firewall-backend:latest"
+      pullPolicy: "Always"
+    firewallServerImage:
+      registry: "docker.io"
+      name: "robustintelligencehq/ri-firewall:latest"
+      pullPolicy: "Always"
+
+  # -- `licenseServer` K8s-level configurations
+  # @default -- (see individual values in `values.yaml`)
+  licenseServer:
+    name: "license-server"
+    port: 5024
+    # Service Account for licenseServer to view k8s firewall instances.
+    serviceAccount:
+      create: true
+      # If not set and create is true, a name is generated using the fullname template
+      name:
+      annotations: {}
+      labels: {}
+    # Service for licenseServer
+    service:
+      type: ClusterIP
+      annotations: {}
+      labels: {}
+    # Deployment for licenseServer
+    deployment:
+      annotations: {}
+      labels: {}
+      replicaCount: 1
+      resources:
+        limits:
+          memory: 90Mi
+        requests:
+          cpu: 100m
+          memory: 90Mi
+
+  # -- `authServer` K8s-level configurations
+  # @default -- (see individual values in `values.yaml`)
+  authServer:
+    name: "auth-server"
+    port: 15021
+    # Service for authServer
+    service:
+      type: ClusterIP
+      annotations: {}
+      labels: {}
+    # HPA for the authServer. If disabled, will use `replicaCount` for the deployment.
+    hpa:
+      annotations: {}
+      labels: {}
+      enabled: true
+      minReplicas: 1
+      maxReplicas: 10
+      metrics:
+        - type: Resource
+          resource:
+            name: cpu
+            target:
+              type: Utilization
+              averageUtilization: 60
+    # Deployment for authServer
+    deployment:
+      annotations: {}
+      labels: {}
+      replicaCount: 1
+      resources:
+        limits:
+          memory: 90Mi
+        requests:
+          cpu: 100m
+          memory: 90Mi
+    tokenLifetimeHours:
+      userTokenLifetime: 10  # 10 hours
+      systemTokenLifetime: 720  # 30 days
+
+  # -- `operator` K8s-level configurations
+  # @default -- (see individual values in `values.yaml`)
+  # The operator is responsible for reconciling FirewallInstance CRs.
+  # It creates individual firewall deployments and makes them available over
+  # the network.
+  operator:
+    name: "operator"
+    # Service Account for operator to manipulate k8s objects.
+    serviceAccount:
+      create: true
+      # If not set and create is true, a name is generated using the fullname template
+      name:
+      annotations: {}
+      labels: {}
+    deployment:
+      annotations: {}
+      labels: {}
+      resources:
+        limits:
+          memory: 300Mi
+        requests:
+          cpu: 10m
+          memory: 100Mi
+
+    firewallInstanceTemplate:
+      proxyPort: 8081
+      # Internal local port for communication between containers in the same deployment.
+      firewallServerLocalPort: 50052
+      # Service for the firewall-instances
+      service:
+        type: ClusterIP
+        annotations: {}
+        labels: {}
+      # Deployment for the firewall server.
+      deployment:
+        annotations: {}
+        labels: {}
+        # Replica count for the firewall-server: only use if HPA disabled.
+        replicaCount: 1
+        # Resources for the firewall server container.
+        serverResources:
+          limits:
+            memory: 3000Mi
+          requests:
+            cpu: 1000m
+            memory: 3000Mi
+        # Resources for the gRPC-gateway proxy container.
+        proxyResources:
+          limits:
+            memory: 100Mi
+          requests:
+            cpu: 10m
+            memory: 100Mi
+      # Horizontal pod autoscaler for the firewall instance.
+      hpa:
+        annotations: {}
+        labels: {}
+        minReplicas: 1
+        maxReplicas: 3
+        metrics:
+          - type: Resource
+            resource:
+              name: cpu
+              target:
+                type: Utilization
+                averageUtilization: 60
+
+  # -- `yaraServer` K8s-level configurations
+  # @default -- (see individual values in `values.yaml`)
+  yaraServer:
+    name: "yara-server"
+    port: 5023
+    # Service for yaraServer
+    service:
+      type: ClusterIP
+      annotations: {}
+      labels: {}
+    # HPA for the yaraServer. If disabled, will use `replicaCount` for the deployment.
+    hpa:
+      annotations: {}
+      labels: {}
+      enabled: true
+      minReplicas: 1
+      maxReplicas: 10
+      metrics:
+        - type: Resource
+          resource:
+            name: cpu
+            target:
+              type: Utilization
+              averageUtilization: 60
+    # Deployment for yaraServer
+    deployment:
+      annotations: {}
+      labels: {}
+      replicaCount: 1
+      resources:
+        limits:
+          memory: 1000Mi
+          ephemeral-storage: "4Gi"
+        requests:
+          cpu: 1000m
+          memory: 100Mi
+          ephemeral-storage: "2Gi"
+    # autoUpdateEnabled (bool): Whether to allow yara server to periodically update its rules via a pull mechanism.
+    autoUpdateEnabled: true
+    # ruleRepoRef (str): The revision of the YARA rule git repo to pull at server initialization.
+    ruleRepoRef: ""
+    # gitRepoToken (str): The git repo token to use for pulling yara rules.
+    gitRepoToken: ""
+    # yaraPatternUpdateFrequency (str): The cron frequency at which yara server should update its rules.
+    yaraPatternUpdateFrequency: ""
+
+  # -- `instanceManagerServer` K8s-level configurations
+  # @default -- (see individual values in `values.yaml`)
+  instanceManagerServer:
+    name: "instance-manager-server"
+    port: 5024
+    restPort: 15024
+    # Service Account for instanceManagerServer to manipulate k8s firewall instances.
+    serviceAccount:
+      create: true
+      # If not set and create is true, a name is generated using the fullname template
+      name:
+      annotations: {}
+      labels: {}
+    # Service for instanceManagerServer
+    service:
+      type: ClusterIP
+      annotations: {}
+      labels: {}
+    # HPA for the instanceManagerServer. If disabled, will use `replicaCount` for the deployment.
+    hpa:
+      annotations: {}
+      labels: {}
+      enabled: true
+      minReplicas: 1
+      maxReplicas: 3
+      metrics:
+        - type: Resource
+          resource:
+            name: cpu
+            target:
+              type: Utilization
+              averageUtilization: 60
+    # Deployment for instanceManagerServer
+    deployment:
+      annotations: {}
+      labels: {}
+      replicaCount: 1
+      resources:
+        limits:
+          memory: 90Mi
+        requests:
+          cpu: 100m
+          memory: 90Mi
+
+  # -- `ingress` K8s-level configurations
+  # @default -- (see individual values in `values.yaml`)
+  ingress:
+    annotations: {}
+    labels: {}
+    tls: []
+    ingressClassName: nginx
+
+  # -- `monitoring` (Prometheus metrics/Datadog) K8s-level configurations
+  # @default -- (see individual values in `values.yaml`)
+  monitoring:
+    # -- Whether to enable Prometheus metrics for all services on the Firewall
+    enabled: true
+    # -- Port to expose Prometheus metrics on
+    port: 8080
+
+# -- Ingress-nginx controller sub-chart. See https://artifacthub.io/packages/helm/ingress-nginx/ingress-nginx for all parameters.
+# @default -- (see individual values in `values`.yaml)
+ingress-nginx:
+  imagePullSecrets:
+    - name: rimecreds
+  controller:
+    image:
+      registry: "docker.io"
+      image: "robustintelligencehq/ingress-nginx-controller"
+      tag: "v1.3.0"
+      digest: "sha256:067673df26a65ec5c2d5b30f25db869bad4d7d391fc81882250134577e581ef0"
+    scope:
+      enabled: true
+      # -- K8s namespace for the ingress
+      namespace: ""
+    ingressClassResource:
+      enabled: true
+      default: false
+    admissionWebhooks:
+      enabled: false
+    service:
+      targetPorts:
+        http: http
+        https: http
+      # -- For full list of annotations, see
+      # https://kubernetes-sigs.github.io/aws-load-balancer-controller/v2.2/guide/service/annotations/
+      annotations: {}
+      enableHttp: false
+    metrics:
+      # Enable Prometheus metrics by default for the ingress-nginx controller.
+      # It is accessible on port 10254.
+      enabled: true
+    config:
+      force-ssl-redirect: "false"
+      ssl-redirect: "false"
+      log-format-upstream: '{"msg": "nginx request log", "remote_addr": "$remote_addr", "request_method": "$request_method", "request_uri": "$request_uri", "status": "$status", "body_bytes_sent": "$body_bytes_sent", "request_time": "$request_time", "http_referrer": "$http_referer", "http_user_agent": "$http_user_agent", "upstream_service": "$upstream_addr", "upstream_response_length": "$upstream_response_length", "upstream_response_time": "$upstream_response_time", "upstream_status": "$upstream_status"}'
+    extraArgs:
+      # https://kubernetes.github.io/ingress-nginx/user-guide/monitoring/#wildcard-ingresses
+      # We use a "wildcard host" character so unless we use this option, no
+      # metrics will be logged.
+      # They disable it by default because the cardinality blows up quickly.
+      metrics-per-host: "false"
+
+# -- ri-detection-resources sub-chart
+# This chart contains detection resources such as model servers and YARA servers.
+ri-detection-resources:
+  modelServers:
+    # Disable any models only used in GAI Model Testing
+    llmRejection:
+      enabled: false
