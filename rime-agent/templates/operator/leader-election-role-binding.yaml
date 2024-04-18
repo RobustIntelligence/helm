@@ -1,0 +1,14 @@
+{{- if .Values.rimeAgent.operator.serviceAccount.create -}}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "rime-agent.fullname" . }}-{{ .Values.rimeAgent.operator.name }}-leader-election-rolebinding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ include "rime-agent.fullname" . }}-{{ .Values.rimeAgent.operator.name }}-leader-election-role
+subjects:
+- kind: ServiceAccount
+  name: {{ include "rime-agent.operator.serviceAccountName" . }}
+  namespace: {{ .Release.Namespace }}
+{{- end }}

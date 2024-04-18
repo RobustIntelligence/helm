@@ -1,0 +1,80 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "ri-detection-resources.name" . }}-{{ .Values.signalgenYaraServer.name }}
+  labels:
+    app: {{ .Values.signalgenYaraServer.name }}
+    {{- with .Values.signalgenYaraServer.deployment.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  annotations:
+    {{- include "ri-detection-resources.annotations" . | nindent 4 }}
+    {{- with .Values.signalgenYaraServer.deployment.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Values.signalgenYaraServer.name }}
+  {{- if not .Values.signalgenYaraServer.hpa.enabled }}
+  replicas: {{ .Values.signalgenYaraServer.deployment.replicaCount }}
+  {{- end }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.signalgenYaraServer.name }}
+        {{- with .Values.signalgenYaraServer.deployment.labels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      annotations:
+        {{- include "ri-detection-resources.annotations" . | nindent 8 }}
+        {{- with .Values.signalgenYaraServer.deployment.annotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.images.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: {{ .Values.signalgenYaraServer.name }}
+          image: "{{ .Values.images.firewallBackendImage.registry}}/{{ .Values.images.firewallBackendImage.name }}"
+          imagePullPolicy: {{ .Values.images.firewallBackendImage.pullPolicy }}
+          ports:
+            - name: yara
+              containerPort: {{ .Values.signalgenYaraServer.port }}
+              protocol: TCP
+          livenessProbe:
+            exec:
+              command: [ "/bin/grpc_health_probe", "-addr=:{{ .Values.signalgenYaraServer.port }}" ]
+            periodSeconds: 5
+          readinessProbe:
+            exec:
+              command: [ "/bin/grpc_health_probe", "-addr=:{{ .Values.signalgenYaraServer.port }}" ]
+            periodSeconds: 5
+          startupProbe:
+            exec:
+              command: [ "/bin/grpc_health_probe", "-addr=:{{ .Values.signalgenYaraServer.port }}" ]
+            failureThreshold: 60
+            periodSeconds: 5
+          resources:
+            {{- toYaml .Values.signalgenYaraServer.deployment.resources | nindent 12 }}
+          command:
+            - "/ri/firewall"
+          args:
+            - "start-signalgen-yara-server"
+            - "--port={{ .Values.signalgenYaraServer.port }}"
+            - "--server-config-path=/config/server.config"
+            - "--yara-patterns-dir=/ri/yara_patterns"
+          volumeMounts:
+            - name: {{ include "ri-detection-resources.name" . }}-{{ .Values.signalgenYaraServer.name }}-config
+              mountPath: "/config"
+              readOnly: true
+      volumes:
+        # Volumes are defined at the Pod level, then mounted into containers within that Pod
+        - name: {{ include "ri-detection-resources.name" . }}-{{ .Values.signalgenYaraServer.name }}-config
+          configMap:
+            name: {{ include "ri-detection-resources.name" . }}-{{ .Values.signalgenYaraServer.name }}-conf
+            items:
+              - key: "server.config"
+                path: "server.config"
