@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "ri-firewall.firewallSystemConfigMapName" . }}
+data:
+  systemConf: |
+    max_request_tokens: {{ .Values.riFirewall.firewallSystemConfig.maxRequestTokens }}
+    validate_response_visibility:
+    {{- with .Values.riFirewall.firewallSystemConfig.validateResponseVisibilitySettings.ruleEvalMetadataVisibility }}
+      rule_eval_metadata_visibility:
+        enable_stdout_logging: {{ .enableStdoutLogging }}
+        enable_api_response: {{ .enableApiResponse }}
+    {{- end }}
+    {{- with .Values.riFirewall.firewallSystemConfig.validateResponseVisibilitySettings.firewallRequestVisibility }}
+      firewall_request_visibility:
+        enable_stdout_logging: {{ .enableStdoutLogging }}
+        enable_api_response: {{ .enableApiResponse }}
+    {{- end }}
+    license_server_address: "{{ include "ri-firewall.fullname" . }}-{{ .Values.riFirewall.licenseServer.name }}:{{ .Values.riFirewall.licenseServer.port }}"
+    signalgen_yara_server_address: "{{ include "ri-firewall.signalGenYaraServerAddr" . }}"
+    hotfix_yara_config:
+      enable_hotfix_yara: {{ .Values.riFirewall.firewallSystemConfig.enableHotfixYara }}
+      hotfix_yara_server_address: "{{ include "ri-firewall.fullname" . }}-{{ .Values.riFirewall.hotfixYaraServer.name }}:{{ .Values.riFirewall.hotfixYaraServer.port }}"
+  {{- if .Values.riFirewall.firewallSystemConfig.azureOpenaiModelProvider.enabled }}
+    azure_openai_model_provider:
+      api_base_url: {{ .Values.riFirewall.firewallSystemConfig.azureOpenaiModelProvider.apiBaseURL }}
+      api_version: {{ .Values.riFirewall.firewallSystemConfig.azureOpenaiModelProvider.apiVersion }}
+      chat_model_deployment_name: {{ .Values.riFirewall.firewallSystemConfig.azureOpenaiModelProvider.chatModelDeploymentName }}
+  {{- end }}

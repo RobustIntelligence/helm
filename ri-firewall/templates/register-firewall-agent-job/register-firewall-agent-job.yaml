@@ -1,0 +1,81 @@
+{{- if .Values.riFirewall.registerFirewallAgent.enabled }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "ri-firewall.fullname" . }}-{{ .Values.riFirewall.registerFirewallAgent.name }}
+  labels:
+    {{- include "ri-firewall.labels" . | nindent 4 }}
+    {{- with .Values.riFirewall.registerFirewallAgent.job.labels }}
+    {{- toYaml . | indent 4 }}
+    {{- end }}
+  annotations:
+    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook-weight": "4"
+    {{- include "ri-firewall.annotations" . | nindent 4 }}
+    {{- with .Values.riFirewall.registerFirewallAgent.job.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  template:
+    metadata:
+      labels:
+        {{- include "ri-firewall.labels" . | nindent 8 }}
+        {{- with .Values.riFirewall.registerFirewallAgent.job.labels }}
+        {{- toYaml . | indent 8 }}
+        {{- end }}
+      annotations:
+        {{- include "ri-firewall.annotations" . | nindent 8 }}
+        {{- with .Values.riFirewall.registerFirewallAgent.job.annotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.riFirewall.images.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.riFirewall.registerFirewallAgent.job.securityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "ri-firewall.registerFirewallAgent.serviceAccountName" . }}
+      containers:
+        - name: {{ .Values.riFirewall.registerFirewallAgent.name }}
+          image: "{{ .Values.riFirewall.images.backendImage.registry}}/{{ .Values.riFirewall.images.backendImage.name }}"
+          imagePullPolicy: {{ .Values.riFirewall.images.backendImage.pullPolicy }}
+          resources:
+            {{- toYaml .Values.riFirewall.registerFirewallAgent.job.resources | nindent 12 }}
+          env:
+            - name: RIME_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "ri-firewall.existingSecretsName" . }}
+                  key: registerAgentAPIKey
+                  optional: false
+            - name: RIME_CROSS_SERVICE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "ri-firewall.generatedSecretsName" . }}
+                  key: crossServiceKey
+                  optional: false
+            - name: EXISTING_SECRETS_NAME
+              value: {{ include "ri-firewall.existingSecretsName" . }}
+          command:
+            - "/ri/firewall"
+          args:
+            - "register-firewall-agent-job"
+            - "--server-config-path=/config/server.config"
+            - "--agent-id={{ .Values.riFirewall.registerFirewallAgent.agentID }}"
+          volumeMounts:
+            - name: {{ include "ri-firewall.fullname" . }}-{{ .Values.riFirewall.registerFirewallAgent.name }}-config
+              mountPath: "/config"
+              readOnly: true
+      restartPolicy: OnFailure
+      volumes:
+        - name: {{ include "ri-firewall.fullname" . }}-{{ .Values.riFirewall.registerFirewallAgent.name }}-config
+          configMap:
+            name: {{ include "ri-firewall.fullname" . }}-{{ .Values.riFirewall.registerFirewallAgent.name }}-conf
+            items:
+              - key: "server.config"
+                path: "server.config"
+  backoffLimit: {{ .Values.riFirewall.registerFirewallAgent.backoffLimit }}
+{{- end }}
