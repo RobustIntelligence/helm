@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "rime.fullname" . }}-{{ .Values.rime.featureFlagServer.name }}
+  labels:
+    {{- include "rime.labels" . | nindent 4 }}
+    {{- with .Values.rime.featureFlagServer.service.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  annotations:
+    {{- include "rime.annotations" . | nindent 4 }}
+    {{- with .Values.rime.featureFlagServer.service.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  type: {{ .Values.rime.featureFlagServer.service.type }}
+  ports:
+    - port: {{ .Values.rime.featureFlagServer.port }}
+      targetPort: {{ .Values.rime.featureFlagServer.port }}
+      protocol: TCP
+      name: ff
+    - port: {{ .Values.rime.featureFlagServer.restPort }}
+      targetPort: {{ .Values.rime.featureFlagServer.restPort }}
+      protocol: TCP
+      name: ff-rest
+  selector:
+    app: {{ .Values.rime.featureFlagServer.name }}
+    {{- include "rime.labels" . | nindent 4 }}
