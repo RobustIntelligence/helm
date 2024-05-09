@@ -1,0 +1,320 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "rime.fullname" . }}-{{ .Values.rime.storageManagerServer.name }}
+  labels:
+    app: {{ .Values.rime.storageManagerServer.name }}
+    {{- include "rime.labels" . | nindent 4 }}
+    {{- with .Values.rime.storageManagerServer.sts.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  annotations:
+    {{- include "rime.annotations" . | nindent 4 }}
+    {{- with .Values.rime.storageManagerServer.sts.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Values.rime.storageManagerServer.name }}
+      {{- include "rime.selectorLabels" . | nindent 6 }}
+  {{- if not .Values.rime.storageManagerServer.hpa.enabled }}
+  replicas: {{ .Values.rime.storageManagerServer.sts.replicaCount }}
+  {{- end }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.rime.storageManagerServer.name }}
+        {{- include "rime.labels" . | nindent 8 }}
+        {{- with .Values.rime.storageManagerServer.sts.labels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      annotations:
+        {{- include "rime.annotations" . | nindent 8 }}
+        {{- with .Values.rime.storageManagerServer.sts.annotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- include "rime.monitoringAnnotations" (dict "monitoring" .Values.rime.monitoring "name" .Values.rime.storageManagerServer.name ) | nindent 8 }}
+        checksum/config: {{ include (print $.Template.BasePath "/web-server/configmap.yaml") . | sha256sum }}
+    spec:
+      {{- with .Values.rime.images.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.rime.storageManagerServer.sts.securityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "rime.storageManagerServer.serviceAccountName" . }}
+      containers:
+        - name: {{ .Values.rime.storageManagerServer.name }}
+          env:
+            {{- include "rime.webAppHostEnv" . | nindent 12 }}
+            {{- include "rime.commonEnv" . | nindent 12 }}
+            {{- with .Values.rime.storageManagerServer.sts.extraEnv }}
+              {{- toYaml . | nindent 12 }}
+            {{- end }}
+            - name: RI_SERVICE_NAME
+              value: {{ .Values.rime.storageManagerServer.name }}
+          image: "{{ .Values.rime.images.backendImage.registry}}/{{ .Values.rime.images.backendImage.name }}"
+          imagePullPolicy: {{ .Values.rime.images.backendImage.pullPolicy }}
+          ports:
+            - name: sms
+              containerPort: {{ .Values.rime.storageManagerServer.port }}
+              protocol: TCP
+            - name: sms-grpc
+              containerPort: {{ .Values.rime.storageManagerServer.grpcPort }}
+              protocol: TCP
+            - name: sms-debug
+              containerPort: 6060
+              protocol: TCP
+          resources:
+            {{- toYaml .Values.rime.storageManagerServer.sts.resources | nindent 12 }}
+          command:
+            - "/rime/rime"
+          args:
+            - "start-storage-manager-server"
+            - "--server-config-path=/config/server.config"
+            - "--grpc-port={{ .Values.rime.storageManagerServer.grpcPort }}"
+          volumeMounts:
+            - name: {{ include "rime.fullname" . }}-{{ .Values.rime.storageManagerServer.name }}-config
+              mountPath: "/config"
+              readOnly: true
+            {{- if .Values.tls.enableCertManager }}
+            - name: {{ include "rime.fullname" . }}-{{ .Values.rime.storageManagerServer.name }}-tls
+              mountPath: /var/tmp/tls/common
+              readOnly: true
+            {{- end }}
+            {{- include "rime.externalTLSSecretVolumeMounts" . | nindent 12 }}
+            {{- with .Values.rime.storageManagerServer.sts.extraVolumeMounts }}
+              {{- toYaml . | nindent 12 }}
+            {{- end }}
+      initContainers:
+        {{- if .Values.rime.storageManagerServer.initIndexes.enabled }}
+        - name: database-setup
+          image: "{{ .Values.rime.images.backendImage.registry}}/{{ .Values.rime.images.backendImage.name }}"
+          imagePullPolicy: "{{ .Values.rime.images.backendImage.pullPolicy }}"
+          command: [ "/bin/sh","-c" ]
+          args: [ "[[ `hostname` =~ -([0-9]+)$ ]] || exit 1; \
+          ordinal=${BASH_REMATCH[1]}; \
+          if [[ $ordinal -eq 0 ]]; then \
+          /rime/dbworker create-indices \
+          --server-config-path=/config/worker.config \
+          -timeout=4m -debug; fi" ]
+          {{- with .Values.rime.storageManagerServer.initIndexes.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+            - name: {{ include "rime.fullname" . }}-worker-config
+              mountPath: "/config"
+              readOnly: true
+            {{- if .Values.tls.enableCertManager }}
+            - name: {{ include "rime.fullname" . }}-{{ .Values.rime.storageManagerServer.name }}-tls
+              mountPath: /var/tmp/tls/common
+              readOnly: true
+            {{- end }}
+            {{- include "rime.externalTLSSecretVolumeMounts" . | nindent 12 }}
+        {{- end}}
+        {{- if .Values.rime.storageManagerServer.dropDuplicates.enabled }}
+        - name: drop-duplicates
+          image: "{{ .Values.rime.images.backendImage.registry}}/{{ .Values.rime.images.backendImage.name }}"
+          imagePullPolicy: "{{ .Values.rime.images.backendImage.pullPolicy }}"
+          command: [ "/bin/sh","-c" ]
+          args: [ "[[ `hostname` =~ -([0-9]+)$ ]] || exit 1; \
+          ordinal=${BASH_REMATCH[1]}; \
+          if [[ $ordinal -eq 0 ]]; then \
+          /rime/dbworker drop-duplicates \
+          --server-config-path=/config/worker.config \
+          -timeout=4m -debug; fi" ]
+          {{- with .Values.rime.storageManagerServer.dropDuplicates.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+            - name: {{ include "rime.fullname" . }}-worker-config
+              mountPath: "/config"
+              readOnly: true
+            {{- if .Values.tls.enableCertManager }}
+            - name: {{ include "rime.fullname" . }}-{{ .Values.rime.storageManagerServer.name }}-tls
+              mountPath: /var/tmp/tls/common
+              readOnly: true
+            {{- end }}
+            {{- include "rime.externalTLSSecretVolumeMounts" . | nindent 12 }}
+        {{- end}}
+        {{- if .Values.rime.storageManagerServer.initVault.enabled }}
+        - name: init-vault
+          image: "{{ .Values.rime.images.backendImage.registry}}/{{ .Values.rime.images.backendImage.name }}"
+          imagePullPolicy: "{{ .Values.rime.images.backendImage.pullPolicy }}"
+          command: [ "/bin/sh","-c" ]
+          args: [ "[[ `hostname` =~ -([0-9]+)$ ]] || exit 1; \
+          ordinal=${BASH_REMATCH[1]}; \
+          if [[ $ordinal -eq 0 ]]; then \
+          /rime/init-vault --server-config-path=/config/worker.config \
+          -timeout=4m -debug; fi" ]
+          {{- if .Values.tls.enableCertManager }}
+          {{- with .Values.rime.storageManagerServer.initVault.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+            - name: {{ include "rime.fullname" . }}-{{ .Values.rime.storageManagerServer.initVault.name }}-config
+              mountPath: "/config"
+              readOnly: true
+            - name: {{ include "rime.fullname" . }}-{{ .Values.rime.storageManagerServer.name }}-tls
+              mountPath: /var/tmp/tls/common
+              readOnly: true
+          {{- end }}
+        {{- end }}
+        {{- if .Values.rime.storageManagerServer.initClusterMetadata.enabled }}
+        - name: init-cluster-metadata
+          env:
+            {{- include "rime.commonEnv" . | nindent 12 }}
+            {{- include "rime.featureFlagEnv" . | nindent 12 }}
+            {{- include "rime.webAppHostEnv" . | nindent 12 }}
+            - name: SMTP_EMAIL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "rime.commonSecretName" . }}
+                  key: smtpEmail
+                  optional: true
+            - name: SMTP_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "rime.commonSecretName" . }}
+                  key: smtpPassword
+                  optional: true
+            - name: SMTP_SERVER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "rime.commonSecretName" . }}
+                  key: smtpServer
+                  optional: true
+            - name: SMTP_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "rime.commonSecretName" . }}
+                  key: smtpPort
+                  optional: true
+            - name: ADMIN_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "rime.commonSecretName" . }}
+                  key: adminUsername
+                  optional: true
+            - name: ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "rime.commonSecretName" . }}
+                  key: adminPassword
+                  optional: true
+            - name: OIDC_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "rime.commonSecretName" . }}
+                  key: oidcClientID
+                  optional: true
+            - name: OIDC_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "rime.commonSecretName" . }}
+                  key: oidcClientSecret
+                  optional: true
+            - name: OIDC_ISSUER_URL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "rime.commonSecretName" . }}
+                  key: oidcIssuerURL
+                  optional: true
+            {{- if .Values.rime.internalAgent.enabled }}
+            - name: INTERNAL_AGENT_API_TOKEN_ENV
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.rime.internalAgent.registrationApiKey.k8sSecretName }}
+                  key: {{ .Values.rime.internalAgent.registrationApiKey.keyPath }}
+            {{- end }}
+          image: "{{ .Values.rime.images.backendImage.registry}}/{{ .Values.rime.images.backendImage.name }}"
+          imagePullPolicy: "{{ .Values.rime.images.backendImage.pullPolicy }}"
+          command: [ "/bin/sh","-c" ]
+          args: [ "[[ `hostname` =~ -([0-9]+)$ ]] || exit 1; \
+          ordinal=${BASH_REMATCH[1]}; \
+          if [[ $ordinal -eq 0 ]]; then \
+          /rime/dbworker init-cluster-metadata \
+          --server-config-path=/config/worker.config \
+          -overwrite-feature-flags={{ .Values.rime.storageManagerServer.initClusterMetadata.overwriteLicense }} \
+          {{- if .Values.rime.imageRegistryServer.enabled }}
+          -initialize-image-registry \
+          {{- end }}
+          -timeout=4m -debug; fi" ]
+          {{- with .Values.rime.storageManagerServer.initClusterMetadata.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+            - name: {{ include "rime.fullname" . }}-worker-config
+              mountPath: "/config"
+              readOnly: true
+            {{- if .Values.tls.enableCertManager }}
+            - name: {{ include "rime.fullname" . }}-{{ .Values.rime.storageManagerServer.name }}-tls
+              mountPath: /var/tmp/tls/common
+              readOnly: true
+            {{- end }}
+            {{- include "rime.externalTLSSecretVolumeMounts" . | nindent 12 }}
+        {{- end }}
+      restartPolicy: Always
+      volumes:
+        # Volumes are defined at the Pod level, then mounted into containers within that Pod
+        - name: {{ include "rime.fullname" . }}-{{ .Values.rime.storageManagerServer.name }}-config
+          {{- if ne .Values.rime.storageManagerServer.existingConfigSecretName "" }}
+          secret:
+            secretName: {{ .Values.rime.storageManagerServer.existingConfigSecretName }}
+          {{- else }}
+          configMap:
+            name: {{ include "rime.fullname" . }}-{{ .Values.rime.storageManagerServer.name }}-conf
+          {{- end }}
+            items:
+              - key: "server.config"
+                path: "server.config"
+        - name: {{ include "rime.fullname" . }}-worker-config
+          {{- if ne .Values.rime.internalWorkerJobs.existingConfigSecretName "" }}
+          secret:
+            secretName: {{ .Values.rime.internalWorkerJobs.existingConfigSecretName }}
+          {{- else }}
+          configMap:
+            name: {{ include "rime.fullname" . }}-worker-conf
+          {{- end }}
+            items:
+              - key: "worker.config"
+                path: "worker.config"
+        {{- if .Values.tls.enableCertManager }}
+        - name: {{ include "rime.fullname" . }}-{{ .Values.rime.storageManagerServer.initVault.name }}-config
+          {{- if ne .Values.rime.storageManagerServer.initVault.existingConfigSecretName "" }}
+          secret:
+            secretName: {{ .Values.rime.storageManagerServer.initVault.existingConfigSecretName }}
+          {{- else }}
+          configMap:
+            name: {{ include "rime.fullname" . }}-{{ .Values.rime.storageManagerServer.initVault.name }}-conf
+          {{- end }}
+            items:
+              - key: "worker.config"
+                path: "worker.config"
+        - name: {{ include "rime.fullname" . }}-{{ .Values.rime.storageManagerServer.name }}-tls
+          secret:
+            secretName: {{ include "rime.fullname" . }}-{{ .Values.rime.storageManagerServer.name }}-tls
+        {{- end }}
+        {{- include "rime.externalTLSSecretVolumes" . | nindent 8 }}
+        {{- with .Values.rime.storageManagerServer.sts.extraVolumes }}
+          {{- toYaml . | nindent 8 }}
+        {{- end }}
+      {{- with .Values.rime.storageManagerServer.sts.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.rime.storageManagerServer.sts.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.rime.storageManagerServer.sts.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
