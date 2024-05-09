@@ -1,0 +1,158 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "rime.fullname" . }}-{{ .Values.rime.authServer.name }}
+  labels:
+    app: {{ .Values.rime.authServer.name }}
+    {{- include "rime.labels" . | nindent 4 }}
+    {{- with .Values.rime.authServer.deployment.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  annotations:
+    {{- include "rime.annotations" . | nindent 4 }}
+    {{- with .Values.rime.authServer.deployment.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Values.rime.authServer.name }}
+      {{- include "rime.selectorLabels" . | nindent 6 }}
+  {{- if not .Values.rime.authServer.hpa.enabled }}
+  replicas: {{ .Values.rime.authServer.deployment.replicaCount }}
+  {{- end }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.rime.authServer.name }}
+        {{- include "rime.labels" . | nindent 8 }}
+        {{- with .Values.rime.authServer.deployment.labels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      annotations:
+        {{- include "rime.annotations" . | nindent 8 }}
+        {{- with .Values.rime.authServer.deployment.annotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- include "rime.monitoringAnnotations" (dict "monitoring" .Values.rime.monitoring "name" .Values.rime.authServer.name ) | nindent 8 }}
+        checksum/config: {{ include (print $.Template.BasePath "/auth-server/configmap.yaml") . | sha256sum }}
+    spec:
+      {{- with .Values.rime.images.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.rime.authServer.deployment.securityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: {{ .Values.rime.authServer.name }}
+          env:
+            - name: RIME_JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "rime.generatedSecretsName" . }}
+                  key: jwtSecret
+            {{- include "rime.commonEnv" . | nindent 12 }}
+            {{- with .Values.rime.authServer.deployment.extraEnv }}
+              {{- toYaml . | nindent 12 }}
+            {{- end }}
+            - name: RI_SERVICE_NAME
+              value: {{ .Values.rime.authServer.name }}
+          image: "{{ .Values.rime.images.backendImage.registry}}/{{ .Values.rime.images.backendImage.name }}"
+          imagePullPolicy: {{ .Values.rime.images.backendImage.pullPolicy }}
+          ports:
+            - name: auth
+              containerPort: {{ .Values.rime.authServer.port }}
+              protocol: TCP
+            - name: auth-grpc
+              containerPort: {{ .Values.rime.authServer.grpcPort }}
+              protocol: TCP
+            - name: auth-grpc-rest
+              containerPort: {{ .Values.rime.authServer.grpcRestPort }}
+              protocol: TCP
+            - name: auth-debug
+              containerPort: 6060
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /health-check
+              port: {{ .Values.rime.authServer.port }}
+              {{- if .Values.tls.restEnabled }}
+              scheme: HTTPS
+              {{ end }}
+            periodSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /health-check
+              port: {{ .Values.rime.authServer.port }}
+              {{- if .Values.tls.restEnabled }}
+              scheme: HTTPS
+              {{ end }}
+            periodSeconds: 5
+          startupProbe:
+            httpGet:
+              path: /health-check
+              port: {{ .Values.rime.authServer.port }}
+              {{- if .Values.tls.restEnabled }}
+              scheme: HTTPS
+              {{ end }}
+            failureThreshold: 60
+            periodSeconds: 5
+          resources:
+            {{- toYaml .Values.rime.authServer.deployment.resources | nindent 12 }}
+          command:
+            - "/rime/rime"
+          args:
+            - "start-auth-server"
+            - "--server-config-path=/config/server.config"
+            - "--auth-port={{ .Values.rime.authServer.port }}"
+            - "--user-apikey-lifetime-hours={{ .Values.rime.authServer.apiKeyLifetimeHours.userApiKeyLifetime }}"
+            - "--agent-apikey-lifetime-hours={{ .Values.rime.authServer.apiKeyLifetimeHours.agentApiKeyLifetime }}"
+          volumeMounts:
+            - name: {{ include "rime.fullname" . }}-{{ .Values.rime.authServer.name }}-config
+              mountPath: "/config"
+              readOnly: true
+            {{- if .Values.tls.enableCertManager }}
+            - name: {{ include "rime.fullname" . }}-{{ .Values.rime.authServer.name }}-tls
+              mountPath: /var/tmp/tls/common
+              readOnly: true
+            {{- end }}
+            {{- include "rime.externalTLSSecretVolumeMounts" . | nindent 12 }}
+            {{- with .Values.rime.authServer.deployment.extraVolumeMounts }}
+              {{- toYaml . | nindent 12 }}
+            {{- end }}
+      volumes:
+        # Volumes are defined at the Pod level, then mounted into containers within that Pod
+        - name: {{ include "rime.fullname" . }}-{{ .Values.rime.authServer.name }}-config
+          {{- if ne .Values.rime.authServer.existingConfigSecretName "" }}
+          secret:
+            secretName: {{ .Values.rime.authServer.existingConfigSecretName }}
+          {{- else }}
+          configMap:
+            name: {{ include "rime.fullname" . }}-{{ .Values.rime.authServer.name }}-conf
+          {{- end }}
+            items:
+              - key: "server.config"
+                path: "server.config"
+        {{- if .Values.tls.enableCertManager }}
+        - name: {{ include "rime.fullname" . }}-{{ .Values.rime.authServer.name }}-tls
+          secret:
+            secretName: {{ include "rime.fullname" . }}-{{ .Values.rime.authServer.name }}-tls
+        {{- end }}
+        {{- include "rime.externalTLSSecretVolumes" . | nindent 8 }}
+        {{- with .Values.rime.authServer.deployment.extraVolumes }}
+          {{- toYaml . | nindent 8 }}
+        {{- end }}
+      {{- with .Values.rime.authServer.deployment.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.rime.authServer.deployment.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.rime.authServer.deployment.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
