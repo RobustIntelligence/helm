@@ -2,8 +2,26 @@ apiVersion: v1
 entries:
   ri-firewall:
   - apiVersion: v2
+    appVersion: v0.5.0-rc.15
+    created: "2024-05-10T04:01:15.467321251Z"
+    dependencies:
+    - name: ingress-nginx
+      repository: https://kubernetes.github.io/ingress-nginx
+      version: 4.2.0
+    - name: ri-detection-resources
+      repository: file://../ri-detection-resources
+      version: 0.1.0
+    description: A Helm chart for the Robust Intelligence Firewall.
+    digest: 6242102667d5f4b6f60296bb8347e44113934705e1a323aa057e40db92c2c81a
+    kubeVersion: '>=1.20.0-0'
+    name: ri-firewall
+    type: application
+    urls:
+    - https://robustintelligence.github.io/helm/fw/ri-firewall-0.5.0-rc.15.tgz
+    version: 0.5.0-rc.15
+  - apiVersion: v2
     appVersion: v0.5.0-rc.14
-    created: "2024-05-09T17:26:39.9359055Z"
+    created: "2024-05-10T04:01:15.462842776Z"
     dependencies:
     - name: ingress-nginx
       repository: https://kubernetes.github.io/ingress-nginx
@@ -21,7 +39,7 @@ entries:
     version: 0.5.0-rc.14
   - apiVersion: v2
     appVersion: v0.5.0-rc.13
-    created: "2024-05-09T17:26:39.931894444Z"
+    created: "2024-05-10T04:01:15.459304352Z"
     dependencies:
     - name: ingress-nginx
       repository: https://kubernetes.github.io/ingress-nginx
@@ -39,7 +57,7 @@ entries:
     version: 0.5.0-rc.13
   - apiVersion: v2
     appVersion: v0.5.0-rc.12
-    created: "2024-05-09T17:26:39.927110462Z"
+    created: "2024-05-10T04:01:15.454853752Z"
     dependencies:
     - name: ingress-nginx
       repository: https://kubernetes.github.io/ingress-nginx
@@ -57,7 +75,7 @@ entries:
     version: 0.5.0-rc.12
   - apiVersion: v2
     appVersion: v0.5.0-rc.11
-    created: "2024-05-09T17:26:39.92316691Z"
+    created: "2024-05-10T04:01:15.451265848Z"
     dependencies:
     - name: ingress-nginx
       repository: https://kubernetes.github.io/ingress-nginx
@@ -75,7 +93,7 @@ entries:
     version: 0.5.0-rc.11
   - apiVersion: v2
     appVersion: v0.5.0-rc.10
-    created: "2024-05-09T17:26:39.917857575Z"
+    created: "2024-05-10T04:01:15.446938376Z"
     dependencies:
     - name: ingress-nginx
       repository: https://kubernetes.github.io/ingress-nginx
@@ -93,7 +111,7 @@ entries:
     version: 0.5.0-rc.10
   - apiVersion: v2
     appVersion: v0.5.0-rc.8
-    created: "2024-05-09T17:26:39.948627761Z"
+    created: "2024-05-10T04:01:15.47892995Z"
     dependencies:
     - name: ingress-nginx
       repository: https://kubernetes.github.io/ingress-nginx
@@ -111,7 +129,7 @@ entries:
     version: 0.5.0-rc.8
   - apiVersion: v2
     appVersion: v0.5.0-rc.6
-    created: "2024-05-09T17:26:39.943907597Z"
+    created: "2024-05-10T04:01:15.474629298Z"
     dependencies:
     - name: ingress-nginx
       repository: https://kubernetes.github.io/ingress-nginx
@@ -129,7 +147,7 @@ entries:
     version: 0.5.0-rc.6
   - apiVersion: v2
     appVersion: v0.5.0-rc.5
-    created: "2024-05-09T17:26:39.940351871Z"
+    created: "2024-05-10T04:01:15.471316027Z"
     dependencies:
     - name: ingress-nginx
       repository: https://kubernetes.github.io/ingress-nginx
@@ -147,7 +165,7 @@ entries:
     version: 0.5.0-rc.5
   - apiVersion: v2
     appVersion: v0.5.0-rc.1
-    created: "2024-05-09T17:26:39.912609798Z"
+    created: "2024-05-10T04:01:15.442571691Z"
     dependencies:
     - name: ingress-nginx
       repository: https://kubernetes.github.io/ingress-nginx
@@ -165,7 +183,7 @@ entries:
     version: 0.5.0-rc.1
   - apiVersion: v2
     appVersion: v0.5.0-rc.0
-    created: "2024-05-09T17:26:39.908431895Z"
+    created: "2024-05-10T04:01:15.439435568Z"
     dependencies:
     - name: ingress-nginx
       repository: https://kubernetes.github.io/ingress-nginx
@@ -183,7 +201,7 @@ entries:
     version: 0.5.0-rc.0
   - apiVersion: v2
     appVersion: v0.4.2
-    created: "2024-05-09T17:26:39.904195053Z"
+    created: "2024-05-10T04:01:15.435562434Z"
     dependencies:
     - name: ingress-nginx
       repository: https://kubernetes.github.io/ingress-nginx
@@ -201,7 +219,7 @@ entries:
     version: 0.4.2
   - apiVersion: v2
     appVersion: v0.4.0
-    created: "2024-05-09T17:26:39.899272722Z"
+    created: "2024-05-10T04:01:15.432359711Z"
     dependencies:
     - name: ingress-nginx
       repository: https://kubernetes.github.io/ingress-nginx
@@ -219,7 +237,7 @@ entries:
     version: 0.4.0
   - apiVersion: v2
     appVersion: v0.4.0-rc.9
-    created: "2024-05-09T17:26:39.895581662Z"
+    created: "2024-05-10T04:01:15.428394031Z"
     dependencies:
     - name: ingress-nginx
       repository: https://kubernetes.github.io/ingress-nginx
@@ -237,7 +255,7 @@ entries:
     version: 0.4.0-rc.9
   - apiVersion: v2
     appVersion: v0.4.0-rc.8
-    created: "2024-05-09T17:26:39.890792928Z"
+    created: "2024-05-10T04:01:15.425213447Z"
     dependencies:
     - name: ingress-nginx
       repository: https://kubernetes.github.io/ingress-nginx
@@ -255,7 +273,7 @@ entries:
     version: 0.4.0-rc.8
   - apiVersion: v2
     appVersion: v0.4.0-rc.6
-    created: "2024-05-09T17:26:39.885915834Z"
+    created: "2024-05-10T04:01:15.421410244Z"
     dependencies:
     - name: ingress-nginx
       repository: https://kubernetes.github.io/ingress-nginx
@@ -273,7 +291,7 @@ entries:
     version: 0.4.0-rc.6
   - apiVersion: v2
     appVersion: v0.4.0-rc.5
-    created: "2024-05-09T17:26:39.880745965Z"
+    created: "2024-05-10T04:01:15.417043929Z"
     dependencies:
     - name: ingress-nginx
       repository: https://kubernetes.github.io/ingress-nginx
@@ -291,7 +309,7 @@ entries:
     version: 0.4.0-rc.5
   - apiVersion: v2
     appVersion: v0.4.0-rc.3
-    created: "2024-05-09T17:26:39.877095803Z"
+    created: "2024-05-10T04:01:15.413776805Z"
     dependencies:
     - name: ingress-nginx
       repository: https://kubernetes.github.io/ingress-nginx
@@ -306,7 +324,7 @@ entries:
     version: 0.4.0-rc.3
   - apiVersion: v2
     appVersion: v0.4.0-rc.2
-    created: "2024-05-09T17:26:39.871668786Z"
+    created: "2024-05-10T04:01:15.410296289Z"
     dependencies:
     - name: ingress-nginx
       repository: https://kubernetes.github.io/ingress-nginx
@@ -321,7 +339,7 @@ entries:
     version: 0.4.0-rc.2
   - apiVersion: v2
     appVersion: v0.4.0-rc.1
-    created: "2024-05-09T17:26:39.868072483Z"
+    created: "2024-05-10T04:01:15.406307741Z"
     dependencies:
     - name: ingress-nginx
       repository: https://kubernetes.github.io/ingress-nginx
@@ -336,7 +354,7 @@ entries:
     version: 0.4.0-rc.1
   - apiVersion: v2
     appVersion: v0.4.0-rc.0
-    created: "2024-05-09T17:26:39.863851936Z"
+    created: "2024-05-10T04:01:15.403084748Z"
     dependencies:
     - name: ingress-nginx
       repository: https://kubernetes.github.io/ingress-nginx
@@ -351,7 +369,7 @@ entries:
     version: 0.4.0-rc.0
   - apiVersion: v2
     appVersion: v0.3.1
-    created: "2024-05-09T17:26:39.860434556Z"
+    created: "2024-05-10T04:01:15.399448135Z"
     dependencies:
     - name: ingress-nginx
       repository: https://kubernetes.github.io/ingress-nginx
@@ -366,7 +384,7 @@ entries:
     version: 0.3.1
   - apiVersion: v2
     appVersion: v0.3.0
-    created: "2024-05-09T17:26:39.855162565Z"
+    created: "2024-05-10T04:01:15.396428556Z"
     dependencies:
     - name: ingress-nginx
       repository: https://kubernetes.github.io/ingress-nginx
@@ -381,7 +399,7 @@ entries:
     version: 0.3.0
   - apiVersion: v2
     appVersion: v0.3.0-rc.10
-    created: "2024-05-09T17:26:39.819764914Z"
+    created: "2024-05-10T04:01:15.366954522Z"
     dependencies:
     - name: ingress-nginx
       repository: https://kubernetes.github.io/ingress-nginx
@@ -396,7 +414,7 @@ entries:
     version: 0.3.0-rc.10
   - apiVersion: v2
     appVersion: v0.3.0-rc.9
-    created: "2024-05-09T17:26:39.851521995Z"
+    created: "2024-05-10T04:01:15.392869891Z"
     dependencies:
     - name: ingress-nginx
       repository: https://kubernetes.github.io/ingress-nginx
@@ -411,7 +429,7 @@ entries:
     version: 0.3.0-rc.9
   - apiVersion: v2
     appVersion: v0.3.0-rc.8
-    created: "2024-05-09T17:26:39.847745184Z"
+    created: "2024-05-10T04:01:15.390108115Z"
     dependencies:
     - name: ingress-nginx
       repository: https://kubernetes.github.io/ingress-nginx
@@ -426,7 +444,7 @@ entries:
     version: 0.3.0-rc.8
   - apiVersion: v2
     appVersion: v0.3.0-rc.7
-    created: "2024-05-09T17:26:39.843753743Z"
+    created: "2024-05-10T04:01:15.386656206Z"
     dependencies:
     - name: ingress-nginx
       repository: https://kubernetes.github.io/ingress-nginx
@@ -441,7 +459,7 @@ entries:
     version: 0.3.0-rc.7
   - apiVersion: v2
     appVersion: v0.3.0-rc.6
-    created: "2024-05-09T17:26:39.840356305Z"
+    created: "2024-05-10T04:01:15.383467405Z"
     dependencies:
     - name: ingress-nginx
       repository: https://kubernetes.github.io/ingress-nginx
@@ -456,7 +474,7 @@ entries:
     version: 0.3.0-rc.6
   - apiVersion: v2
     appVersion: v0.3.0-rc.5
-    created: "2024-05-09T17:26:39.836359808Z"
+    created: "2024-05-10T04:01:15.379441418Z"
     dependencies:
     - name: ingress-nginx
       repository: https://kubernetes.github.io/ingress-nginx
@@ -471,7 +489,7 @@ entries:
     version: 0.3.0-rc.5
   - apiVersion: v2
     appVersion: v0.3.0-rc.4
-    created: "2024-05-09T17:26:39.833296227Z"
+    created: "2024-05-10T04:01:15.376773295Z"
     dependencies:
     - name: ingress-nginx
       repository: https://kubernetes.github.io/ingress-nginx
@@ -486,7 +504,7 @@ entries:
     version: 0.3.0-rc.4
   - apiVersion: v2
     appVersion: v0.3.0-rc.3
-    created: "2024-05-09T17:26:39.829218615Z"
+    created: "2024-05-10T04:01:15.373924404Z"
     dependencies:
     - name: ingress-nginx
       repository: https://kubernetes.github.io/ingress-nginx
@@ -501,7 +519,7 @@ entries:
     version: 0.3.0-rc.3
   - apiVersion: v2
     appVersion: v0.3.0-rc.2
-    created: "2024-05-09T17:26:39.826076029Z"
+    created: "2024-05-10T04:01:15.370237859Z"
     dependencies:
     - name: ingress-nginx
       repository: https://kubernetes.github.io/ingress-nginx
@@ -516,7 +534,7 @@ entries:
     version: 0.3.0-rc.2
   - apiVersion: v2
     appVersion: v0.3.0-rc.1
-    created: "2024-05-09T17:26:39.815766463Z"
+    created: "2024-05-10T04:01:15.362887693Z"
     dependencies:
     - name: ingress-nginx
       repository: https://kubernetes.github.io/ingress-nginx
@@ -531,7 +549,7 @@ entries:
     version: 0.3.0-rc.1
   - apiVersion: v2
     appVersion: v0.3.0-rc.0
-    created: "2024-05-09T17:26:39.810142984Z"
+    created: "2024-05-10T04:01:15.359807285Z"
     dependencies:
     - name: ingress-nginx
       repository: https://kubernetes.github.io/ingress-nginx
@@ -546,7 +564,7 @@ entries:
     version: 0.3.0-rc.0
   - apiVersion: v2
     appVersion: v0.2.1
-    created: "2024-05-09T17:26:39.80638238Z"
+    created: "2024-05-10T04:01:15.356596763Z"
     dependencies:
     - name: ingress-nginx
       repository: https://kubernetes.github.io/ingress-nginx
@@ -561,7 +579,7 @@ entries:
     version: 0.2.1
   - apiVersion: v2
     appVersion: v0.2.0
-    created: "2024-05-09T17:26:39.802496008Z"
+    created: "2024-05-10T04:01:15.35340949Z"
     dependencies:
     - name: ingress-nginx
       repository: https://kubernetes.github.io/ingress-nginx
@@ -576,7 +594,7 @@ entries:
     version: 0.2.0
   - apiVersion: v2
     appVersion: v0.2.0-rc.7
-    created: "2024-05-09T17:26:39.799504581Z"
+    created: "2024-05-10T04:01:15.350259458Z"
     dependencies:
     - name: ingress-nginx
       repository: https://kubernetes.github.io/ingress-nginx
@@ -591,7 +609,7 @@ entries:
     version: 0.2.0-rc.7
   - apiVersion: v2
     appVersion: v0.2.0-rc.6
-    created: "2024-05-09T17:26:39.795400831Z"
+    created: "2024-05-10T04:01:15.34622221Z"
     dependencies:
     - name: ingress-nginx
       repository: https://kubernetes.github.io/ingress-nginx
@@ -606,7 +624,7 @@ entries:
     version: 0.2.0-rc.6
   - apiVersion: v2
     appVersion: v0.2.0-rc.5
-    created: "2024-05-09T17:26:39.791899119Z"
+    created: "2024-05-10T04:01:15.343456002Z"
     dependencies:
     - name: ingress-nginx
       repository: https://kubernetes.github.io/ingress-nginx
@@ -621,7 +639,7 @@ entries:
     version: 0.2.0-rc.5
   - apiVersion: v2
     appVersion: v0.2.0-rc.4
-    created: "2024-05-09T17:26:39.786279394Z"
+    created: "2024-05-10T04:01:15.340042621Z"
     dependencies:
     - name: ingress-nginx
       repository: https://kubernetes.github.io/ingress-nginx
@@ -636,7 +654,7 @@ entries:
     version: 0.2.0-rc.4
   - apiVersion: v2
     appVersion: v0.2.0-rc.3
-    created: "2024-05-09T17:26:39.781048932Z"
+    created: "2024-05-10T04:01:15.334975165Z"
     dependencies:
     - name: ingress-nginx
       repository: https://kubernetes.github.io/ingress-nginx
@@ -651,7 +669,7 @@ entries:
     version: 0.2.0-rc.3
   - apiVersion: v2
     appVersion: v0.2.0-rc.2
-    created: "2024-05-09T17:26:39.778190085Z"
+    created: "2024-05-10T04:01:15.33035968Z"
     dependencies:
     - name: ingress-nginx
       repository: https://kubernetes.github.io/ingress-nginx
@@ -666,7 +684,7 @@ entries:
     version: 0.2.0-rc.2
   - apiVersion: v2
     appVersion: v0.2.0-rc.1
-    created: "2024-05-09T17:26:39.774183568Z"
+    created: "2024-05-10T04:01:15.326555195Z"
     dependencies:
     - name: ingress-nginx
       repository: https://kubernetes.github.io/ingress-nginx
@@ -681,7 +699,7 @@ entries:
     version: 0.2.0-rc.1
   - apiVersion: v2
     appVersion: v0.2.0-rc.0
-    created: "2024-05-09T17:26:39.771392273Z"
+    created: "2024-05-10T04:01:15.323981929Z"
     dependencies:
     - name: ingress-nginx
       repository: https://kubernetes.github.io/ingress-nginx
@@ -696,7 +714,7 @@ entries:
     version: 0.2.0-rc.0
   - apiVersion: v2
     appVersion: v0.1.1
-    created: "2024-05-09T17:26:39.768510657Z"
+    created: "2024-05-10T04:01:15.320626969Z"
     dependencies:
     - name: ingress-nginx
       repository: https://kubernetes.github.io/ingress-nginx
@@ -711,7 +729,7 @@ entries:
     version: 0.1.1
   - apiVersion: v2
     appVersion: v0.1.1-rc.0
-    created: "2024-05-09T17:26:39.763853839Z"
+    created: "2024-05-10T04:01:15.317849664Z"
     dependencies:
     - name: ingress-nginx
       repository: https://kubernetes.github.io/ingress-nginx
@@ -726,7 +744,7 @@ entries:
     version: 0.1.1-rc.0
   - apiVersion: v2
     appVersion: v0.1.0
-    created: "2024-05-09T17:26:39.760091484Z"
+    created: "2024-05-10T04:01:15.314469827Z"
     dependencies:
     - name: ingress-nginx
       repository: https://kubernetes.github.io/ingress-nginx
@@ -741,7 +759,7 @@ entries:
     version: 0.1.0
   - apiVersion: v2
     appVersion: v0.0.1-rc.10
-    created: "2024-05-09T17:26:39.737435067Z"
+    created: "2024-05-10T04:01:15.294524068Z"
     dependencies:
     - name: ingress-nginx
       repository: https://kubernetes.github.io/ingress-nginx
@@ -756,7 +774,7 @@ entries:
     version: 0.0.1-rc.10
   - apiVersion: v2
     appVersion: v0.0.1-rc.9
-    created: "2024-05-09T17:26:39.757170687Z"
+    created: "2024-05-10T04:01:15.311943025Z"
     dependencies:
     - name: ingress-nginx
       repository: https://kubernetes.github.io/ingress-nginx
@@ -771,7 +789,7 @@ entries:
     version: 0.0.1-rc.9
   - apiVersion: v2
     appVersion: v0.0.1-rc.8
-    created: "2024-05-09T17:26:39.75328796Z"
+    created: "2024-05-10T04:01:15.309347377Z"
     dependencies:
     - name: ingress-nginx
       repository: https://kubernetes.github.io/ingress-nginx
@@ -786,7 +804,7 @@ entries:
     version: 0.0.1-rc.8
   - apiVersion: v2
     appVersion: v2.4.0-rc.15
-    created: "2024-05-09T17:26:39.75039258Z"
+    created: "2024-05-10T04:01:15.306003737Z"
     dependencies:
     - name: ingress-nginx
       repository: https://kubernetes.github.io/ingress-nginx
@@ -801,7 +819,7 @@ entries:
     version: 0.0.1-rc.7
   - apiVersion: v2
     appVersion: v2.4.0-rc.13
-    created: "2024-05-09T17:26:39.746800171Z"
+    created: "2024-05-10T04:01:15.303417715Z"
     dependencies:
     - name: ingress-nginx
       repository: https://kubernetes.github.io/ingress-nginx
@@ -816,7 +834,7 @@ entries:
     version: 0.0.1-rc.6
   - apiVersion: v2
     appVersion: v2.4.0-rc.11
-    created: "2024-05-09T17:26:39.743765932Z"
+    created: "2024-05-10T04:01:15.300397918Z"
     dependencies:
     - name: ingress-nginx
       repository: https://kubernetes.github.io/ingress-nginx
@@ -831,7 +849,7 @@ entries:
     version: 0.0.1-rc.5
   - apiVersion: v2
     appVersion: v2.4.0-rc.8
-    created: "2024-05-09T17:26:39.740232561Z"
+    created: "2024-05-10T04:01:15.297251118Z"
     dependencies:
     - name: ingress-nginx
       repository: https://kubernetes.github.io/ingress-nginx
@@ -846,7 +864,7 @@ entries:
     version: 0.0.1-rc.3
   - apiVersion: v2
     appVersion: v2.3.3
-    created: "2024-05-09T17:26:39.733536382Z"
+    created: "2024-05-10T04:01:15.289342852Z"
     dependencies:
     - name: ingress-nginx
       repository: https://kubernetes.github.io/ingress-nginx
@@ -861,8 +879,47 @@ entries:
     version: 0.0.1-rc.0
   rime-extras:
   - apiVersion: v2
+    appVersion: v0.5.0-rc.15
+    created: "2024-05-10T04:01:16.371467979Z"
+    dependencies:
+    - condition: rimeExtras.datadog
+      name: datadog
+      repository: https://helm.datadoghq.com
+      version: 3.32.8
+    - condition: rimeExtras.velero
+      name: velero
+      repository: https://vmware-tanzu.github.io/helm-charts
+      version: 2.23.6
+    - condition: rimeExtras.prometheusNodeExporter
+      name: prometheus-node-exporter
+      repository: https://prometheus-community.github.io/helm-charts
+      version: 4.22.0
+    - condition: rimeExtras.prometheusServer
+      name: prometheus
+      repository: https://prometheus-community.github.io/helm-charts
+      version: 25.6.0
+    - condition: rimeExtras.prometheusCloudwatchExporter
+      name: prometheus-cloudwatch-exporter
+      repository: https://prometheus-community.github.io/helm-charts
+      version: 0.25.2
+    - condition: rimeExtras.logscaleFluentBit
+      name: humio-helm-charts
+      repository: https://humio.github.io/humio-helm-charts
+      version: 0.9.5
+    - condition: rimeExtras.riObservabilityFluentBit
+      name: fluent-bit
+      repository: https://fluent.github.io/helm-charts
+      version: 0.42.0
+    description: A Helm chart for RIME's extra resources
+    digest: a91c1f469c7479dedc7836b6e51ea199fb064533a3fb2807501ca66ebe70187b
+    name: rime-extras
+    type: application
+    urls:
+    - https://robustintelligence.github.io/helm/fw/rime-extras-0.5.0-rc.15.tgz
+    version: 0.5.0-rc.15
+  - apiVersion: v2
     appVersion: v0.5.0-rc.14
-    created: "2024-05-09T17:26:40.893812392Z"
+    created: "2024-05-10T04:01:16.351157356Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -901,7 +958,7 @@ entries:
     version: 0.5.0-rc.14
   - apiVersion: v2
     appVersion: v0.5.0-rc.13
-    created: "2024-05-09T17:26:40.868692408Z"
+    created: "2024-05-10T04:01:16.331676361Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -940,7 +997,7 @@ entries:
     version: 0.5.0-rc.13
   - apiVersion: v2
     appVersion: v0.5.0-rc.12
-    created: "2024-05-09T17:26:40.845565918Z"
+    created: "2024-05-10T04:01:16.303341974Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -979,7 +1036,7 @@ entries:
     version: 0.5.0-rc.12
   - apiVersion: v2
     appVersion: v0.5.0-rc.11
-    created: "2024-05-09T17:26:40.823189469Z"
+    created: "2024-05-10T04:01:16.281274759Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -1018,7 +1075,7 @@ entries:
     version: 0.5.0-rc.11
   - apiVersion: v2
     appVersion: v0.5.0-rc.10
-    created: "2024-05-09T17:26:40.798807129Z"
+    created: "2024-05-10T04:01:16.258652763Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -1057,7 +1114,7 @@ entries:
     version: 0.5.0-rc.10
   - apiVersion: v2
     appVersion: v0.5.0-rc.8
-    created: "2024-05-09T17:26:40.960083222Z"
+    created: "2024-05-10T04:01:16.436863863Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -1096,7 +1153,7 @@ entries:
     version: 0.5.0-rc.8
   - apiVersion: v2
     appVersion: v0.5.0-rc.6
-    created: "2024-05-09T17:26:40.938486805Z"
+    created: "2024-05-10T04:01:16.417378685Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -1135,7 +1192,7 @@ entries:
     version: 0.5.0-rc.6
   - apiVersion: v2
     appVersion: v0.5.0-rc.5
-    created: "2024-05-09T17:26:40.916335202Z"
+    created: "2024-05-10T04:01:16.396701052Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -1174,7 +1231,7 @@ entries:
     version: 0.5.0-rc.5
   - apiVersion: v2
     appVersion: v0.5.0-rc.1
-    created: "2024-05-09T17:26:40.776646732Z"
+    created: "2024-05-10T04:01:16.239060896Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -1213,7 +1270,7 @@ entries:
     version: 0.5.0-rc.1
   - apiVersion: v2
     appVersion: v0.5.0-rc.0
-    created: "2024-05-09T17:26:40.755078698Z"
+    created: "2024-05-10T04:01:16.217502592Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -1252,7 +1309,7 @@ entries:
     version: 0.5.0-rc.0
   - apiVersion: v2
     appVersion: v0.4.2
-    created: "2024-05-09T17:26:40.732095244Z"
+    created: "2024-05-10T04:01:16.196705648Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -1291,7 +1348,7 @@ entries:
     version: 0.4.2
   - apiVersion: v2
     appVersion: v0.4.0
-    created: "2024-05-09T17:26:40.710490885Z"
+    created: "2024-05-10T04:01:16.177428058Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -1330,7 +1387,7 @@ entries:
     version: 0.4.0
   - apiVersion: v2
     appVersion: v0.4.0-rc.9
-    created: "2024-05-09T17:26:40.688765316Z"
+    created: "2024-05-10T04:01:16.156739832Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -1369,7 +1426,7 @@ entries:
     version: 0.4.0-rc.9
   - apiVersion: v2
     appVersion: v0.4.0-rc.8
-    created: "2024-05-09T17:26:40.667562491Z"
+    created: "2024-05-10T04:01:16.137779272Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -1408,7 +1465,7 @@ entries:
     version: 0.4.0-rc.8
   - apiVersion: v2
     appVersion: v0.4.0-rc.6
-    created: "2024-05-09T17:26:40.645175435Z"
+    created: "2024-05-10T04:01:16.11847422Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -1447,7 +1504,7 @@ entries:
     version: 0.4.0-rc.6
   - apiVersion: v2
     appVersion: v0.4.0-rc.5
-    created: "2024-05-09T17:26:40.623042448Z"
+    created: "2024-05-10T04:01:16.096966088Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -1486,7 +1543,7 @@ entries:
     version: 0.4.0-rc.5
   - apiVersion: v2
     appVersion: v0.4.0-rc.3
-    created: "2024-05-09T17:26:40.600175584Z"
+    created: "2024-05-10T04:01:16.077709124Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -1525,7 +1582,7 @@ entries:
     version: 0.4.0-rc.3
   - apiVersion: v2
     appVersion: v0.4.0-rc.2
-    created: "2024-05-09T17:26:40.57825834Z"
+    created: "2024-05-10T04:01:16.057540671Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -1564,7 +1621,7 @@ entries:
     version: 0.4.0-rc.2
   - apiVersion: v2
     appVersion: v0.4.0-rc.1
-    created: "2024-05-09T17:26:40.555773146Z"
+    created: "2024-05-10T04:01:16.036911569Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -1603,7 +1660,7 @@ entries:
     version: 0.4.0-rc.1
   - apiVersion: v2
     appVersion: v0.4.0-rc.0
-    created: "2024-05-09T17:26:40.531496592Z"
+    created: "2024-05-10T04:01:16.017320765Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -1642,7 +1699,7 @@ entries:
     version: 0.4.0-rc.0
   - apiVersion: v2
     appVersion: v0.3.1
-    created: "2024-05-09T17:26:40.509619235Z"
+    created: "2024-05-10T04:01:15.998059394Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -1681,7 +1738,7 @@ entries:
     version: 0.3.1
   - apiVersion: v2
     appVersion: v0.3.0
-    created: "2024-05-09T17:26:40.486623506Z"
+    created: "2024-05-10T04:01:15.977762613Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -1720,7 +1777,7 @@ entries:
     version: 0.3.0
   - apiVersion: v2
     appVersion: v0.3.0-rc.10
-    created: "2024-05-09T17:26:40.286457971Z"
+    created: "2024-05-10T04:01:15.790400324Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -1759,7 +1816,7 @@ entries:
     version: 0.3.0-rc.10
   - apiVersion: v2
     appVersion: v0.3.0-rc.9
-    created: "2024-05-09T17:26:40.46464702Z"
+    created: "2024-05-10T04:01:15.957071536Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -1798,7 +1855,7 @@ entries:
     version: 0.3.0-rc.9
   - apiVersion: v2
     appVersion: v0.3.0-rc.8
-    created: "2024-05-09T17:26:40.442643203Z"
+    created: "2024-05-10T04:01:15.933207959Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -1837,7 +1894,7 @@ entries:
     version: 0.3.0-rc.8
   - apiVersion: v2
     appVersion: v0.3.0-rc.7
-    created: "2024-05-09T17:26:40.42000265Z"
+    created: "2024-05-10T04:01:15.913026155Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -1876,7 +1933,7 @@ entries:
     version: 0.3.0-rc.7
   - apiVersion: v2
     appVersion: v0.3.0-rc.6
-    created: "2024-05-09T17:26:40.397721732Z"
+    created: "2024-05-10T04:01:15.893452349Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -1915,7 +1972,7 @@ entries:
     version: 0.3.0-rc.6
   - apiVersion: v2
     appVersion: v0.3.0-rc.5
-    created: "2024-05-09T17:26:40.376217735Z"
+    created: "2024-05-10T04:01:15.872752387Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -1954,7 +2011,7 @@ entries:
     version: 0.3.0-rc.5
   - apiVersion: v2
     appVersion: v0.3.0-rc.4
-    created: "2024-05-09T17:26:40.353864244Z"
+    created: "2024-05-10T04:01:15.852828551Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -1993,7 +2050,7 @@ entries:
     version: 0.3.0-rc.4
   - apiVersion: v2
     appVersion: v0.3.0-rc.3
-    created: "2024-05-09T17:26:40.331134125Z"
+    created: "2024-05-10T04:01:15.829657474Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -2032,7 +2089,7 @@ entries:
     version: 0.3.0-rc.3
   - apiVersion: v2
     appVersion: v0.3.0-rc.2
-    created: "2024-05-09T17:26:40.309199602Z"
+    created: "2024-05-10T04:01:15.809493166Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -2071,7 +2128,7 @@ entries:
     version: 0.3.0-rc.2
   - apiVersion: v2
     appVersion: v0.3.0-rc.1
-    created: "2024-05-09T17:26:40.265680439Z"
+    created: "2024-05-10T04:01:15.767127221Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -2110,7 +2167,7 @@ entries:
     version: 0.3.0-rc.1
   - apiVersion: v2
     appVersion: v0.3.0-rc.0
-    created: "2024-05-09T17:26:40.243967027Z"
+    created: "2024-05-10T04:01:15.746243223Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -2145,7 +2202,7 @@ entries:
     version: 0.3.0-rc.0
   - apiVersion: v2
     appVersion: v0.2.1
-    created: "2024-05-09T17:26:40.223235612Z"
+    created: "2024-05-10T04:01:15.727682777Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -2180,7 +2237,7 @@ entries:
     version: 0.2.1
   - apiVersion: v2
     appVersion: v0.2.0
-    created: "2024-05-09T17:26:40.202176653Z"
+    created: "2024-05-10T04:01:15.70948745Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -2215,7 +2272,7 @@ entries:
     version: 0.2.0
   - apiVersion: v2
     appVersion: v0.2.0-rc.7
-    created: "2024-05-09T17:26:40.181646585Z"
+    created: "2024-05-10T04:01:15.689222724Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -2250,7 +2307,7 @@ entries:
     version: 0.2.0-rc.7
   - apiVersion: v2
     appVersion: v0.2.0-rc.6
-    created: "2024-05-09T17:26:40.160758954Z"
+    created: "2024-05-10T04:01:15.670420441Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -2285,7 +2342,7 @@ entries:
     version: 0.2.0-rc.6
   - apiVersion: v2
     appVersion: v0.2.0-rc.5
-    created: "2024-05-09T17:26:40.138855987Z"
+    created: "2024-05-10T04:01:15.650598392Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -2320,7 +2377,7 @@ entries:
     version: 0.2.0-rc.5
   - apiVersion: v2
     appVersion: v0.2.0-rc.4
-    created: "2024-05-09T17:26:40.114565328Z"
+    created: "2024-05-10T04:01:15.631995213Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -2347,7 +2404,7 @@ entries:
     version: 0.2.0-rc.4
   - apiVersion: v2
     appVersion: v0.2.0-rc.3
-    created: "2024-05-09T17:26:40.099679807Z"
+    created: "2024-05-10T04:01:15.619260902Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -2374,7 +2431,7 @@ entries:
     version: 0.2.0-rc.3
   - apiVersion: v2
     appVersion: v0.2.0-rc.2
-    created: "2024-05-09T17:26:40.084940656Z"
+    created: "2024-05-10T04:01:15.602922779Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -2401,7 +2458,7 @@ entries:
     version: 0.2.0-rc.2
   - apiVersion: v2
     appVersion: v0.2.0-rc.1
-    created: "2024-05-09T17:26:40.071295417Z"
+    created: "2024-05-10T04:01:15.59017248Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -2428,7 +2485,7 @@ entries:
     version: 0.2.0-rc.1
   - apiVersion: v2
     appVersion: v0.2.0-rc.0
-    created: "2024-05-09T17:26:40.056998344Z"
+    created: "2024-05-10T04:01:15.577432814Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -2451,7 +2508,7 @@ entries:
     version: 0.2.0-rc.0
   - apiVersion: v2
     appVersion: v0.1.1
-    created: "2024-05-09T17:26:40.048172663Z"
+    created: "2024-05-10T04:01:15.569773559Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -2474,7 +2531,7 @@ entries:
     version: 0.1.1
   - apiVersion: v2
     appVersion: v0.1.1-rc.0
-    created: "2024-05-09T17:26:40.039501281Z"
+    created: "2024-05-10T04:01:15.561573631Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -2497,7 +2554,7 @@ entries:
     version: 0.1.1-rc.0
   - apiVersion: v2
     appVersion: v0.1.0
-    created: "2024-05-09T17:26:40.030535243Z"
+    created: "2024-05-10T04:01:15.553121469Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -2520,7 +2577,7 @@ entries:
     version: 0.1.0
   - apiVersion: v2
     appVersion: v0.0.1-rc.10
-    created: "2024-05-09T17:26:39.966249078Z"
+    created: "2024-05-10T04:01:15.494438195Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -2543,7 +2600,7 @@ entries:
     version: 0.0.1-rc.10
   - apiVersion: v2
     appVersion: v0.0.1-rc.9
-    created: "2024-05-09T17:26:40.021015877Z"
+    created: "2024-05-10T04:01:15.545722884Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -2566,7 +2623,7 @@ entries:
     version: 0.0.1-rc.9
   - apiVersion: v2
     appVersion: v0.0.1-rc.8
-    created: "2024-05-09T17:26:40.011287224Z"
+    created: "2024-05-10T04:01:15.538338538Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -2589,7 +2646,7 @@ entries:
     version: 0.0.1-rc.8
   - apiVersion: v2
     appVersion: v2.4.0-rc.15
-    created: "2024-05-09T17:26:40.001740229Z"
+    created: "2024-05-10T04:01:15.526727755Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -2612,7 +2669,7 @@ entries:
     version: 0.0.1-rc.7
   - apiVersion: v2
     appVersion: v2.4.0-rc.13
-    created: "2024-05-09T17:26:39.992959638Z"
+    created: "2024-05-10T04:01:15.51905065Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -2635,7 +2692,7 @@ entries:
     version: 0.0.1-rc.6
   - apiVersion: v2
     appVersion: v2.4.0-rc.11
-    created: "2024-05-09T17:26:39.984250769Z"
+    created: "2024-05-10T04:01:15.510690134Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -2658,7 +2715,7 @@ entries:
     version: 0.0.1-rc.5
   - apiVersion: v2
     appVersion: v2.4.0-rc.8
-    created: "2024-05-09T17:26:39.974730796Z"
+    created: "2024-05-10T04:01:15.502262001Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -2681,7 +2738,7 @@ entries:
     version: 0.0.1-rc.3
   - apiVersion: v2
     appVersion: v2.3.3
-    created: "2024-05-09T17:26:39.957218142Z"
+    created: "2024-05-10T04:01:15.486453693Z"
     dependencies:
     - condition: rimeExtras.datadog
       name: datadog
@@ -2704,8 +2761,52 @@ entries:
     version: 0.0.1-rc.0
   rime-kube-system:
   - apiVersion: v2
+    appVersion: v0.5.0-rc.15
+    created: "2024-05-10T04:01:16.950475123Z"
+    dependencies:
+    - condition: rimeSystem.clusterAutoscaler
+      name: cluster-autoscaler
+      repository: https://kubernetes.github.io/autoscaler
+      version: 9.28.0
+    - condition: rimeSystem.externalDns
+      name: external-dns
+      repository: https://kubernetes-sigs.github.io/external-dns/
+      version: 1.10.1
+    - condition: rimeSystem.awsLoadBalancerController
+      name: aws-load-balancer-controller
+      repository: https://aws.github.io/eks-charts
+      version: 1.5.5
+    - condition: rimeSystem.metricsServer
+      name: metrics-server
+      repository: https://kubernetes-sigs.github.io/metrics-server/
+      version: 3.8.2
+    - condition: cert-manager.enabled
+      name: cert-manager
+      repository: https://charts.jetstack.io
+      version: v1.10.0
+    - condition: rimeSystem.ingressNginx
+      name: ingress-nginx
+      repository: https://kubernetes.github.io/ingress-nginx
+      version: 4.7.1
+    - condition: rimeSystem.awsLoadBalancerController
+      name: aws-load-balancer-crds-2-6-1
+      repository: file://./charts/aws-load-balancer-controller-crds-2-6-1
+      version: v0.0.1
+    - condition: rimeSystem.kserve
+      name: kserve
+      repository: https://robustintelligence.github.io/helm
+      version: v0.11.1
+    description: A Helm chart for RIME's kubesystem resources
+    digest: 4e341e0d2da2e060ba0ade7dde63d4e0400f8a03938924ac8ee1ed338f4a0a3f
+    kubeVersion: '>=1.24.0-0'
+    name: rime-kube-system
+    type: application
+    urls:
+    - https://robustintelligence.github.io/helm/fw/rime-kube-system-0.5.0-rc.15.tgz
+    version: 0.5.0-rc.15
+  - apiVersion: v2
     appVersion: v0.5.0-rc.14
-    created: "2024-05-09T17:26:41.525270002Z"
+    created: "2024-05-10T04:01:16.939665991Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -2749,7 +2850,7 @@ entries:
     version: 0.5.0-rc.14
   - apiVersion: v2
     appVersion: v0.5.0-rc.13
-    created: "2024-05-09T17:26:41.514966199Z"
+    created: "2024-05-10T04:01:16.929993384Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -2793,7 +2894,7 @@ entries:
     version: 0.5.0-rc.13
   - apiVersion: v2
     appVersion: v0.5.0-rc.12
-    created: "2024-05-09T17:26:41.504768296Z"
+    created: "2024-05-10T04:01:16.91959201Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -2837,7 +2938,7 @@ entries:
     version: 0.5.0-rc.12
   - apiVersion: v2
     appVersion: v0.5.0-rc.11
-    created: "2024-05-09T17:26:41.49364022Z"
+    created: "2024-05-10T04:01:16.910570525Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -2881,7 +2982,7 @@ entries:
     version: 0.5.0-rc.11
   - apiVersion: v2
     appVersion: v0.5.0-rc.10
-    created: "2024-05-09T17:26:41.483430979Z"
+    created: "2024-05-10T04:01:16.901704791Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -2925,7 +3026,7 @@ entries:
     version: 0.5.0-rc.10
   - apiVersion: v2
     appVersion: v0.5.0-rc.8
-    created: "2024-05-09T17:26:41.557555786Z"
+    created: "2024-05-10T04:01:16.97938182Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -2969,7 +3070,7 @@ entries:
     version: 0.5.0-rc.8
   - apiVersion: v2
     appVersion: v0.5.0-rc.6
-    created: "2024-05-09T17:26:41.547843881Z"
+    created: "2024-05-10T04:01:16.970501515Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -3013,7 +3114,7 @@ entries:
     version: 0.5.0-rc.6
   - apiVersion: v2
     appVersion: v0.5.0-rc.5
-    created: "2024-05-09T17:26:41.536412061Z"
+    created: "2024-05-10T04:01:16.960545879Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -3057,7 +3158,7 @@ entries:
     version: 0.5.0-rc.5
   - apiVersion: v2
     appVersion: v0.5.0-rc.1
-    created: "2024-05-09T17:26:41.473228243Z"
+    created: "2024-05-10T04:01:16.891645083Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -3101,7 +3202,7 @@ entries:
     version: 0.5.0-rc.1
   - apiVersion: v2
     appVersion: v0.5.0-rc.0
-    created: "2024-05-09T17:26:41.46297636Z"
+    created: "2024-05-10T04:01:16.881123295Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -3145,7 +3246,7 @@ entries:
     version: 0.5.0-rc.0
   - apiVersion: v2
     appVersion: v0.4.2
-    created: "2024-05-09T17:26:41.452635434Z"
+    created: "2024-05-10T04:01:16.87207257Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -3189,7 +3290,7 @@ entries:
     version: 0.4.2
   - apiVersion: v2
     appVersion: v0.4.0
-    created: "2024-05-09T17:26:41.442582172Z"
+    created: "2024-05-10T04:01:16.861310084Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -3233,7 +3334,7 @@ entries:
     version: 0.4.0
   - apiVersion: v2
     appVersion: v0.4.0-rc.9
-    created: "2024-05-09T17:26:41.432426848Z"
+    created: "2024-05-10T04:01:16.851809296Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -3277,7 +3378,7 @@ entries:
     version: 0.4.0-rc.9
   - apiVersion: v2
     appVersion: v0.4.0-rc.8
-    created: "2024-05-09T17:26:41.420399542Z"
+    created: "2024-05-10T04:01:16.842405284Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -3321,7 +3422,7 @@ entries:
     version: 0.4.0-rc.8
   - apiVersion: v2
     appVersion: v0.4.0-rc.6
-    created: "2024-05-09T17:26:41.407158875Z"
+    created: "2024-05-10T04:01:16.832038139Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -3365,7 +3466,7 @@ entries:
     version: 0.4.0-rc.6
   - apiVersion: v2
     appVersion: v0.4.0-rc.5
-    created: "2024-05-09T17:26:41.396947289Z"
+    created: "2024-05-10T04:01:16.822620323Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -3409,7 +3510,7 @@ entries:
     version: 0.4.0-rc.5
   - apiVersion: v2
     appVersion: v0.4.0-rc.3
-    created: "2024-05-09T17:26:41.385423841Z"
+    created: "2024-05-10T04:01:16.813066243Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -3453,7 +3554,7 @@ entries:
     version: 0.4.0-rc.3
   - apiVersion: v2
     appVersion: v0.4.0-rc.2
-    created: "2024-05-09T17:26:41.372628312Z"
+    created: "2024-05-10T04:01:16.80395884Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -3497,7 +3598,7 @@ entries:
     version: 0.4.0-rc.2
   - apiVersion: v2
     appVersion: v0.4.0-rc.1
-    created: "2024-05-09T17:26:41.360100463Z"
+    created: "2024-05-10T04:01:16.794516656Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -3541,7 +3642,7 @@ entries:
     version: 0.4.0-rc.1
   - apiVersion: v2
     appVersion: v0.4.0-rc.0
-    created: "2024-05-09T17:26:41.349255237Z"
+    created: "2024-05-10T04:01:16.784266343Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -3585,7 +3686,7 @@ entries:
     version: 0.4.0-rc.0
   - apiVersion: v2
     appVersion: v0.3.1
-    created: "2024-05-09T17:26:41.338580881Z"
+    created: "2024-05-10T04:01:16.774279835Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -3629,7 +3730,7 @@ entries:
     version: 0.3.1
   - apiVersion: v2
     appVersion: v0.3.0
-    created: "2024-05-09T17:26:41.327979301Z"
+    created: "2024-05-10T04:01:16.763733574Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -3673,7 +3774,7 @@ entries:
     version: 0.3.0
   - apiVersion: v2
     appVersion: v0.3.0-rc.10
-    created: "2024-05-09T17:26:41.226972805Z"
+    created: "2024-05-10T04:01:16.673986034Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -3717,7 +3818,7 @@ entries:
     version: 0.3.0-rc.10
   - apiVersion: v2
     appVersion: v0.3.0-rc.9
-    created: "2024-05-09T17:26:41.316620117Z"
+    created: "2024-05-10T04:01:16.753182623Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -3761,7 +3862,7 @@ entries:
     version: 0.3.0-rc.9
   - apiVersion: v2
     appVersion: v0.3.0-rc.8
-    created: "2024-05-09T17:26:41.305074806Z"
+    created: "2024-05-10T04:01:16.743350115Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -3805,7 +3906,7 @@ entries:
     version: 0.3.0-rc.8
   - apiVersion: v2
     appVersion: v0.3.0-rc.7
-    created: "2024-05-09T17:26:41.294331928Z"
+    created: "2024-05-10T04:01:16.732500719Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -3849,7 +3950,7 @@ entries:
     version: 0.3.0-rc.7
   - apiVersion: v2
     appVersion: v0.3.0-rc.6
-    created: "2024-05-09T17:26:41.283552018Z"
+    created: "2024-05-10T04:01:16.72315489Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -3893,7 +3994,7 @@ entries:
     version: 0.3.0-rc.6
   - apiVersion: v2
     appVersion: v0.3.0-rc.5
-    created: "2024-05-09T17:26:41.271896749Z"
+    created: "2024-05-10T04:01:16.713280604Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -3937,7 +4038,7 @@ entries:
     version: 0.3.0-rc.5
   - apiVersion: v2
     appVersion: v0.3.0-rc.4
-    created: "2024-05-09T17:26:41.260755514Z"
+    created: "2024-05-10T04:01:16.702518947Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -3981,7 +4082,7 @@ entries:
     version: 0.3.0-rc.4
   - apiVersion: v2
     appVersion: v0.3.0-rc.3
-    created: "2024-05-09T17:26:41.248538126Z"
+    created: "2024-05-10T04:01:16.692823386Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -4025,7 +4126,7 @@ entries:
     version: 0.3.0-rc.3
   - apiVersion: v2
     appVersion: v0.3.0-rc.2
-    created: "2024-05-09T17:26:41.237503967Z"
+    created: "2024-05-10T04:01:16.683342264Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -4069,7 +4170,7 @@ entries:
     version: 0.3.0-rc.2
   - apiVersion: v2
     appVersion: v0.3.0-rc.1
-    created: "2024-05-09T17:26:41.216229024Z"
+    created: "2024-05-10T04:01:16.662614868Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -4113,7 +4214,7 @@ entries:
     version: 0.3.0-rc.1
   - apiVersion: v2
     appVersion: v0.3.0-rc.0
-    created: "2024-05-09T17:26:41.205903648Z"
+    created: "2024-05-10T04:01:16.6520324Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -4157,7 +4258,7 @@ entries:
     version: 0.3.0-rc.0
   - apiVersion: v2
     appVersion: v0.2.1
-    created: "2024-05-09T17:26:41.195401613Z"
+    created: "2024-05-10T04:01:16.641978512Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -4201,7 +4302,7 @@ entries:
     version: 0.2.1
   - apiVersion: v2
     appVersion: v0.2.0
-    created: "2024-05-09T17:26:41.183862148Z"
+    created: "2024-05-10T04:01:16.632168728Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -4245,7 +4346,7 @@ entries:
     version: 0.2.0
   - apiVersion: v2
     appVersion: v0.2.0-rc.7
-    created: "2024-05-09T17:26:41.171989836Z"
+    created: "2024-05-10T04:01:16.622936127Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -4289,7 +4390,7 @@ entries:
     version: 0.2.0-rc.7
   - apiVersion: v2
     appVersion: v0.2.0-rc.6
-    created: "2024-05-09T17:26:41.159730062Z"
+    created: "2024-05-10T04:01:16.613120924Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -4333,7 +4434,7 @@ entries:
     version: 0.2.0-rc.6
   - apiVersion: v2
     appVersion: v0.2.0-rc.5
-    created: "2024-05-09T17:26:41.148374188Z"
+    created: "2024-05-10T04:01:16.603693566Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -4377,7 +4478,7 @@ entries:
     version: 0.2.0-rc.5
   - apiVersion: v2
     appVersion: v0.2.0-rc.4
-    created: "2024-05-09T17:26:41.137021652Z"
+    created: "2024-05-10T04:01:16.594063632Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -4421,7 +4522,7 @@ entries:
     version: 0.2.0-rc.4
   - apiVersion: v2
     appVersion: v0.2.0-rc.3
-    created: "2024-05-09T17:26:41.12571349Z"
+    created: "2024-05-10T04:01:16.583991025Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -4465,7 +4566,7 @@ entries:
     version: 0.2.0-rc.3
   - apiVersion: v2
     appVersion: v0.2.0-rc.2
-    created: "2024-05-09T17:26:41.114988719Z"
+    created: "2024-05-10T04:01:16.574673315Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -4509,7 +4610,7 @@ entries:
     version: 0.2.0-rc.2
   - apiVersion: v2
     appVersion: v0.2.0-rc.1
-    created: "2024-05-09T17:26:41.104171279Z"
+    created: "2024-05-10T04:01:16.565727376Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -4553,7 +4654,7 @@ entries:
     version: 0.2.0-rc.1
   - apiVersion: v2
     appVersion: v0.2.0-rc.0
-    created: "2024-05-09T17:26:41.093212476Z"
+    created: "2024-05-10T04:01:16.555903737Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -4597,7 +4698,7 @@ entries:
     version: 0.2.0-rc.0
   - apiVersion: v2
     appVersion: v0.1.1
-    created: "2024-05-09T17:26:41.081471736Z"
+    created: "2024-05-10T04:01:16.546620125Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -4641,7 +4742,7 @@ entries:
     version: 0.1.1
   - apiVersion: v2
     appVersion: v0.1.1-rc.0
-    created: "2024-05-09T17:26:41.069501523Z"
+    created: "2024-05-10T04:01:16.537714177Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -4685,7 +4786,7 @@ entries:
     version: 0.1.1-rc.0
   - apiVersion: v2
     appVersion: v0.1.0
-    created: "2024-05-09T17:26:41.058691411Z"
+    created: "2024-05-10T04:01:16.526458971Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -4729,7 +4830,7 @@ entries:
     version: 0.1.0
   - apiVersion: v2
     appVersion: v0.0.1-rc.10
-    created: "2024-05-09T17:26:40.979777143Z"
+    created: "2024-05-10T04:01:16.458529374Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -4773,7 +4874,7 @@ entries:
     version: 0.0.1-rc.10
   - apiVersion: v2
     appVersion: v0.0.1-rc.9
-    created: "2024-05-09T17:26:41.047424893Z"
+    created: "2024-05-10T04:01:16.516481821Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -4817,7 +4918,7 @@ entries:
     version: 0.0.1-rc.9
   - apiVersion: v2
     appVersion: v0.0.1-rc.8
-    created: "2024-05-09T17:26:41.035436519Z"
+    created: "2024-05-10T04:01:16.506739779Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -4861,7 +4962,7 @@ entries:
     version: 0.0.1-rc.8
   - apiVersion: v2
     appVersion: v2.4.0-rc.15
-    created: "2024-05-09T17:26:41.023591649Z"
+    created: "2024-05-10T04:01:16.497055564Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -4905,7 +5006,7 @@ entries:
     version: 0.0.1-rc.7
   - apiVersion: v2
     appVersion: v2.4.0-rc.13
-    created: "2024-05-09T17:26:41.013111235Z"
+    created: "2024-05-10T04:01:16.486927058Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -4949,7 +5050,7 @@ entries:
     version: 0.0.1-rc.6
   - apiVersion: v2
     appVersion: v2.4.0-rc.11
-    created: "2024-05-09T17:26:41.00245658Z"
+    created: "2024-05-10T04:01:16.477456441Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -4993,7 +5094,7 @@ entries:
     version: 0.0.1-rc.5
   - apiVersion: v2
     appVersion: v2.4.0-rc.8
-    created: "2024-05-09T17:26:40.991842938Z"
+    created: "2024-05-10T04:01:16.468315346Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -5037,7 +5138,7 @@ entries:
     version: 0.0.1-rc.3
   - apiVersion: v2
     appVersion: v2.3.3
-    created: "2024-05-09T17:26:40.968511418Z"
+    created: "2024-05-10T04:01:16.445239548Z"
     dependencies:
     - condition: rimeSystem.clusterAutoscaler
       name: cluster-autoscaler
@@ -5075,4 +5176,4 @@ entries:
     urls:
     - https://robustintelligence.github.io/helm/fw/rime-kube-system-0.0.1-rc.0.tgz
     version: 0.0.1-rc.0
-generated: "2024-05-09T17:26:39.730518094Z"
+generated: "2024-05-10T04:01:15.286631584Z"
