@@ -1,0 +1,19 @@
+Your RI Platform Agent is starting!
+To verify your agent is running properly, use `kubectl get pods` or check the Agents page in the UI.
+If the pods have errored or the agent is not "Active" in the UI after several minutes,
+check your configuration and contact a Robust Intelligence representative if needed.
+
+{{- if .Values.supportBundle.enabled }}
+----------------------------------------------------------------------------------
+Generate a support bundle for the rime-agent, run the following command:
+    kubectl support-bundle --load-cluster-specs -n {{ .Release.Namespace }}
+
+Get the values of the collected data by running the following command:
+    mkdir support-bundle-values && tar -xvf <NAME OF SUPPORT BUNDLE>.tgz -C support-bundle-values/
+
+Inspect the configuration for the support-bundle either:
+    1. view the in-cluster configmap named {{ include "rime-agent.supportBundleConfigMapName" . }}
+    2. navigate to the public helm repository to see the non-templated version of the configmap: https://github.com/RobustIntelligence/helm/tree/<RIME_VERSION>/rime-agent
+
+If you need to share the support bundle with Robust Intelligence, please follow the instructions found in the RI Knowledge Base
+{{- end }}

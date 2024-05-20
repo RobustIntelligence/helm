@@ -1,0 +1,582 @@
+rimeExtras:
+  # -- Whether to install the DataDog Helm charts for observability
+  datadog: false
+  # -- Whether to install the Velero Helm charts for disaster recovery
+  velero: false
+  # -- Whether to install the Prometheus Node Exporter Helm charts for observability
+  prometheusNodeExporter: false
+  # -- Whether to install the Prometheus Server Helm charts for observability
+  prometheusServer: false
+  # -- Whether to install the Observability Proxy Server Helm charts for observability
+  observabilityProxyServer: false
+  # -- Whether to install the Prometheus CloudWatch Exporter Helm charts for observability
+  prometheusCloudwatchExporter: false
+  # -- Whether to install the Logscale(previously know as humio) FluentBit
+  # Helm charts for sending Firewall validation logs to Logscale(Crowdstrike)
+  # for SIEM
+  logscaleFluentBit: false
+  # -- Whether to install the RI Observability FluentBit Helm chart for internal oversvability and monitoring
+  riObservabilityFluentBit: false
+
+# -- For full reference, see https://github.com/DataDog/helm-charts/tree/datadog-2.20.3/charts/datadog
+# @default -- (see individual values in `values`.yaml)
+datadog:
+  registry: "docker.io"
+  datadog:
+    # kube-state-metrics disabled by default, as they are redundant and unused
+    # The metrics controlled by this value show up as `kube_pod_info` or similar.
+    # Not the same as the native kubernetes.* metrics.
+    # See https://github.com/DataDog/helm-charts/blob/c75a5effa46d934f5f9952d2bf658823e9170135/charts/datadog/values.yaml#L122
+    kubeStateMetricsEnabled: false
+    prometheusScrape:
+      enabled: true
+      # Restricts prometheus metrics scraping to only our custom containers.
+      additionalConfigs:
+        -
+          configurations:
+          - send_distribution_buckets: true
+          - histogram_buckets_as_distributions: true
+          autodiscovery:
+            kubernetes_container_names:
+              - "aws-node"
+            kubernetes_annotations:
+              include:
+                prometheus.io/scrape: "true"
+                app.kubernetes.io/owned-by: "ri"
+              exclude:
+                prometheus.io/scrape: "false"
+    # Ignore auto-configuration for `kubernetes_state` (because we disable kube-state-metrics) and `redisdb`
+    # See https://docs.datadoghq.com/agent/guide/auto_conf/
+    ignoreAutoConfig:
+      - kubernetes_state
+      - redisdb
+    # Enable logs agent and provide custom configs
+    logs:
+      # Enabled to activate Datadog Agent log collection
+      # ref: https://docs.datadoghq.com/containers/kubernetes/log/?tab=helm
+      enabled: true
+      # Enabled to allow log collection for all containers
+      # ref: https://docs.datadoghq.com/containers/kubernetes/log/?tab=helm
+      containerCollectAll: true
+      # Collect logs from files in /var/log/pods instead of using container runtime API
+      # It's usually the most efficient way of collecting logs.
+      # ref: https://docs.datadoghq.com/containers/kubernetes/log/?tab=helm
+      containerCollectUsingFiles: true
+    env:
+      # -- Log masking to prevent transmission of sensitive info
+      # NOTE: regex in the log rules require an extra escape for any escape character used,
+      # e.g. \\\b for \b in normal regex
+      - name: DD_LOGS_CONFIG_PROCESSING_RULES
+        value: >-
+          [{
+            "type": "mask_sequences",
+            "name": "mask_ip",
+            "replace_placeholder": "[masked_ip]",
+            "pattern" : "(?:[0-9]{1,3}\\.){3}[0-9]{1,3}"
+           },
+           {
+            "type": "mask_sequences",
+            "name": "mask_email",
+            "replace_placeholder": "[masked_email]",
+            "pattern" : "[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,4}"
+           }]
+    # -- (string) API key for DataDog services.
+    # Will be provided by your RI Solutions Architect.
+    apiKey: ""
+    # -- List of static tags to attach to every metric, event and service check collected by this Agent.
+    #  Learn more about tagging: https://docs.datadoghq.com/tagging/
+    tags:
+      - "user:${datadog_user_tag}"
+      - "rime-version:${datadog_rime_version_tag}"
+  agents:
+    # Needed to allow the Agent to run on the dedicated nodegroup for test jobs
+    tolerations:
+      - key: "dedicated"
+        operator: "Equal"
+        value: "model-testing"
+        effect: "NoSchedule"
+    image:
+      repository: "robustintelligencehq/datadog-agent"
+      pullSecrets:
+        - name: rimecreds
+      tag: 7.46.0
+  clusterAgent:
+    image:
+      repository: "robustintelligencehq/datadog-cluster-agent"
+      pullSecrets:
+        - name: rimecreds
+      tag: 7.46.0
+
+# -- For full reference, see https://github.com/vmware-tanzu/helm-charts/tree/velero-2.23.6/charts/velero
+# @default -- (see individual values in `values`.yaml)
+velero:
+  image:
+    repository: "docker.io/robustintelligencehq/velero"
+    tag: "v1.6.3"
+    imagePullSecrets:
+      - rimecreds
+  # -- Init containers to add to the Velero deployment's pod spec.
+  # At least one plugin provider image is required. For other cloud
+  # providers, see https://velero.io/docs/v1.6/supported-providers/
+  initContainers:
+    - name: velero-plugin-for-aws
+      image: "docker.io/robustintelligencehq/velero-plugin-for-aws:v1.2.1"
+      imagePullPolicy: IfNotPresent
+      volumeMounts:
+        - mountPath: /target
+          name: plugins
+  configuration:
+    # Cloud provider being used (e.g. aws, azure, gcp).
+    provider: aws
+    logFormat: json
+    # Parameters for the `default` BackupStorageLocation. See
+    # https://velero.io/docs/v1.6/api-types/backupstoragelocation/
+    backupStorageLocation:
+      # -- Bucket is the name of the bucket to store backups in. Required.
+      bucket: ""
+      config:
+        # -- AWS region for the EKS cluster
+        region: ""
+        serverSideEncryption: AES256
+    volumeSnapshotLocation:
+      # -- Name of the volume snapshot location where snapshots are being taken. Required.
+      name: mongodb-snapshots
+      config:
+        # -- AWS region for the EKS cluster
+        region: ""
+  serviceAccount:
+    # Needed to allow the K8s Velero server to orchestrate cloud provider snapshots
+    server:
+      create: true
+    # -- For AWS: Specify ARN of IRSA-enabled Velero Backups IAM role here
+    annotations:
+      eks.amazonaws.com/role-arn: ""
+  credentials:
+    # Secret not needed due to use of service accounts (e.g., IRSA on AWS)
+    useSecret: false
+  schedules:
+    mongodb-backup:
+      disabled: false
+      # -- Default: every four hours starting at 12:00 AM
+      schedule: "0 */4 * * *"
+      useOwnerReferencesInBackup: false
+      template:
+        # -- Backup horizon. Default is 336h (i.e., 2 weeks)
+        ttl: "336h"
+        includedResources:
+          - pvc
+          - pv
+        # -- At minimum, should include the RIME namespace(s) (all namespaces recommended)
+        includedNamespaces:
+          - "*"
+
+# -- For full reference, see https://github.com/prometheus-community/helm-charts/tree/main/charts/prometheus-node-exporter
+# @default -- (see individual values in `values`.yaml)
+prometheus-node-exporter:
+  image:
+    registry: "docker.io"
+    repository: "robustintelligencehq/node-exporter"
+    tag: v1.6.0
+    pullPolicy: IfNotPresent
+  extraArgs:
+    - --collector.disable-defaults
+    - --collector.cpu
+    - --collector.meminfo
+    - --collector.vmstat
+  podAnnotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9100"
+    prometheus.io/path: "/metrics"
+    app.kubernetes.io/owned-by: "ri"
+
+prometheus:
+  server:
+    image:
+      repository: "docker.io/robustintelligencehq/prometheus"
+      tag: v2.48.0
+      pullPolicy: IfNotPresent
+    remoteWrite:
+      - url: "http://observability-proxy-server:8000/remote_write"
+        write_relabel_configs:
+          - source_labels: [__name__]
+            regex: 'awscni_assigned_ip_addresses|awscni_ip_max|go_gc_duration_seconds|go_goroutines|go_memstats_heap_alloc_bytes|machine_cpu_cores|machine_memory_bytes|node_cpu_seconds_total|node_memory_MemAvailable_bytes|node_memory_MemTotal_bytes|request_predict_seconds_bucket|request_predict_seconds_count|aws_.*|container_.*|firewall_.*|grpc_.*|kube_.*|kubelet_.*|rime_.*|robust_.*|ri_.*'
+            action: keep
+    persistentVolume:
+      enabled: false
+    global:
+      scrape_interval: 60s
+    defaultFlagsOverride: ["--web.enable-lifecycle", "--config.file=/etc/config/prometheus.yml"]
+  serverFiles:
+    alerting_rules.yml: {}
+    alerts: {}
+    recording_rules.yml: {}
+    rules: {}
+    prometheus.yml:
+      rule_files:
+        - /etc/config/recording_rules.yml
+        - /etc/config/alerting_rules.yml
+        - /etc/config/rules
+        - /etc/config/alerts
+      # The vast majority of the below scrape configs are defaults,
+      # but we need to copy them here because Helm will overwrite the
+      # entire config if we add additional jobs here
+      scrape_configs:
+        # Scrapes metrics about the k8s control plane (via k8s API)
+        - job_name: 'kubernetes-apiservers'
+          kubernetes_sd_configs:
+            - role: endpoints
+          scheme: https
+          tls_config:
+            ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+            insecure_skip_verify: true
+          bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+          relabel_configs:
+            - source_labels: [__meta_kubernetes_namespace, __meta_kubernetes_service_name, __meta_kubernetes_endpoint_port_name]
+              action: keep
+              regex: default;kubernetes;https
+        # Scrapes metrics about nodes in the k8s cluster (via k8s API)
+        - job_name: 'kubernetes-nodes'
+          scheme: https
+          tls_config:
+            ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+            insecure_skip_verify: true
+          bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+          kubernetes_sd_configs:
+            - role: node
+          relabel_configs:
+            - action: labelmap
+              regex: __meta_kubernetes_node_label_(.+)
+            - target_label: __address__
+              replacement: kubernetes.default.svc:443
+            - source_labels: [__meta_kubernetes_node_name]
+              regex: (.+)
+              target_label: __metrics_path__
+              replacement: /api/v1/nodes/$1/proxy/metrics
+        # Scrapes metrics about nodes related to cAdvisor (E.g., CPU, memory)
+        - job_name: 'kubernetes-nodes-cadvisor'
+          scheme: https
+          tls_config:
+            ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+            insecure_skip_verify: true
+          bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+          kubernetes_sd_configs:
+            - role: node
+          relabel_configs:
+            - action: labelmap
+              regex: __meta_kubernetes_node_label_(.+)
+            - target_label: __address__
+              replacement: kubernetes.default.svc:443
+            - source_labels: [__meta_kubernetes_node_name]
+              regex: (.+)
+              target_label: __metrics_path__
+              replacement: /api/v1/nodes/$1/proxy/metrics/cadvisor
+        # Scrapes pods directly. This is where our custom metrics are exposed.
+        - job_name: 'kubernetes-pods'
+          honor_labels: true
+          kubernetes_sd_configs:
+            - role: pod
+          relabel_configs:
+            # Only keep pods with prometheus.io/scrape: "true"
+            - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+              action: keep
+              regex: true
+            # Only keep pods with app.kubernetes.io/owned-by: "ri"
+            - source_labels: [__meta_kubernetes_pod_annotation_app_kubernetes_io_owned_by]
+              action: keep
+              regex: ri
+            # Gets the metric endpoint's scheme from the annotation prometheus.io/scheme
+            - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scheme]
+              action: replace
+              regex: (https?)
+              target_label: __scheme__
+            # Gets the metric endpoint's path from the annotation prometheus.io/path
+            - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+              action: replace
+              target_label: __metrics_path__
+              regex: (.+)
+            # For IPv6, gets the metric endpoint's ip/port from the annotation prometheus.io/port
+            - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_port, __meta_kubernetes_pod_ip]
+              action: replace
+              regex: (\d+);(([A-Fa-f0-9]{1,4}::?){1,7}[A-Fa-f0-9]{1,4})
+              replacement: '[$2]:$1'
+              target_label: __address__
+            # For IPv4, gets the metric endpoint's ip/port from the annotation prometheus.io/port
+            - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_port, __meta_kubernetes_pod_ip]
+              action: replace
+              regex: (\d+);((([0-9]+?)(\.|$)){4})
+              replacement: $2:$1
+              target_label: __address__
+            - action: labelmap
+              regex: __meta_kubernetes_pod_annotation_prometheus_io_param_(.+)
+              replacement: __param_$1
+            - action: labelmap
+              regex: __meta_kubernetes_pod_label_(.+)
+            - source_labels: [__meta_kubernetes_namespace]
+              action: replace
+              target_label: namespace
+            - source_labels: [__meta_kubernetes_pod_name]
+              action: replace
+              target_label: pod
+            - source_labels: [__meta_kubernetes_pod_phase]
+              regex: Pending|Succeeded|Failed|Completed
+              action: drop
+            - source_labels: [__meta_kubernetes_pod_node_name]
+              action: replace
+              target_label: node
+        # Scrapes AWS VPC CNI
+        - job_name: aws-node
+          honor_labels: true
+          kubernetes_sd_configs:
+            - role: pod
+          relabel_configs:
+            - source_labels: [__meta_kubernetes_pod_label_app_kubernetes_io_instance]
+              action: keep
+              regex: aws-vpc-cni
+            - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+              action: keep
+              regex: true
+  configmapReload:
+    prometheus:
+      enabled: true
+      image:
+        repository: "docker.io/robustintelligencehq/prometheus-config-reloader"
+        tag: v0.70.0
+        pullPolicy: IfNotPresent
+  kube-state-metrics:
+    enabled: true
+    podAnnotations:
+      prometheus.io/scrape: "true"
+      prometheus.io/port: "8080"
+      prometheus.io/path: "/metrics"
+      app.kubernetes.io/owned-by: "ri"
+    image:
+      registry: "docker.io"
+      repository: "robustintelligencehq/kube-state-metrics"
+      tag: "v2.10.1"
+  prometheus-node-exporter:
+    enabled: false
+  prometheus-pushgateway:
+    enabled: false
+  alertmanager:
+    enabled: false
+
+observabilityProxyServer:
+  image:
+    registry: docker.io
+    name: robustintelligencehq/observability-proxy-server:v0.1
+    pullPolicy: IfNotPresent
+  port: 8000
+  containerPort: 8000
+  # The same remote_write URL is used for all Prometheus servers
+  remoteWriteURL: https://4dj9f20xee.execute-api.us-west-2.amazonaws.com/production/remote_write
+  remoteWriteSecretName: remote-write-api-key
+
+prometheus-cloudwatch-exporter:
+  image:
+    repository: "docker.io/robustintelligencehq/cloudwatch-exporter"
+    tag: "v0.15.5"
+    pullPolicy: IfNotPresent
+  pod:
+    annotations:
+      prometheus.io/scrape: "true"
+      prometheus.io/port: "9106"
+      prometheus.io/path: "/metrics"
+      app.kubernetes.io/owned-by: "ri"
+  config: |-
+    region: "us-west-2"
+    period_seconds: 60
+    delay_seconds: 900
+    metrics:
+
+    - aws_metric_name: CPUUtilization
+      aws_namespace: AWS/EC2
+      aws_statistics:
+      - Average
+      aws_dimensions:
+      - InstanceId
+
+    # The total number of bytes processed by the load balancer, including TCP/IP headers.
+    # This count includes traffic to and from targets, minus health check traffic.
+    - aws_metric_name: ProcessedBytes
+      aws_namespace: AWS/NetworkELB
+      aws_statistics:
+      - Sum
+      aws_dimensions:
+      - LoadBalancer
+      - AvailabilityZone
+
+    # The total number of concurrent flows (or connections) from clients to targets.
+    - aws_metric_name: ActiveFlowCount
+      aws_namespace: AWS/NetworkELB
+      aws_statistics:
+      - Average
+      aws_dimensions:
+      - LoadBalancer
+      - AvailabilityZone
+
+    # The number of new TCP messages rejected by the inbound rules of the load balancer security groups.
+    - aws_metric_name: SecurityGroupBlockedFlowCount_Inbound_TCP
+      aws_namespace: AWS/NetworkELB
+      aws_statistics:
+      - Sum
+      aws_dimensions:
+      - LoadBalancer
+      - AvailabilityZone
+
+# -- For full reference, see https://github.com/humio/humio-helm-charts/tree/release-0.9.5/charts/humio-fluentbit
+# @default -- (see individual values in `values`.yaml)
+humio-helm-charts:
+  humio-fluentbit:
+    image: "docker.io/robustintelligencehq/fluent-bit:2.0.3"
+    imagePullPolicy: IfNotPresent
+    imagePullSecrets:
+      - name: rimecreds
+    enabled: false
+    humioHostname: ""
+    token: ""
+    es:
+      tls: true
+    tolerations:
+      - key: "dedicated"
+        operator: "Equal"
+        value: "model-testing"
+        effect: "NoSchedule"
+    customFluentBitConfig:
+      custom-filter-kubernetes.conf: |-
+        [FILTER]
+            Name    grep
+            Match   kube.*
+            Regex   $kubernetes['annotations']['enable_logscale_logging'] true
+        [FILTER]
+            Name                nest
+            Match               *
+            Wildcard            *
+            Operation           lift
+            Nested_under        log_processed
+            Add_prefix          log_processed_
+        [FILTER]
+            Name    grep
+            Match   *
+            Regex   log_processed_ri_service_name (firewall-server|model-testing-server|rime-job)
+
+# Configuration for RI's internal Fluent Bit that is used for internal logging and monitoring
+fluent-bit:
+  nameOverride: ri-observability-fluent-bit
+  image:
+    repository: "docker.io/robustintelligencehq/fluent-bit"
+    tag: "2.2.2"
+    pullPolicy: IfNotPresent
+  tolerations:
+    - operator: Exists
+      effect: NoSchedule
+  imagePullSecrets:
+    - name: rimecreds
+  ## https://docs.fluentbit.io/manual/pipeline/filters/lua
+  luaScripts:
+    piiMasking: |
+      function mask_sensitive_info(tag, timestamp, record)
+        local function mask_message(message)
+          if message == nil then
+            return nil
+          end
+          masked_msg = message
+          -- email address
+          masked_msg = string.gsub(masked_msg, '[%w_.%-]+@[%w_.%-]+%.%w+', '[masked_email]')
+          -- ip address
+          masked_msg = string.gsub(masked_msg, '%d%d?%d?%.%d%d?%d?%.%d%d?%d?%.%d%d?%d?', '[masked_ipv4]')
+          masked_msg = string.gsub(masked_msg, '([%da-fA-F]*:%)*[%da-fA-F]*:%)*[%da-fA-F]*:%)*[%da-fA-F]*:%)*[%da-fA-F]*:%)*[%da-fA-F]*:%)*[%da-fA-F]*:%)*[%da-fA-F]*', '[masked_ipv6]')
+          -- phone number
+          masked_msg = string.gsub(masked_msg, '%(?%d%d%d%)?[%s%-]?%d%d%d[%s%-]?%d%d%d%d', '[masked_phone]')
+          -- social security number
+          masked_msg = string.gsub(masked_msg, '%d%d%d[%s%-]?%d%d[%s%-]?%d%d%d%d', '[masked_ssn]')
+          -- credit card number
+          masked_msg = string.gsub(masked_msg, '%d%d%d%d[%s%-]?%d%d%d%d[%s%-]?%d%d%d%d[%s%-]?%d%d%d%d', '[masked_credit_card]')
+
+          return masked_msg
+        end
+
+        record["msg"] = mask_message(record["msg"])
+        record["message"] = mask_message(record["message"])
+        return 2, timestamp, record
+      end
+  ## https://docs.fluentbit.io/manual/administration/configuring-fluent-bit/classic-mode/configuration-file
+  config:
+    service: |
+      [SERVICE]
+        Daemon Off
+        Flush {{ .Values.flush }}
+        Log_Level {{ .Values.logLevel }}
+        Parsers_File /fluent-bit/etc/parsers.conf
+        Parsers_File /fluent-bit/etc/conf/custom_parsers.conf
+        HTTP_Server On
+        HTTP_Listen 0.0.0.0
+        HTTP_Port {{ .Values.metricsPort }}
+        Health_Check On
+
+    ## https://docs.fluentbit.io/manual/pipeline/inputs
+    inputs: |
+      [INPUT]
+        Name tail
+        Path /var/log/containers/*.log
+        multiline.parser docker, cri
+        Tag kube.*
+        Mem_Buf_Limit 10MB
+        Skip_Long_Lines On
+
+    ## https://docs.fluentbit.io/manual/pipeline/filters
+    filters: |
+      [FILTER]
+        Name kubernetes
+        Match kube.*
+        Merge_Log On
+        Keep_Log Off
+        K8S-Logging.Parser On
+        K8S-Logging.Exclude On
+        Annotations Off
+        Labels Off
+        Buffer_Size 10MB
+
+      [FILTER]
+        Name modify
+        Match *
+        Condition Key_does_not_exist attr.error.code
+        Rename attr.error attr.error_str
+
+      [FILTER]
+        Name modify
+        Match *
+        Condition Key_exists message
+        Rename message msg
+
+      [FILTER]
+        Name nest
+        Match kube.*
+        Operation lift
+        Nested_under kubernetes
+
+      [FILTER]
+        Name modify
+        Match kube.*
+        Remove attr
+        Rename log msg
+
+      [FILTER]
+        Name lua
+        Match kube.*
+        Script /fluent-bit/scripts/piiMasking
+        Call mask_sensitive_info
+
+    ## https://docs.fluentbit.io/manual/pipeline/outputs
+    outputs: |
+      [OUTPUT]
+        Name opensearch
+        Match kube.*
+        Host search-ri-opensearch-vqycu6e5fafj4zojubom4zzl4y.us-west-2.es.amazonaws.com
+        Port 443
+        Index ri_logs.%Y.%m.%d
+        AWS_Auth On
+        AWS_Region us-west-2
+        AWS_Role_ARN arn:aws:iam::746181457053:role/fluentbit_role
+        Suppress_Type_Name On
+        TLS On
+        Trace_Error On
