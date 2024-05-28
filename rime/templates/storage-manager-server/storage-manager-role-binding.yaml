@@ -1,0 +1,17 @@
+{{- if .Values.rime.storageManagerServer.serviceAccount.create -}}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "rime.storageManagerServer.serviceAccountName" . }}
+  labels:
+    {{- include "rime.labels" . | nindent 4 }}
+  annotations:
+    {{- include "rime.annotations" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ include "rime.storageManagerServer.serviceAccountName" . }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "rime.storageManagerServer.serviceAccountName" . }}
+{{- end }}
