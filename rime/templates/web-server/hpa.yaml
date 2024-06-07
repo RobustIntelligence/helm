@@ -1,0 +1,21 @@
+{{- if .Values.rime.webServer.hpa.enabled }}
+apiVersion: {{ include "rime.hpa.apiVersion" . }}
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ include "rime.fullname" . }}-{{ .Values.rime.webServer.name }}
+  labels:
+    app: {{ .Values.rime.webServer.name }}
+    {{- include "rime.labels" . | nindent 4 }}
+    {{- with .Values.rime.webServer.hpa.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ include "rime.fullname" . }}-{{ .Values.rime.webServer.name }}
+  minReplicas: {{ .Values.rime.webServer.hpa.minReplicas }}
+  maxReplicas: {{ .Values.rime.webServer.hpa.maxReplicas }}
+  metrics:
+{{ toYaml .Values.rime.webServer.hpa.metrics | indent 4 }}
+{{- end }}
