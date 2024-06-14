@@ -1,0 +1,134 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "ri-firewall.fullname" . }}-{{ .Values.riFirewall.instanceManagerServer.name }}
+  labels:
+    app: {{ .Values.riFirewall.instanceManagerServer.name }}
+    {{- include "ri-firewall.labels" . | nindent 4 }}
+    {{- with .Values.riFirewall.instanceManagerServer.deployment.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  annotations:
+    {{- include "ri-firewall.annotations" . | nindent 4 }}
+    {{- with .Values.riFirewall.instanceManagerServer.deployment.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Values.riFirewall.instanceManagerServer.name }}
+  {{- if not .Values.riFirewall.instanceManagerServer.hpa.enabled }}
+  replicas: {{ .Values.riFirewall.instanceManagerServer.deployment.replicaCount }}
+  {{- end }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.riFirewall.instanceManagerServer.name }}
+        {{- with .Values.riFirewall.instanceManagerServer.deployment.labels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      annotations:
+        {{- include "ri-firewall.annotations" . | nindent 8 }}
+        {{- with .Values.riFirewall.instanceManagerServer.deployment.annotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.riFirewall.images.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if .Values.riFirewall.registerFirewallAgent.enabled }}
+      initContainers:
+        - name: {{ .Values.riFirewall.registerFirewallAgent.name }}
+          image: "{{ .Values.riFirewall.images.backendImage.registry}}/{{ .Values.riFirewall.images.backendImage.name }}"
+          imagePullPolicy: {{ .Values.riFirewall.images.backendImage.pullPolicy }}
+          resources:
+            {{- toYaml .Values.riFirewall.registerFirewallAgent.job.resources | nindent 12 }}
+          env:
+            - name: RIME_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "ri-firewall.existingSecretsName" . }}
+                  key: registerAgentAPIKey
+                  optional: false
+            - name: RIME_CROSS_SERVICE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "ri-firewall.generatedSecretsName" . }}
+                  key: crossServiceKey
+                  optional: false
+            - name: EXISTING_SECRETS_NAME
+              value: {{ include "ri-firewall.existingSecretsName" . }}
+            - name: RI_SERVICE_NAME
+              value: {{ .Values.riFirewall.instanceManagerServer.name }}
+            {{- if .Values.riFirewall.registerFirewallAgent.enabled }}
+            - name: AGENT_ID
+              value: {{ .Values.riFirewall.registerFirewallAgent.agentID }}
+            {{- end }}
+          command:
+            - "/ri/firewall"
+          args:
+            - "register-firewall-agent-job"
+            - "--server-config-path=/config/server.config"
+            - "--agent-id={{ .Values.riFirewall.registerFirewallAgent.agentID }}"
+            - "--agent-url={{ .Values.riFirewall.registerFirewallAgent.agentURL }}"
+          volumeMounts:
+            - name: {{ include "ri-firewall.fullname" . }}-{{ .Values.riFirewall.instanceManagerServer.name }}-config
+              mountPath: "/config"
+              readOnly: true
+      {{- end }}
+      serviceAccountName: {{ include "ri-firewall.instanceManagerServer.serviceAccountName" . }}
+      containers:
+        - name: {{ .Values.riFirewall.instanceManagerServer.name }}
+          image: "{{ .Values.riFirewall.images.backendImage.registry}}/{{ .Values.riFirewall.images.backendImage.name }}"
+          imagePullPolicy: {{ .Values.riFirewall.images.backendImage.pullPolicy }}
+          env:
+            - name: RI_SERVICE_NAME
+              value: {{ .Values.riFirewall.instanceManagerServer.name }}
+            {{- if .Values.riFirewall.registerFirewallAgent.enabled }}
+            - name: RIME_CROSS_SERVICE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "ri-firewall.generatedSecretsName" . }}
+                  key: crossServiceKey
+            - name: RIME_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "ri-firewall.existingSecretsName" . }}
+                  key: registerAgentAPIKey
+            # We pass this as an env var instead of a command line argument because we need to know
+            # the value before the firewall instance manager is initialized.
+            - name: ENABLE_CP_INTEGRATION
+              value: "true"
+            {{- end }}
+          ports:
+            - name: mgr
+              containerPort: {{ .Values.riFirewall.instanceManagerServer.port }}
+              protocol: TCP
+            - name: mgr-rest
+              containerPort: {{ .Values.riFirewall.instanceManagerServer.restPort }}
+              protocol: TCP
+          resources:
+            {{- toYaml .Values.riFirewall.instanceManagerServer.deployment.resources | nindent 12 }}
+          command:
+            - "/ri/firewall"
+          args:
+            - "start-firewall-instance-manager"
+            - "--server-config-path=/config/server.config"
+            - "--port={{ .Values.riFirewall.instanceManagerServer.port }}"
+            - "--rest-port={{ .Values.riFirewall.instanceManagerServer.restPort }}"
+            {{- if .Values.riFirewall.registerFirewallAgent.enabled }}
+            - "--agent-id={{ .Values.riFirewall.registerFirewallAgent.agentID }}"
+            {{- end }}
+          volumeMounts:
+            - name: {{ include "ri-firewall.fullname" . }}-{{ .Values.riFirewall.instanceManagerServer.name }}-config
+              mountPath: "/config"
+              readOnly: true
+      volumes:
+        # Volumes are defined at the Pod level, then mounted into containers within that Pod
+        - name: {{ include "ri-firewall.fullname" . }}-{{ .Values.riFirewall.instanceManagerServer.name }}-config
+          configMap:
+            name: {{ include "ri-firewall.fullname" . }}-{{ .Values.riFirewall.instanceManagerServer.name }}-conf
+            items:
+              - key: "server.config"
+                path: "server.config"
