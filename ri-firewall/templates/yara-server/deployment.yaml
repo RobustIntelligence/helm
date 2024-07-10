@@ -1,0 +1,92 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "ri-firewall.fullname" . }}-{{ .Values.riFirewall.yaraServer.name }}
+  labels:
+    app: {{ .Values.riFirewall.yaraServer.name }}
+    {{- with .Values.riFirewall.yaraServer.deployment.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  annotations:
+    {{- include "ri-firewall.annotations" . | nindent 4 }}
+    {{- with .Values.riFirewall.yaraServer.deployment.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Values.riFirewall.yaraServer.name }}
+  {{- if not .Values.riFirewall.yaraServer.hpa.enabled }}
+  replicas: {{ .Values.riFirewall.authServer.deployment.replicaCount }}
+  {{- end }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.riFirewall.yaraServer.name }}
+        {{- with .Values.riFirewall.yaraServer.deployment.labels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      annotations:
+        {{- include "ri-firewall.annotations" . | nindent 8 }}
+        {{- with .Values.riFirewall.yaraServer.deployment.annotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.riFirewall.images.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: {{ .Values.riFirewall.yaraServer.name }}
+          image: "{{ .Values.riFirewall.images.backendImage.registry}}/{{ .Values.riFirewall.images.backendImage.name }}"
+          imagePullPolicy: {{ .Values.riFirewall.images.backendImage.pullPolicy }}
+          ports:
+            - name: yara
+              containerPort: {{ .Values.riFirewall.yaraServer.port }}
+              protocol: TCP
+          livenessProbe:
+            exec:
+              command: [ "/bin/grpc_health_probe", "-addr=:{{ .Values.riFirewall.yaraServer.port }}" ]
+            periodSeconds: 5
+          readinessProbe:
+            exec:
+              command: [ "/bin/grpc_health_probe", "-addr=:{{ .Values.riFirewall.yaraServer.port }}" ]
+            periodSeconds: 5
+          startupProbe:
+            exec:
+              command: [ "/bin/grpc_health_probe", "-addr=:{{ .Values.riFirewall.yaraServer.port }}" ]
+            failureThreshold: 60
+            periodSeconds: 5
+          env:
+            - name: GITHUB_API_KEY
+              value: "{{ .Values.riFirewall.yaraServer.gitRepoToken }}"
+          resources:
+            {{- toYaml .Values.riFirewall.yaraServer.deployment.resources | nindent 12 }}
+          command:
+            - "/ri/firewall"
+          args:
+            - "start-yara-server"
+            - "--server-config-path=/config/server.config"
+            - "--port={{ .Values.riFirewall.yaraServer.port }}"
+            - "--mount-dir=/yara"
+            - "--auto-update-enabled={{ .Values.riFirewall.yaraServer.autoUpdateEnabled }}"
+            - "--yara-patterns-git-ref={{ .Values.riFirewall.yaraServer.ruleRepoRef }}"
+            {{ if ne .Values.riFirewall.yaraServer.yaraPatternUpdateFrequency "" }}
+            - "--update-frequency={{ .Values.riFirewall.yaraServer.yaraPatternUpdateFrequency }}"
+            {{ end }}
+          volumeMounts:
+            - name: {{ include "ri-firewall.fullname" . }}-{{ .Values.riFirewall.yaraServer.name }}-config
+              mountPath: "/config"
+              readOnly: true
+            - name: {{ include "ri-firewall.fullname" . }}-{{ .Values.riFirewall.yaraServer.name }}-ephemeral-storage
+              mountPath: "/yara"
+      volumes:
+        # Volumes are defined at the Pod level, then mounted into containers within that Pod
+        - name: {{ include "ri-firewall.fullname" . }}-{{ .Values.riFirewall.yaraServer.name }}-config
+          configMap:
+            name: {{ include "ri-firewall.fullname" . }}-{{ .Values.riFirewall.yaraServer.name }}-conf
+            items:
+              - key: "server.config"
+                path: "server.config"
+        - name: {{ include "ri-firewall.fullname" . }}-{{ .Values.riFirewall.yaraServer.name }}-ephemeral-storage
+          emptyDir: {}
