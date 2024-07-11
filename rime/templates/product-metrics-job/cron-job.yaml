@@ -1,0 +1,63 @@
+{{- if .Values.rime.productMetricsJob.enabled }}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ include "rime.fullname" . }}-{{ .Values.rime.productMetricsJob.name }}
+  labels:
+    app: {{ .Values.rime.productMetricsJob.name }}
+    {{- include "rime.labels" . | nindent 4 }}
+  annotations:
+    {{- include "rime.annotations" . | nindent 4 }}
+spec:
+  schedule: "0 0 * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          {{- with .Values.rime.images.imagePullSecrets }}
+          imagePullSecrets:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          containers:
+          - name: {{ .Values.rime.productMetricsJob.name }}
+            env:
+              {{- include "rime.commonEnv" . | nindent 14 }}
+              - name: RI_SERVICE_NAME
+                value: {{ .Values.rime.productMetricsJob.name }}
+              - name: KUBE_NAMESPACE
+                valueFrom:
+                  fieldRef:
+                    fieldPath: metadata.namespace
+            image: "{{ .Values.rime.images.backendImage.registry}}/{{ .Values.rime.images.backendImage.name }}"
+            imagePullPolicy: {{ .Values.rime.images.backendImage.pullPolicy }}
+            resources:
+              {{- toYaml .Values.rime.productMetricsJob.deployment.resources | nindent 14 }}
+            command:
+              - "/rime/rime"
+            args:
+              - "start-product-metrics-job"
+              - "--server-config-path=/config/server.config"
+            volumeMounts:
+              - name: {{ include "rime.fullname" . }}-{{ .Values.rime.productMetricsJob.name }}-config
+                mountPath: "/config"
+                readOnly: true
+              {{- if .Values.tls.enableCertManager }}
+              - name: {{ include "rime.fullname" . }}-{{ .Values.rime.productMetricsJob.name }}-tls
+                mountPath: /var/tmp/tls/common
+                readOnly: true
+              {{- end }}
+          volumes:
+            - name: {{ include "rime.fullname" . }}-{{ .Values.rime.productMetricsJob.name }}-config
+              configMap:
+                name: {{ include "rime.fullname" . }}-{{ .Values.rime.productMetricsJob.name }}-conf
+                items:
+                  - key: "server.config"
+                    path: "server.config"
+            {{- if .Values.tls.enableCertManager }}
+            - name: {{ include "rime.fullname" . }}-{{ .Values.rime.productMetricsJob.name }}-tls
+              secret:
+                secretName: {{ include "rime.fullname" . }}-{{ .Values.rime.productMetricsJob.name }}-tls
+            {{- end }}
+            {{- include "rime.externalTLSSecretVolumes" . | nindent 12 }}
+          restartPolicy: OnFailure
+{{- end }}
