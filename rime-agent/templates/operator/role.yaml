@@ -1,0 +1,106 @@
+{{- if .Values.rimeAgent.operator.serviceAccount.create -}}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ include "rime-agent.fullname" . }}-{{ .Values.rimeAgent.operator.name }}-role
+  namespace: '{{.Release.Namespace}}'
+rules:
+- apiGroups:
+  - batch
+  resources:
+  - jobs
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - events
+  verbs:
+  - list
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - pods/log
+  verbs:
+  - get
+  - list
+- apiGroups:
+  - rbst.io
+  resources:
+  - crossplanerpcjobs
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - rbst.io
+  resources:
+  - crossplanerpcjobs/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - rbst.io
+  resources:
+  - crossplanerpcjobs/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - rbst.io
+  resources:
+  - rimejobs
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - rbst.io
+  resources:
+  - rimejobs/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - rbst.io
+  resources:
+  - rimejobs/status
+  verbs:
+  - get
+  - patch
+  - update
+{{- end }}
