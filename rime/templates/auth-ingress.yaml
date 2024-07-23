@@ -1,0 +1,63 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "rime.fullname" . }}-auth-ingress
+  labels:
+    {{- include "rime.labels" . | nindent 4 }}
+    {{- with .Values.rime.ingress.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  annotations:
+    {{- if .Values.tls.restEnabled }}
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+    nginx.ingress.kubernetes.io/proxy-ssl-secret: "{{.Release.Namespace}}/{{ include "rime.fullname" . }}-auth-ingress-tls"
+    nginx.ingress.kubernetes.io/proxy-ssl-name: "{{ include "rime.fullname" . }}-auth-ingress-server"
+    {{- end }}
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "360"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "360"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "360"
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      add_header X-Frame-Options "sameorigin" always;
+      add_header X-Content-Type-Options "nosniff" always;
+      add_header Strict-Transport-Security "max-age=31536000; includeSubDomains; preload" always;
+      add_header Cross-Origin-Embedder-Policy "credentialless" always;
+      add_header Cross-Origin-Opener-Policy "same-origin" always;
+      add_header Cross-Origin-Resource-Policy "same-site" always;
+      add_header Content-Security-Policy "default-src 'self' data:; style-src 'self' 'unsafe-inline' 'unsafe-hashes' https://fonts.googleapis.com https://cdn.datatables.net/; script-src 'self' https://cdn.redoc.ly/ https://cdnjs.cloudflare.com/ https://cdn.datatables.net/ 'sha256-aKkL5uJIn8IT6NRaVnTqZYwpUdS1WHm+y1JpAnirHI4=' 'sha256-MRjxq7P7h/pRR7k4ag0x+Mkgk/z0aZB09O9tWlLJTnQ='; font-src 'self' data: https://fonts.gstatic.com; child-src blob:; img-src 'self' data: https://cdn.redoc.ly/" always;
+    {{- include "rime.annotations" . | nindent 4 }}
+    {{- with .Values.rime.ingress.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  ingressClassName: {{ .Values.rime.ingress.ingressClassName }}
+  {{- with .Values.rime.ingress.tls }}
+  tls:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  rules:
+    - http:
+        paths:
+          - path: /v1/auth
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "rime.fullname" . }}-{{ .Values.rime.authServer.name }}
+                port:
+                  number: {{ .Values.rime.authServer.port }}
+          - path: /v1/rime-info
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "rime.fullname" . }}-{{ .Values.rime.webServer.name }}
+                port:
+                  number: {{ .Values.rime.webServer.grpcRestPort }}
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "rime.fullname" . }}-{{ .Values.rime.frontendServer.name }}
+                port:
+                  number: {{ .Values.rime.frontendServer.port }}
+      {{- if .Values.rime.ingress.host }}
+      host: {{ .Values.rime.ingress.host }}
+      {{- end }}
