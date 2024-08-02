@@ -1,0 +1,28 @@
+{{- if .Values.rimeAgent.fileServer.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "rime-agent.fullname" . }}-{{ .Values.rimeAgent.fileServer.name }}
+  labels:
+    {{- with .Values.rimeAgent.fileServer.service.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  annotations:
+    {{- include "rime-agent.annotations" . | nindent 4 }}
+    {{- with .Values.rimeAgent.fileServer.service.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  type: {{ .Values.rimeAgent.fileServer.service.type }}
+  ports:
+    - port: {{ .Values.rimeAgent.fileServer.port }}
+      targetPort: {{ .Values.rimeAgent.fileServer.port }}
+      protocol: TCP
+      name: fs
+    - port: {{ .Values.rimeAgent.fileServer.restPort }}
+      targetPort: {{ .Values.rimeAgent.fileServer.restPort }}
+      protocol: TCP
+      name: fs-rest
+  selector:
+    app: {{ .Values.rimeAgent.fileServer.name }}
+{{- end }}
