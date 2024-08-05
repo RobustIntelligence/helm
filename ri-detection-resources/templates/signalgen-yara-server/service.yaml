@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-{{.Values.signalgenYaraServer.name }}
+  labels:
+    {{- with .Values.signalgenYaraServer.service.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  annotations:
+    {{- include "ri-detection-resources.annotations" . | nindent 4 }}
+    {{- with .Values.signalgenYaraServer.service.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  type: {{ .Values.signalgenYaraServer.service.type }}
+  ports:
+    - port: {{ .Values.signalgenYaraServer.port }}
+      targetPort: {{ .Values.signalgenYaraServer.port }}
+      protocol: TCP
+      name: yara
+  selector:
+    app: {{ .Values.signalgenYaraServer.name }}
