@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "rime.fullname" . }}-{{ .Values.rime.webServer.name }}
+  labels:
+    {{- include "rime.labels" . | nindent 4 }}
+    {{- with .Values.rime.webServer.service.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  annotations:
+    {{- include "rime.annotations" . | nindent 4 }}
+    {{- with .Values.rime.webServer.service.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  type: {{ .Values.rime.webServer.service.type }}
+  ports:
+    - port: {{ .Values.rime.webServer.port }}
+      targetPort: {{ .Values.rime.webServer.port }}
+      protocol: TCP
+      name: ws
+    - port: {{ .Values.rime.webServer.grpcPort }}
+      targetPort: {{ .Values.rime.webServer.grpcPort }}
+      protocol: TCP
+      name: ws-grpc
+    - port: {{ .Values.rime.webServer.grpcRestPort }}
+      targetPort: {{ .Values.rime.webServer.grpcRestPort }}
+      protocol: TCP
+      name: ws-grpc-rest
+  selector:
+    app: {{ .Values.rime.webServer.name }}
+    {{- include "rime.labels" . | nindent 4 }}
