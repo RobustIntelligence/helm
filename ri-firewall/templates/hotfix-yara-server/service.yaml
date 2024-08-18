@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "ri-firewall.fullname" . }}-{{ .Values.riFirewall.hotfixYaraServer.name }}
+  labels:
+    {{- with .Values.riFirewall.hotfixYaraServer.service.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  annotations:
+    {{- include "ri-firewall.annotations" . | nindent 4 }}
+    {{- with .Values.riFirewall.hotfixYaraServer.service.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  type: {{ .Values.riFirewall.hotfixYaraServer.service.type }}
+  ports:
+    - port: {{ .Values.riFirewall.hotfixYaraServer.port }}
+      targetPort: {{ .Values.riFirewall.hotfixYaraServer.port }}
+      protocol: TCP
+      name: yara
+  selector:
+    app: {{ .Values.riFirewall.hotfixYaraServer.name }}
