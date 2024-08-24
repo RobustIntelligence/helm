@@ -1,0 +1,180 @@
+{{- if .Values.supportBundle.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  labels:
+    troubleshoot.sh/kind: support-bundle
+  name: {{ include "rime-agent.supportBundleConfigMapName" . }}
+data:
+  support-bundle-spec: |
+    apiVersion: troubleshoot.sh/v1beta2
+    kind: SupportBundle
+    metadata:
+      name: {{ include "rime-agent.supportBundleConfigMapName" . }}
+    spec:
+      collectors:
+        - logs:
+            selector:
+              - app.kubernetes.io/name=rime-agent
+        - helm:
+            namespace: {{ .Release.Namespace }}
+        - clusterResources:
+            namespaces:
+              - {{ .Release.Namespace }}
+        - runPod:
+            name: cp-connectivity-test
+            namespace: {{ .Release.Namespace }}
+            podSpec:
+      {{- include "rime-agent.imagePullSecretsYaml" . | nindent 14 }}
+              containers:
+                - name: test-cp-connectivity-pod
+                  image: "{{ .Values.rimeAgent.images.agentImage.registry }}/{{ .Values.rimeAgent.images.agentImage.name }}"
+                  imagePullPolicy: {{ .Values.rimeAgent.images.agentImage.pullPolicy }}
+                  command: ["/bin/sh","-c"]
+                  args: ["wget --no-check-certificate {{ .Values.rimeAgent.connections.platformAddress }}/v1/rime-info && cat rime-info"]
+                  resources:
+                    requests:
+                      memory: "64Mi"
+                      cpu: "250m"
+        - secret:
+            name: {{ include "rime-agent.signingKeySecretName" . }}
+            namespace: {{ .Release.Namespace }}
+            key: crossServiceKey
+            includeValue: false
+  {{- if (and (eq (len .Values.rimeAgent.images.imagePullSecrets) 0) .Values.rimeAgent.dockerCredentialsPayload)   }}
+        - secret:
+            name: {{ include "rime-agent.dockerSecretName" . }}
+            namespace: {{ .Release.Namespace }}
+            key: .dockerconfigjson
+            includeValue: false
+  {{- end }}
+        - secret:
+            name: {{ include "rime-agent.secretName" . }}
+            namespace: {{ .Release.Namespace }}
+            key: api-key
+            includeValue: false
+        - runPod:
+            name: "test-scale-up-pod"
+            namespace: {{ .Release.Namespace }}
+            podSpec:
+      {{- include "rime-agent.imagePullSecretsYaml" . | nindent 14 }}
+              containers:
+                - name: test-pod
+                  image: "{{ .Values.rimeAgent.images.agentImage.registry }}/{{ .Values.rimeAgent.images.agentImage.name }}"
+                  imagePullPolicy: {{ .Values.rimeAgent.images.agentImage.pullPolicy }}
+                  command: ["sleep"]
+                  args: ["5"]
+                  resources:
+                    limits:
+                      cpu: 15000m
+                      memory: 55000Mi
+                    requests:
+                      cpu: 15000m
+                      memory: 55000Mi
+              tolerations:
+                - key: "dedicated"
+                  value: "model-testing"
+                  operator: "Equal"
+                  effect: "NoSchedule"
+      analyzers:
+        - secret:
+            checkName: Cross Service Key Secret Check
+            secretName: {{ include "rime-agent.signingKeySecretName" . }}
+            namespace: {{ .Release.Namespace }}
+            key: crossServiceKey
+            outcomes:
+              - fail:
+                  message: The `{{ include "rime-agent.signingKeySecretName" . }}` Secret was not found or the `crossServiceKey` key was not detected.
+              - pass:
+                  message: The '{{ include "rime-agent.signingKeySecretName" . }}' Secret was found the cluster.
+  {{- if (and (eq (len .Values.rimeAgent.images.imagePullSecrets) 0) .Values.rimeAgent.dockerCredentialsPayload)   }}
+        - secret:
+            checkName: Docker Registry Secret
+            secretName: {{ include "rime-agent.dockerSecretName" . }}
+            namespace: {{ .Release.Namespace }}
+            key: .dockerconfigjson
+            outcomes:
+              - fail:
+                  message: The `{{ include "rime-agent.dockerSecretName" . }}` Secret was not found or the `.dockerconfigjson` key was not detected.
+              - pass:
+                  message: The rimecreds docker credentials secret was found the cluster.
+  {{- end }}
+        - secret:
+            checkName: API Key Secret
+            secretName: {{ include "rime-agent.secretName" . }}
+            namespace: {{ .Release.Namespace }}
+            key: api-key
+            outcomes:
+              - fail:
+                  message: The `{{ include "rime-agent.secretName" . }}` Secret was not found or the `api-key` key was not detected.
+              - pass:
+                  message: The `{{ include "rime-agent.secretName" . }}` Secret was found in a Secret in the cluster.
+        - clusterPodStatuses:
+            name: unhealthy
+            namespaces:
+              - {{ .Release.Namespace }}
+            outcomes:
+              - fail:
+                  when: "== CrashLoopBackOff"
+                  message: Pod {{ .Namespace }}/{{ .Name }} is in a CrashLoopBackOff state.
+              - fail:
+                  when: "== ImagePullBackOff"
+                  message: Pod {{ .Namespace }}/{{ .Name }} is in a ImagePullBackOff state.
+              - fail:
+                  when: "== Pending"
+                  message: Pod {{ .Namespace }}/{{ .Name }} is in a Pending state.
+              - fail:
+                  when: "== Evicted"
+                  message: Pod {{ .Namespace }}/{{ .Name }} is in a Evicted state.
+              - fail:
+                  when: "== Terminating"
+                  message: Pod {{ .Namespace }}/{{ .Name }} is in a Terminating state.
+              - fail:
+                  when: "== Init:Error"
+                  message: Pod {{ .Namespace }}/{{ .Name }} is in an Init:Error state.
+              - fail:
+                  when: "== Init:CrashLoopBackOff"
+                  message: Pod {{ .Namespace }}/{{ .Name }} is in an Init:CrashLoopBackOff state.
+              - fail:
+                when: "!= Healthy"
+                message: Pod \{\{ .Namespace \}\}/\{\{ .Name \}\} is unhealthy with a status of \{\{ .Status.Reason \}\}. Message is \{\{ .Status.Message \}\}
+        - deploymentStatus:
+            namespace: {{ .Release.Namespace }}
+            outcomes:
+              - fail:
+                  when: "absent"
+                  message: The API deployment is not present.
+              - fail:
+                  when: "< 1"
+                  message: The API deployment does not have any ready replicas.
+              - warn:
+                  when: "= 1"
+                  message: The API deployment has only a single ready replica.
+              - pass:
+                  message: There are multiple replicas of the API deployment ready.
+        - customResourceDefinition:
+            customResourceDefinitionName: riagents.rbst.io
+            outcomes:
+              - fail:
+                  message: The RI Agent CRD was not found in the cluster.
+              - pass:
+                  message: RI Agent CRD is installed and available.
+        - customResourceDefinition:
+            customResourceDefinitionName: crossplanerpcjobs.rbst.io
+            outcomes:
+              - fail:
+                  message: The CrossplaneJob CRD was not found in the cluster.
+              - pass:
+                  message: CrossplaneJob CRD is installed and available.
+        - nodeResources:
+            checkName: All Nodes Are Healthy
+            outcomes:
+              - fail:
+                  when: "nodeCondition(Ready) == False"
+                  message: Nodes in cluster are not all in a Ready state.
+              - fail:
+                  when: "nodeCondition(Ready) == Unknown"
+                  message: Nodes in cluster are not all in a Ready state.
+              - pass:
+                  message: This cluster has healthy nodes.
+{{- end }}
