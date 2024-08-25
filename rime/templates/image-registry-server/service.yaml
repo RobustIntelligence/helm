@@ -1,0 +1,30 @@
+{{- if .Values.rime.imageRegistryServer.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "rime.fullname" . }}-{{ .Values.rime.imageRegistryServer.name }}
+  labels:
+    {{- include "rime.labels" . | nindent 4 }}
+    {{- with .Values.rime.imageRegistryServer.service.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  annotations:
+    {{- include "rime.annotations" . | nindent 4 }}
+    {{- with .Values.rime.imageRegistryServer.service.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  type: {{ .Values.rime.imageRegistryServer.service.type }}
+  ports:
+    - port: {{ .Values.rime.imageRegistryServer.port }}
+      targetPort: {{ .Values.rime.imageRegistryServer.port }}
+      protocol: TCP
+      name: ir
+    - port: {{ .Values.rime.imageRegistryServer.restPort }}
+      targetPort: {{ .Values.rime.imageRegistryServer.restPort }}
+      protocol: TCP
+      name: ir-rest
+  selector:
+    app: {{ .Values.rime.imageRegistryServer.name }}
+    {{- include "rime.labels" . | nindent 4 }}
+{{- end }}
