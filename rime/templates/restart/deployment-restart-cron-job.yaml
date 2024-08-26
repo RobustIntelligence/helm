@@ -1,0 +1,31 @@
+{{- if and .Values.tls.autorotateEnabled .Values.rime.rolloutRestart.enabled}}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ include "rime.fullname" . }}-{{ .Values.rime.rolloutRestart.name }}
+spec:
+  concurrencyPolicy: Forbid
+  schedule: '0 7 * * 0' # the first Sunday of each month, at 7:00 am
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      activeDeadlineSeconds: 600
+      template:
+        spec:
+          {{- with .Values.rime.images.imagePullSecrets }}
+          imagePullSecrets:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          serviceAccountName:  {{ include "rime.rolloutRestart.serviceAccountName" . }}
+          restartPolicy: Never
+          containers:
+            - name: rollout-restart
+              image: "{{ .Values.rime.images.backendImage.registry}}/{{ .Values.rime.images.backendImage.name }}"
+              imagePullPolicy: "{{ .Values.rime.images.backendImage.pullPolicy }}"
+              command: [ "/bin/sh","-c" ]
+              args: [ "if [ $(date +\\%d) -le 07 ]; \
+              then /rime/rollout-restart --mongo-secret-name={{ include "rime.fullname" . }}-mongo-tls \
+              --ca-secret-name={{ include "rime.fullname" . }}-root-ca \
+              --mongo-bitnami-secret-name={{ include "rime.fullname" . }}-mongo-bitnami-tls \
+              -timeout=8m -debug; fi" ]
+{{- end }}

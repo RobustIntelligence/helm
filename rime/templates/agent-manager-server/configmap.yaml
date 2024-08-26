@@ -1,0 +1,10 @@
+{{- if eq .Values.rime.agentManagerServer.existingConfigSecretName "" }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "rime.fullname" . }}-{{ .Values.rime.agentManagerServer.name }}-conf
+data:
+  server.config: |
+{{ include "rime.serverArgs" . | indent 4 }}
+{{ include "rime.agentManagerServer.serverArgs" . | indent 4 }}
+{{- end }}

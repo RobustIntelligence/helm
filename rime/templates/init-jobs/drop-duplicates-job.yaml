@@ -1,0 +1,93 @@
+{{- if .Values.rime.dropDuplicates.enabled }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "rime.fullname" . }}-{{ .Values.rime.dropDuplicates.name }}
+  labels:
+    {{- include "rime.labels" . | nindent 4 }}
+    {{- with .Values.rime.dropDuplicates.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  annotations:
+    # This is what defines this resource as a hook. Without this line, the
+    # job is considered part of the release.
+    # NOTE: post-upgrade relies on the database-setup script being idempotent.
+    "helm.sh/hook": post-install,post-upgrade
+    # Hooks are sorted in ascending order -> this should run after the index creation job.
+    "helm.sh/hook-weight": "3"
+    "helm.sh/hook-delete-policy": before-hook-creation
+    {{- include "rime.annotations" . | nindent 4 }}
+    {{- with .Values.rime.dropDuplicates.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  template:
+    metadata:
+      labels:
+        {{- include "rime.labels" . | nindent 8 }}
+        {{- with .Values.rime.dropDuplicates.labels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      annotations:
+        {{- include "rime.annotations" . | nindent 8 }}
+        {{- with .Values.rime.dropDuplicates.annotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- include "rime.monitoringAnnotations" (dict "monitoring" .Values.rime.monitoring "name" .Values.rime.dropDuplicates.name ) | nindent 8 }}
+    spec:
+      {{- with .Values.rime.images.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.rime.dropDuplicates.securityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: {{ .Values.rime.dropDuplicates.name }}
+          image: "{{ .Values.rime.images.backendImage.registry}}/{{ .Values.rime.images.backendImage.name }}"
+          imagePullPolicy: "{{ .Values.rime.images.backendImage.pullPolicy }}"
+          command:
+            - "/rime/dbworker"
+          args:
+            - "drop-duplicates"
+            - "--server-config-path=/config/worker.config"
+            # 4 minute timeout because the maximum execution time for a helm chart hook is 5 min.
+            - "-timeout=4m"
+            {{- if .Values.rime.verbose }}
+            - "-verbose"
+            {{- end }}
+            {{- if .Values.rime.dropDuplicates.debug }}
+            - "-debug"
+            {{- end}}
+          volumeMounts:
+            - name: {{ include "rime.fullname" . }}-worker-config
+              mountPath: "/config"
+              readOnly: true
+            {{- if .Values.tls.enableCertManager }}
+            - name: {{ include "rime.fullname" . }}-{{ .Values.rime.dropDuplicates.name }}-tls
+              mountPath: /var/tmp/common/tls
+              readOnly: true
+            {{- end }}
+            {{- include "rime.externalTLSSecretVolumeMounts" . | nindent 12 }}
+      restartPolicy: OnFailure
+      volumes:
+        - name: {{ include "rime.fullname" . }}-worker-config
+          {{- if ne .Values.rime.internalWorkerJobs.existingConfigSecretName "" }}
+          secret:
+            secretName: {{ .Values.rime.internalWorkerJobs.existingConfigSecretName }}
+          {{- else }}
+          configMap:
+            name: {{ include "rime.fullname" . }}-worker-conf
+          {{- end }}
+            items:
+              - key: "worker.config"
+                path: "worker.config"
+        {{- if .Values.tls.enableCertManager }}
+        - name: {{ include "rime.fullname" . }}-{{ .Values.rime.dropDuplicates.name }}-tls
+          secret:
+            secretName: {{ include "rime.fullname" . }}-{{ .Values.rime.dropDuplicates.name }}-tls
+        {{- end }}
+        {{- include "rime.externalTLSSecretVolumes" . | nindent 8 }}
+  backoffLimit: {{ .Values.rime.dropDuplicates.backoffLimit }}
+{{- end }}
