@@ -1,0 +1,52 @@
+apiVersion: v2
+name: rime-kube-system
+description: A Helm chart for RIME's kubesystem resources
+
+type: application
+
+# This is the chart version. This version number should be incremented each time you make changes
+# to the chart and its templates, including the app version.
+# Versions are expected to follow Semantic Versioning (https://semver.org/)
+version: 0.1.6
+
+# This is the version number of the application being deployed. This version number should be
+# incremented each time you make changes to the application.
+appVersion: "v9"
+
+# Kubernetes upstream has end-of-lifed Kubernetes 1.24 as of July 28th, 2023.
+# So updating the supported version
+kubeVersion: ">=1.24.0-0"
+
+dependencies:
+  - name: "cluster-autoscaler"
+    version: "9.28.0"
+    repository: "https://kubernetes.github.io/autoscaler"
+    condition: rimeSystem.clusterAutoscaler
+  - name: "external-dns"
+    version: "1.10.1"
+    repository: "https://kubernetes-sigs.github.io/external-dns/"
+    condition: rimeSystem.externalDns
+  - name: "aws-load-balancer-controller"
+    version: "1.8.2"
+    repository: "https://aws.github.io/eks-charts"
+    condition: rimeSystem.awsLoadBalancerController
+  - name: "metrics-server"
+    version: "3.8.2"
+    repository: "https://kubernetes-sigs.github.io/metrics-server/"
+    condition: rimeSystem.metricsServer
+  - name: cert-manager
+    version: v1.10.0
+    repository: https://charts.jetstack.io
+    condition: cert-manager.enabled
+  - name: "ingress-nginx"
+    version: "4.7.1"
+    repository: "https://kubernetes.github.io/ingress-nginx"
+    condition: rimeSystem.ingressNginx
+  - name: aws-load-balancer-crds-2-8-2
+    version: v0.0.1
+    repository: "file://./charts/aws-load-balancer-controller-crds-2-8-2"
+    condition: rimeSystem.awsLoadBalancerController
+  - name: kserve
+    version: "v0.11.1"
+    repository: "https://robustintelligence.github.io/helm"
+    condition: rimeSystem.kserve
