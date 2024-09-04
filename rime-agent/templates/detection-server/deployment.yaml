@@ -1,0 +1,114 @@
+{{- if .Values.rimeAgent.detectionServer.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "rime-agent.fullname" . }}-{{ .Values.rimeAgent.detectionServer.name }}
+  labels:
+    app: {{ .Values.rimeAgent.detectionServer.name }}
+    {{- include "rime-agent.labels" . | nindent 4 }}
+    {{- with .Values.rimeAgent.detectionServer.deployment.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  annotations:
+    {{- include "rime-agent.annotations" . | nindent 4 }}
+    {{- with .Values.rimeAgent.detectionServer.deployment.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  {{- if not .Values.rimeAgent.detectionServer.hpa.enabled }}
+  replicas: {{ .Values.rimeAgent.detectionServer.deployment.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      app: {{ .Values.rimeAgent.detectionServer.name }}
+      {{- include "rime-agent.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.rimeAgent.detectionServer.name }}
+        {{- include "rime-agent.labels" . | nindent 8 }}
+        {{- with .Values.rimeAgent.detectionServer.deployment.labels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      annotations:
+        {{- include "rime-agent.annotations" . | nindent 8 }}
+        {{- with .Values.rimeAgent.detectionServer.deployment.annotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- include "rime-agent.monitoringAnnotations" (dict "monitoring" .Values.rimeAgent.monitoring "name" .Values.rimeAgent.detectionServer.name ) | nindent 8 }}
+    spec:
+      {{- include "rime-agent.imagePullSecretsYaml" .  | nindent 6 }}
+      {{- with .Values.rimeAgent.detectionServer.deployment.securityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: {{ .Values.rimeAgent.detectionServer.name }}
+          image: "{{ .Values.rimeAgent.images.detectionEngineImage.registry }}/{{ .Values.rimeAgent.images.detectionEngineImage.name }}"
+          imagePullPolicy: {{ .Values.rimeAgent.images.detectionEngineImage.pullPolicy }}
+          resources:
+            {{- toYaml .Values.rimeAgent.detectionServer.deployment.serverResources | nindent 12 }}
+          env:
+            {{- with.Values.rimeAgent.detectionServer.deployment.extraEnv }}
+              {{- toYaml . | nindent 12 }}
+            {{- end }}
+          ports:
+            - name: detection
+              containerPort: {{ .Values.rimeAgent.detectionServer.port }}
+              protocol: TCP
+          command:
+            - "ri-detection-engine"
+          args:
+            - "--port={{ .Values.rimeAgent.detectionServer.port }}"
+            - "--model-connection-config-path=/model-connection-config/model-connection-map.yaml"
+            # TODO (RIML-2422): pass in a yaml system config path
+          volumeMounts:
+            - name: model-connection-config
+              mountPath: "/model-connection-config"
+              readOnly: true
+            {{- with .Values.rimeAgent.detectionServer.deployment.extraVolumeMounts }}
+                {{- toYaml . | nindent 12 }}
+            {{- end }}
+        {{- if .Values.rimeAgent.detectionServer.enableGrpcGateway }}
+        # gRPC-gateway is a sidecar container that proxies traffic from REST to gRPC.
+        # The detection server is exposed via REST for testing purposes on internal
+        # clusters only. This will never be used in production.
+        - name: grpc-gateway-proxy
+          image: "{{ .Values.rimeAgent.images.agentImage.registry }}/{{ .Values.rimeAgent.images.agentImage.name }}"
+          imagePullPolicy: {{ .Values.rimeAgent.images.agentImage.pullPolicy }}
+          resources:
+            {{- toYaml .Values.rimeAgent.detectionServer.deployment.proxyResources | nindent 12 }}
+          ports:
+            - name: grpc-gateway
+              containerPort: {{ .Values.rimeAgent.detectionServer.proxyPort }}
+              protocol: TCP
+          command:
+            - "/rime/detectiongatewayproxy"
+          args:
+            - "start-detection-engine-gateway-proxy"
+            - "--proxy-addr=:{{ .Values.rimeAgent.detectionServer.proxyPort }}"
+            - "--backend-addr=:{{ .Values.rimeAgent.detectionServer.port }}"
+        {{- end }}
+      volumes:
+        - name: model-connection-config
+          configMap:
+            name: {{ include "rime-agent.modelConnectionConfigMapName" . }}
+            items:
+              - key: "model-connection-map.yaml"
+                path: "model-connection-map.yaml"
+        {{- with .Values.rimeAgent.detectionServer.deployment.extraVolumes }}
+          {{- toYaml . | nindent 8 }}
+        {{- end }}
+      {{- with .Values.rimeAgent.detectionServer.deployment.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.rimeAgent.detectionServer.deployment.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.rimeAgent.detectionServer.deployment.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}
