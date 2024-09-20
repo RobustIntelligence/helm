@@ -1,0 +1,128 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "rime-agent.fullname" . }}-{{ .Values.rimeAgent.rimeCrossPlaneServer.name }}
+  labels:
+    app: {{ .Values.rimeAgent.rimeCrossPlaneServer.name }}
+    {{- include "rime-agent.labels" . | nindent 4 }}
+    {{- with .Values.rimeAgent.rimeCrossPlaneServer.deployment.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  annotations:
+    {{- include "rime-agent.annotations" . | nindent 4 }}
+    {{- with .Values.rimeAgent.rimeCrossPlaneServer.deployment.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  {{- if not .Values.rimeAgent.rimeCrossPlaneServer.hpa.enabled }}
+  replicas: {{ .Values.rimeAgent.rimeCrossPlaneServer.deployment.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      app: {{ .Values.rimeAgent.rimeCrossPlaneServer.name }}
+      {{- include "rime-agent.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.rimeAgent.rimeCrossPlaneServer.name }}
+        {{- include "rime-agent.labels" . | nindent 8 }}
+        {{- with .Values.rimeAgent.rimeCrossPlaneServer.deployment.labels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      annotations:
+        {{- include "rime-agent.annotations" . | nindent 8 }}
+        {{- with .Values.rimeAgent.rimeCrossPlaneServer.deployment.annotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- include "rime-agent.monitoringAnnotations" (dict "monitoring" .Values.rimeAgent.monitoring "name" .Values.rimeAgent.rimeCrossPlaneServer.name ) | nindent 8 }}
+    spec:
+      {{- include "rime-agent.imagePullSecretsYaml" .  | nindent 6 }}
+      {{- with .Values.rimeAgent.rimeCrossPlaneServer.deployment.securityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "rime-agent.rimeServer.serviceAccountName" . }}
+      containers:
+        - name: {{ .Values.rimeAgent.rimeCrossPlaneServer.name }}
+          image: "{{ .Values.rimeAgent.images.modelTestJobImage.registry }}/{{ .Values.rimeAgent.images.modelTestJobImage.name }}"
+          imagePullPolicy: {{ .Values.rimeAgent.images.modelTestJobImage.pullPolicy }}
+          resources:
+            {{- toYaml .Values.rimeAgent.rimeCrossPlaneServer.deployment.resources | nindent 12 }}
+          env:
+            {{- if .Values.rimeAgent.proxy.proxyEnabled }}
+            - name: http_proxy
+              value: http://{{ .Values.rimeAgent.proxy.httpProxy}}
+            - name: https_proxy
+              value: https://{{ .Values.rimeAgent.proxy.httpsProxy}}
+            - name: no_proxy
+              value: {{ .Values.rimeAgent.proxy.noProxy}}
+            {{- end }}
+            {{- if and .Values.tls.crossplaneEnabled .Values.rimeAgent.proxy.proxyEnabled }}
+            - name: "RIME_TLS_CA"
+              value: "/var/tmp/tls/common/ca.crt"
+            - name: "RIME_INTERNAL_TLS"
+              value: "True"
+            {{- end }}
+            - name: RIME_CROSS_SERVICE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "rime-agent.signingKeySecretName" . }}
+                  key: crossServiceKey
+            {{- if .Values.rimeAgent.id }}
+            - name: AGENT_ID
+              value: {{ .Values.rimeAgent.id }}
+            {{- end }}
+            - name: BACKEND_ID
+              value: {{ .Values.rimeAgent.operator.crossPlaneRPCJob.backendID | quote }}
+          {{- with.Values.rimeAgent.rimeCrossPlaneServer.deployment.extraEnv }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+            - name: RI_SERVICE_NAME
+              value: {{ .Values.rimeAgent.rimeCrossPlaneServer.name }}
+            - name: "NLTK_DATA"
+              value: "/home/rime/nltk_data"
+          ports:
+            - name: rime
+              containerPort: {{ .Values.rimeAgent.rimeCrossPlaneServer.port }}
+              protocol: TCP
+          command:
+            - "rime-cross-plane-server"
+          args:
+            - "--port={{ .Values.rimeAgent.rimeCrossPlaneServer.port }}"
+            - "--upload-endpoint={{ .Values.rimeAgent.connections.platformAddress | default .Values.rimeAgent.connections.uploadServerRestAddress }}"
+            - "--data-collector-endpoint={{ .Values.rimeAgent.connections.platformAddress | default .Values.rimeAgent.connections.dataCollectorRestAddress }}"
+          volumeMounts:
+            {{- if .Values.tls.crossplaneEnabled }}
+            - name: {{ include "rime-agent.fullname" . }}-{{ .Values.rimeAgent.rimeCrossPlaneServer.name }}-tls
+              mountPath: /var/tmp/tls/common
+              readOnly: true
+            {{- end }}
+          {{- with .Values.rimeAgent.rimeCrossPlaneServer.deployment.extraVolumeMounts }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      volumes:
+        {{- if and .Values.tls.crossplaneEnabled .Values.tls.enableCertManager}}
+        - name: {{ include "rime-agent.fullname" . }}-{{ .Values.rimeAgent.rimeCrossPlaneServer.name }}-tls
+          secret:
+            secretName: {{ include "rime-agent.fullname" . }}-{{ .Values.rimeAgent.rimeCrossPlaneServer.name }}-tls
+        {{- end }}
+        {{- if and .Values.tls.crossplaneEnabled (not .Values.tls.enableCertManager) }}
+        - name: {{ include "rime-agent.fullname" . }}-{{ .Values.rimeAgent.rimeCrossPlaneServer.name }}-tls
+          secret:
+            secretName: {{ include "rime-agent.customCACertSecretName" . }}
+        {{- end }}
+      {{- with .Values.rimeAgent.rimeCrossPlaneServer.deployment.extraVolumes }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.rimeAgent.rimeCrossPlaneServer.deployment.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.rimeAgent.rimeCrossPlaneServer.deployment.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.rimeAgent.rimeCrossPlaneServer.deployment.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
