@@ -1,0 +1,50 @@
+{{- if .Values.rimeExtras.observabilityProxyServer }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: observability-proxy-server
+spec:
+  selector:
+    app: observability-proxy-server
+  ports:
+  - protocol: "TCP"
+    port: {{ .Values.observabilityProxyServer.port }}
+    targetPort: {{ .Values.observabilityProxyServer.containerPort }}
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: observability-proxy-server
+spec:
+  selector:
+    matchLabels:
+      app: observability-proxy-server
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: observability-proxy-server
+    spec:
+      imagePullSecrets:
+      - name: rimecreds
+      containers:
+      - name: observability-proxy-server
+        image: "{{ .Values.observabilityProxyServer.image.registry}}/{{ .Values.observabilityProxyServer.image.name }}"
+        imagePullPolicy: {{ .Values.observabilityProxyServer.image.pullPolicy }}
+        ports:
+        - containerPort: {{ .Values.observabilityProxyServer.containerPort }}
+
+        env:
+        {{- if .Values.observabilityProxyServer.remoteWriteSecretName }}
+          - name: REMOTE_WRITE_API_KEY
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.observabilityProxyServer.remoteWriteSecretName }}
+                key: REMOTE_WRITE_API_KEY
+        {{- end }}
+        {{- if .Values.observabilityProxyServer.remoteWriteURL }}
+          - name: REMOTE_WRITE_URL
+            value: {{ .Values.observabilityProxyServer.remoteWriteURL }}
+        {{- end }}
+{{- end }}
