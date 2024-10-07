@@ -1,0 +1,32 @@
+{{- if .Values.rimeAgent.detectionServer.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "rime-agent.fullname" . }}-{{ .Values.rimeAgent.detectionServer.name }}
+  labels:
+    {{- include "rime-agent.labels" . | nindent 4 }}
+    {{- with .Values.rimeAgent.detectionServer.service.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  annotations:
+    {{- include "rime-agent.annotations" . | nindent 4 }}
+    {{- with .Values.rimeAgent.detectionServer.service.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  type: {{ .Values.rimeAgent.detectionServer.service.type }}
+  ports:
+    - port: {{ .Values.rimeAgent.detectionServer.port }}
+      targetPort: {{ .Values.rimeAgent.detectionServer.port }}
+      protocol: TCP
+      name: detection
+    {{- if .Values.rimeAgent.detectionServer.enableGrpcGateway }}
+    - port: {{ .Values.rimeAgent.detectionServer.proxyPort }}
+      targetPort: {{ .Values.rimeAgent.detectionServer.proxyPort }}
+      protocol: TCP
+      name: grpc-gateway
+    {{- end }}
+  selector:
+    app: {{ .Values.rimeAgent.detectionServer.name }}
+    {{- include "rime-agent.selectorLabels" . | nindent 4 }}
+{{- end }}
