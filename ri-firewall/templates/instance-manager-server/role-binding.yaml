@@ -1,0 +1,15 @@
+{{- if .Values.riFirewall.instanceManagerServer.serviceAccount.create }}
+# Binds Instance Manager server service account to a role providing write access to
+# k8s resources.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "ri-firewall.instanceManagerServer.serviceAccountName" . }}-rolebinding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ include "ri-firewall.instanceManagerServer.serviceAccountName" . }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "ri-firewall.instanceManagerServer.serviceAccountName" . }}
+{{- end }}
