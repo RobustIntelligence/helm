@@ -1,0 +1,32 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "ri-firewall.fullname" . }}-ingress
+  labels:
+    {{- with .Values.riFirewall.ingress.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  annotations:
+    nginx.ingress.kubernetes.io/server-snippet: |
+      if ($allowed_country = no) {
+        return 451;
+      }
+    {{- include "ri-firewall.annotations" . | nindent 4 }}
+    nginx.ingress.kubernetes.io/auth-url: http://{{ include "ri-firewall.fullname" . }}-{{ .Values.riFirewall.authServer.name }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.riFirewall.authServer.port}}/v1/auth/validate
+    nginx.ingress.kubernetes.io/auth-response-headers: X-Rime-User
+    nginx.ingress.kubernetes.io/auth-method: POST
+    {{- with .Values.riFirewall.ingress.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  ingressClassName: {{ .Values.riFirewall.ingress.ingressClassName }}
+  rules:
+    - http:
+        paths:
+          - path: "/v1-beta/firewall-instance"
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "ri-firewall.fullname" . }}-{{ .Values.riFirewall.instanceManagerServer.name }}
+                port:
+                  number: {{ .Values.riFirewall.instanceManagerServer.restPort }}

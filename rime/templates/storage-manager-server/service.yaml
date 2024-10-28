@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "rime.fullname" . }}-{{ .Values.rime.storageManagerServer.name }}
+  labels:
+    {{- include "rime.labels" . | nindent 4 }}
+    {{- with .Values.rime.storageManagerServer.service.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  annotations:
+    {{- include "rime.annotations" . | nindent 4 }}
+    {{- with .Values.rime.storageManagerServer.service.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  clusterIP: None
+  ports:
+    - port: {{ .Values.rime.storageManagerServer.port }}
+      targetPort: {{ .Values.rime.storageManagerServer.port }}
+      protocol: TCP
+      name: sms
+    - port: {{ .Values.rime.storageManagerServer.grpcPort }}
+      targetPort: {{ .Values.rime.storageManagerServer.grpcPort }}
+      protocol: TCP
+      name: sms-grpc
+  selector:
+    app: {{ .Values.rime.storageManagerServer.name }}
+    {{- include "rime.labels" . | nindent 4 }}
