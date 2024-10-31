@@ -1,0 +1,46 @@
+aiValidation:
+  verbose: true
+
+  monitoring:
+    enabled: true
+    port: 8080
+
+  images:
+    imagePullSecrets:
+      - name: "rimecreds"
+    aiValidationImage:
+      registry: "docker.io"
+      name: "robustintelligencehq/ai-validation:latest"
+      # See https://kubernetes.io/docs/concepts/containers/images/#image-pull-policy
+      pullPolicy: "Always"
+
+  detectionServer:
+    enabled: false
+
+  generativeValidationService:
+    enabled: true
+    name: generative-validation-service
+    port: 5040
+    serviceAccount:
+      create: true
+    service:
+      type: ClusterIP
+    deployment:
+      # SecurityContext to add to the deployment. Default is just set to not run as root.
+      # ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#securitycontext-v1-core
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+      resources:
+        limits:
+          memory: "1000Mi"
+          cpu: "1000m"
+        requests:
+          memory: "1000Mi"
+          cpu: "1000m"
+
+# -- RI detection resources like model servers and YARA servers.
+# These are used for GAI model testing.
+ri-detection-resources:
+  enabled: false
