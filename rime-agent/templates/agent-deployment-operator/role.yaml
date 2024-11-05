@@ -1,0 +1,34 @@
+{{- if .Values.rimeAgent.agentDeploymentOperator.serviceAccount.create -}}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "rime-agent.fullname" . }}-{{ .Values.rimeAgent.agentDeploymentOperator.name }}-role
+rules:
+- apiGroups:
+  - rbst.io
+  resources:
+  - riagents
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - rbst.io
+  resources:
+  - riagents/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - rbst.io
+  resources:
+  - riagents/status
+  verbs:
+  - get
+  - patch
+  - update
+{{- end }}

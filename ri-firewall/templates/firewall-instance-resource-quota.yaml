@@ -1,0 +1,9 @@
+{{- if .Values.riFirewall.firewallInstanceResourceQuota.enabled }}
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: {{ include "ri-firewall.fullname" . }}-firewall-instance-quota
+spec:
+  hard:
+    count/firewallinstances.fw.rbst.io: {{ .Values.riFirewall.firewallInstanceResourceQuota.maxObjectCount }}
+{{- end }}
