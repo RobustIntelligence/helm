@@ -1,0 +1,153 @@
+aiValidation:
+  verbose: true
+
+  monitoring:
+    enabled: true
+    port: 8080
+
+  images:
+    imagePullSecrets:
+      - name: "rimecreds"
+    aiValidationImage:
+      registry: "docker.io"
+      name: "robustintelligencehq/ai-validation:latest"
+      # See https://kubernetes.io/docs/concepts/containers/images/#image-pull-policy
+      pullPolicy: "Always"
+    detectionEngineImage:
+      registry: "docker.io"
+      name: "robustintelligencehq/ri-firewall:latest"
+      pullPolicy: "Always"
+
+  detectionServer:
+    name: "detection-server"
+    enabled: true
+    port: 50053
+    # Whether to enable the gRPC-gateway proxy for internal data platform usage.
+    # We expose the detection server via REST on internal clusters only.
+    # DO NOT ENABLE IN PRODUCTION.
+    enableGrpcGateway: false
+    # port for the gRPC-gateway proxy
+    proxyPort: 15053
+    service:
+      type: ClusterIP
+      annotations: {}
+      labels: {}
+    hpa:
+      annotations: {}
+      labels: {}
+      enabled: true
+      minReplicas: 1
+      maxReplicas: 10
+      metrics:
+        - type: Resource
+          resource:
+            name: cpu
+            target:
+              type: Utilization
+              averageUtilization: 60
+    deployment:
+      annotations: {}
+      labels: {}
+      replicaCount: 1
+      serverResources:
+        limits:
+          memory: 3500Mi
+        requests:
+          cpu: 250m
+          memory: 3500Mi
+      # Resources for the gRPC-gateway proxy container.
+      proxyResources:
+        limits:
+          memory: 100Mi
+        requests:
+          cpu: 10m
+          memory: 100Mi
+
+      # SecurityContext to add to the deployment. Default is just set to not run as root.
+      # ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#securitycontext-v1-core
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+
+      # Extra env variables to add to the deployment. Make sure these don't
+      # conflict with the ones already defined in the deployment.
+      # ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#envvar-v1-core
+      extraEnv: []
+
+      # Extra volumes to add to the deployment. Make sure these don't
+      # conflict with the ones already defined in the deployment.
+      # ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#volumedevice-v1-core
+      extraVolumes: []
+
+      # Extra volume mounts to add to the deployment. Make sure these don't
+      # conflict with the ones already defined in the deployment.
+      # ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#volumemount-v1-core
+      extraVolumeMounts: []
+
+      ## Node labels for pod assignment
+      ## ref: https://kubernetes.io/docs/user-guide/node-selection/
+      nodeSelector: {}
+
+      ## Tolerations for pod assignment
+      ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+      tolerations: []
+
+      ## Affinity for pod assignment (evaluated as template)
+      ## ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
+      affinity: {}
+
+
+  generativeValidationService:
+    enabled: true
+    name: generative-validation-service
+    port: 5040
+    serviceAccount:
+      create: true
+    service:
+      type: ClusterIP
+    deployment:
+      # SecurityContext to add to the deployment. Default is just set to not run as root.
+      # ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#securitycontext-v1-core
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+      resources:
+        limits:
+          memory: "1000Mi"
+          cpu: "1000m"
+        requests:
+          memory: "1000Mi"
+          cpu: "1000m"
+
+# -- RI detection resources like model servers and YARA servers.
+# These are used for GAI model testing.
+ri-detection-resources:
+  enabled: true
+  secrets:
+    existingIntegrationSecretsName: ""
+  modelServers:
+    promptInjectionMulticlass:
+      enabled: true
+
+    promptInjectionBinary:
+      enabled: true
+
+    toxicityInterpretability:
+      enabled: true
+
+    factualInconsistency:
+      enabled: true
+
+    factualInconsistencyJa:
+      enabled: false
+
+    languageDetection:
+      enabled: true
+
+    textEmbedding:
+      enabled: true
+
+    textEmbeddingJa:
+      enabled: true

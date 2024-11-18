@@ -1,0 +1,86 @@
+{{- if .Values.riFirewall.shimServer.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "ri-firewall.fullname" . }}-{{ .Values.riFirewall.shimServer.name }}
+  labels:
+    app: {{ .Values.riFirewall.shimServer.name }}
+    {{- with .Values.riFirewall.shimServer.deployment.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  annotations:
+    {{- include "ri-firewall.annotations" . | nindent 4 }}
+    {{- with .Values.riFirewall.shimServer.deployment.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Values.riFirewall.shimServer.name }}
+  {{- if not .Values.riFirewall.shimServer.hpa.enabled }}
+  replicas: {{ .Values.riFirewall.authServer.deployment.replicaCount }}
+  {{- end }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.riFirewall.shimServer.name }}
+        {{- with .Values.riFirewall.shimServer.deployment.labels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      annotations:
+        {{- include "ri-firewall.annotations" . | nindent 8 }}
+        {{- with .Values.riFirewall.shimServer.deployment.annotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.riFirewall.images.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: {{ .Values.riFirewall.shimServer.name }}
+          image: "{{ .Values.riFirewall.images.backendImage.registry}}/{{ .Values.riFirewall.images.backendImage.name }}"
+          imagePullPolicy: {{ .Values.riFirewall.images.backendImage.pullPolicy }}
+          ports:
+            - name: shim
+              containerPort: {{ .Values.riFirewall.shimServer.port }}
+              protocol: TCP
+          readinessProbe:
+            exec:
+              command: [ "/bin/grpc_health_probe", "-addr=:{{ .Values.riFirewall.shimServer.port }}" ]
+            periodSeconds: 5
+            timeoutSeconds: 5
+          startupProbe:
+            exec:
+              command: [ "/bin/grpc_health_probe", "-addr=:{{ .Values.riFirewall.shimServer.port }}" ]
+            failureThreshold: 60
+            periodSeconds: 5
+          env:
+            - name: RI_SERVICE_NAME
+              value: {{ .Values.riFirewall.shimServer.name }}
+            {{- if .Values.riFirewall.registerFirewallAgent.enabled }}
+            - name: AGENT_ID
+              value: {{ .Values.riFirewall.registerFirewallAgent.agentID }}
+            {{- end }}
+          resources:
+            {{- toYaml .Values.riFirewall.shimServer.deployment.resources | nindent 12 }}
+          command:
+            - "/ri/firewall"
+          args:
+            - "start-shim-server"
+            - "--server-config-path=/config/server.config"
+            - "--port={{ .Values.riFirewall.shimServer.port }}"
+            - "--firewall-instance-manager-addr={{ include "ri-firewall.fullname" . }}-{{ .Values.riFirewall.instanceManagerServer.name }}:{{ .Values.riFirewall.instanceManagerServer.port }}"
+          volumeMounts:
+            - name: {{ include "ri-firewall.fullname" . }}-{{ .Values.riFirewall.shimServer.name }}-config
+              mountPath: "/config"
+              readOnly: true
+      volumes:
+        # Volumes are defined at the Pod level, then mounted into containers within that Pod
+        - name: {{ include "ri-firewall.fullname" . }}-{{ .Values.riFirewall.shimServer.name }}-config
+          configMap:
+            name: {{ include "ri-firewall.fullname" . }}-{{ .Values.riFirewall.shimServer.name }}-conf
+            items:
+              - key: "server.config"
+                path: "server.config"
+{{- end }}
