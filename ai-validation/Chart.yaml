@@ -1,0 +1,12 @@
+apiVersion: v2
+name: ai-validation
+description: A Helm chart for the AI Validation data plane.
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+kubeVersion: ">=1.20.0-0"
+dependencies:
+  - name: "ri-detection-resources"
+    version: "0.1.0"
+    repository: "file://../ri-detection-resources"
+    condition: ri-detection-resources.enabled

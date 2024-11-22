@@ -1,0 +1,28 @@
+{{- if .Values.riFirewall.shimServer.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "ri-firewall.fullname" . }}-{{ .Values.riFirewall.shimServer.name }}
+  labels:
+    {{- with .Values.riFirewall.shimServer.service.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  annotations:
+    {{- include "ri-firewall.annotations" . | nindent 4 }}
+    {{- with .Values.riFirewall.shimServer.service.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  type: {{ .Values.riFirewall.shimServer.service.type }}
+  ports:
+    - port: {{ .Values.riFirewall.shimServer.port }}
+      targetPort: {{ .Values.riFirewall.shimServer.port }}
+      protocol: TCP
+      name: shim
+    - port: {{ .Values.riFirewall.shimServer.restPort }}
+      targetPort: {{ .Values.riFirewall.shimServer.restPort }}
+      protocol: TCP
+      name: shim-rest
+  selector:
+    app: {{ .Values.riFirewall.shimServer.name }}
+{{- end }}

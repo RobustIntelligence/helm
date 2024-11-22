@@ -1,0 +1,26 @@
+{{- if .Values.aiValidation.detectionServer.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "ai-validation.fullname" . }}-{{ .Values.aiValidation.detectionServer.name }}
+  labels:
+    {{- include "ai-validation.labels" . | nindent 4 }}
+    {{- with .Values.aiValidation.detectionServer.service.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  annotations:
+    {{- include "ai-validation.annotations" . | nindent 4 }}
+    {{- with .Values.aiValidation.detectionServer.service.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  type: {{ .Values.aiValidation.detectionServer.service.type }}
+  ports:
+    - port: {{ .Values.aiValidation.detectionServer.port }}
+      targetPort: {{ .Values.aiValidation.detectionServer.port }}
+      protocol: TCP
+      name: detection
+  selector:
+    app: {{ .Values.aiValidation.detectionServer.name }}
+    {{- include "ai-validation.selectorLabels" . | nindent 4 }}
+{{- end }}

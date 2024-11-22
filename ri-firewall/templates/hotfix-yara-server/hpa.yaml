@@ -1,0 +1,21 @@
+{{- if .Values.riFirewall.hotfixYaraServer.hpa.enabled }}
+apiVersion: {{ include "ri-firewall.hpa.apiVersion" . }}
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ include "ri-firewall.fullname" . }}-{{ .Values.riFirewall.hotfixYaraServer.name }}
+  labels:
+    app: {{ .Values.riFirewall.hotfixYaraServer.name }}
+    {{- include "ri-firewall.labels" . | nindent 4 }}
+    {{- with .Values.riFirewall.hotfixYaraServer.hpa.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ include "ri-firewall.fullname" . }}-{{ .Values.riFirewall.hotfixYaraServer.name }}
+  minReplicas: {{ .Values.riFirewall.hotfixYaraServer.hpa.minReplicas }}
+  maxReplicas: {{ .Values.riFirewall.hotfixYaraServer.hpa.maxReplicas }}
+  metrics:
+{{ toYaml .Values.riFirewall.hotfixYaraServer.hpa.metrics | indent 4 }}
+{{- end }}
