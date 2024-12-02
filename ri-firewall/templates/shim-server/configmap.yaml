@@ -1,0 +1,9 @@
+{{- if .Values.riFirewall.shimServer.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "ri-firewall.fullname" . }}-{{ .Values.riFirewall.shimServer.name }}-conf
+data:
+  server.config: |
+{{ include "ri-firewall.serverArgs" . | indent 4 }}
+{{- end }}
