@@ -1,0 +1,100 @@
+{{- if .Values.riFirewall.shimServer.enabled }}
+apiVersion: fw.rbst.io/v2
+kind: FirewallInstance
+metadata:
+  name: "fwinstance-default"
+spec:
+  firewallServerImage: {{ .Values.riFirewall.images.firewallServerImage.registry}}/{{ .Values.riFirewall.images.firewallServerImage.name }}
+  firewallBackendImage: {{ .Values.riFirewall.images.backendImage.registry}}/{{ .Values.riFirewall.images.backendImage.name }}
+  modelServersConfig:
+    modelServers:
+      ## START MODEL SERVER VALUES
+      - name: prompt-injection-multiclass
+        # This should only be non-empty for local minikube servers
+        remoteModelServerAddress: {{ .Values.riFirewall.modelServers.promptInjectionMulticlass.remoteModelServerAddress }}
+        huggingface_config:
+          model_task: text-classification
+          repository: robustintelligence/prompt-injection-multiclass
+          revision: c73b1c054ea3b966ca550bcc1d4a4f6d1c43f460
+          tokenizer_kwargs_json: '{"padding": true, "max_length": 512, "truncation": true}'
+        resourceConfig:
+{{ toYaml .Values.riFirewall.modelServers.promptInjectionMulticlass.resources | indent 10 }}
+        modelServerImage: {{ .Values.riFirewall.images.modelServerImage.registry}}/{{ .Values.riFirewall.images.modelServerImage.name }}
+      - name: prompt-injection-binary
+        # This should only be non-empty for local minikube servers
+        remoteModelServerAddress: {{ .Values.riFirewall.modelServers.promptInjectionBinary.remoteModelServerAddress }}
+        huggingface_config:
+          model_task: text-classification
+          repository: robustintelligence/prompt-injection-snowflake-baseline
+          revision: 5c4fe389401cbbce95a84bac02b37e1323cc48c6
+          tokenizer_kwargs_json: '{"padding": true, "max_length": 512, "truncation": true}'
+        classifier_config:
+          default_sensitivity: RULE_SENSITIVITY_MEDIUM
+          fixed_threshold: null
+          positive_class_index: 1
+          sensitivity_based_thresholds:
+            RULE_SENSITIVITY_HIGH: '0.121109'
+            RULE_SENSITIVITY_LOW: '0.8987822'
+            RULE_SENSITIVITY_MEDIUM: '0.7214332'
+            RULE_SENSITIVITY_VERY_HIGH: '0.0032268'
+            RULE_SENSITIVITY_VERY_LOW: '0.9615459'
+        resourceConfig:
+{{ toYaml .Values.riFirewall.modelServers.promptInjectionBinary.resources | indent 10 }}
+        modelServerImage: {{ .Values.riFirewall.images.modelServerImage.registry}}/{{ .Values.riFirewall.images.modelServerImage.name }}
+      - name: toxicity
+        # This should only be non-empty for local minikube servers
+        remoteModelServerAddress: {{ .Values.riFirewall.modelServers.toxicity.remoteModelServerAddress }}
+        huggingface_config:
+          model_task: text-classification
+          repository: robustintelligence/toxicity-2.10-snowflake-model
+          revision: 2028465ee1d876421bfe739996e1297dae320cd0
+          tokenizer_kwargs_json: '{"padding": true, "max_length": 512, "truncation": true}'
+        classifier_config:
+          default_sensitivity: RULE_SENSITIVITY_LOW
+          fixed_threshold: null
+          positive_class_index: 1
+          sensitivity_based_thresholds:
+            RULE_SENSITIVITY_HIGH: '0.0805626'
+            RULE_SENSITIVITY_LOW: '0.7731783'
+            RULE_SENSITIVITY_MEDIUM: '0.3715801'
+            RULE_SENSITIVITY_VERY_HIGH: '0.0148664'
+            RULE_SENSITIVITY_VERY_LOW: '0.9318446'
+        resourceConfig:
+{{ toYaml .Values.riFirewall.modelServers.toxicity.resources | indent 10 }}
+        modelServerImage: {{ .Values.riFirewall.images.modelServerImage.registry}}/{{ .Values.riFirewall.images.modelServerImage.name }}
+      - name: toxicity-interpretability
+        # This should only be non-empty for local minikube servers
+        remoteModelServerAddress: {{ .Values.riFirewall.modelServers.toxicityInterpretability.remoteModelServerAddress }}
+        huggingface_config:
+          model_task: text-classification
+          repository: robustintelligence/toxicity-interpretability-2.10-model
+          revision: 091e1f76bdc8795b4248b8c8621a6889419f6e27
+          tokenizer_kwargs_json: '{"padding": true, "max_length": 512, "truncation": true}'
+        resourceConfig:
+{{ toYaml .Values.riFirewall.modelServers.toxicityInterpretability.resources | indent 10 }}
+        modelServerImage: {{ .Values.riFirewall.images.modelServerImage.registry}}/{{ .Values.riFirewall.images.modelServerImage.name }}
+      - name: toxicity-ja
+        # This should only be non-empty for local minikube servers
+        remoteModelServerAddress: {{ .Values.riFirewall.modelServers.toxicityJa.remoteModelServerAddress }}
+        huggingface_config:
+          model_task: text-classification
+          repository: robustintelligence/toxicity-japanese-model
+          revision: f5fae45e6cb6b97e5a92a7259ee475728435ad3d
+          tokenizer_kwargs_json: '{"padding": true, "max_length": 512, "truncation": true}'
+        classifier_config:
+          default_sensitivity: RULE_SENSITIVITY_LOW
+          fixed_threshold: null
+          positive_class_index: 1
+          sensitivity_based_thresholds:
+            RULE_SENSITIVITY_HIGH: '2.6e-06'
+            RULE_SENSITIVITY_LOW: '0.9999681'
+            RULE_SENSITIVITY_MEDIUM: '0.0001519'
+            RULE_SENSITIVITY_VERY_HIGH: '1.1e-06'
+            RULE_SENSITIVITY_VERY_LOW: '0.9999917'
+        resourceConfig:
+{{ toYaml .Values.riFirewall.modelServers.toxicityJa.resources | indent 10 }}
+        modelServerImage: {{ .Values.riFirewall.images.modelServerImage.registry}}/{{ .Values.riFirewall.images.modelServerImage.name }}
+      ## END MODEL SERVER VALUES
+  yaraServerConfig:
+    rimeYaraGitRef: {{ .Values.riFirewall.hotfixYaraServer.ruleRepoRef }}
+{{- end }}
