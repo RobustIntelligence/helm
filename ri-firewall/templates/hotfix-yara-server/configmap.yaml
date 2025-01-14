@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "ri-firewall.fullname" . }}-{{ .Values.riFirewall.hotfixYaraServer.name }}-conf
+data:
+  server.config: |
+{{ include "ri-firewall.serverArgs" . | indent 4 }}
+    yaraServer:
+      autoUpdateEnabled: {{ .Values.riFirewall.hotfixYaraServer.autoUpdateEnabled }}
+      yaraRuleRepoRef: {{ .Values.riFirewall.hotfixYaraServer.ruleRepoRef }}
+      storageDir: "/yara"
+      {{ if ne .Values.riFirewall.hotfixYaraServer.yaraPatternUpdateFrequency "" }}
+      updateFrequency: {{ .Values.riFirewall.hotfixYaraServer.yaraPatternUpdateFrequency }}
+      {{ end }}

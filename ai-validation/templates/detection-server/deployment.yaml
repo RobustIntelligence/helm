@@ -1,0 +1,113 @@
+{{- if .Values.aiValidation.detectionServer.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "ai-validation.fullname" . }}-{{ .Values.aiValidation.detectionServer.name }}
+  labels:
+    app: {{ .Values.aiValidation.detectionServer.name }}
+    {{- include "ai-validation.labels" . | nindent 4 }}
+    {{- with .Values.aiValidation.detectionServer.deployment.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  annotations:
+    {{- include "ai-validation.annotations" . | nindent 4 }}
+    {{- with .Values.aiValidation.detectionServer.deployment.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  {{- if not .Values.aiValidation.detectionServer.hpa.enabled }}
+  replicas: {{ .Values.aiValidation.detectionServer.deployment.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      app: {{ .Values.aiValidation.detectionServer.name }}
+      {{- include "ai-validation.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.aiValidation.detectionServer.name }}
+        {{- include "ai-validation.labels" . | nindent 8 }}
+        {{- with .Values.aiValidation.detectionServer.deployment.labels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      annotations:
+        {{- include "ai-validation.annotations" . | nindent 8 }}
+        {{- with .Values.aiValidation.detectionServer.deployment.annotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- include "ai-validation.monitoringAnnotations" (dict "monitoring" .Values.aiValidation.monitoring "name" .Values.aiValidation.detectionServer.name ) | nindent 8 }}
+    spec:
+      {{- include "ai-validation.imagePullSecretsYaml" .  | nindent 6 }}
+      {{- with .Values.aiValidation.detectionServer.deployment.securityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: {{ .Values.aiValidation.detectionServer.name }}
+          image: "{{ .Values.aiValidation.images.detectionEngineImage.registry }}/{{ .Values.aiValidation.images.detectionEngineImage.name }}"
+          imagePullPolicy: {{ .Values.aiValidation.images.detectionEngineImage.pullPolicy }}
+          resources:
+            {{- toYaml .Values.aiValidation.detectionServer.deployment.serverResources | nindent 12 }}
+          env:
+            {{- with.Values.aiValidation.detectionServer.deployment.extraEnv }}
+              {{- toYaml . | nindent 12 }}
+            {{- end }}
+          ports:
+            - name: detection
+              containerPort: {{ .Values.aiValidation.detectionServer.port }}
+              protocol: TCP
+          command:
+            - "ri-detection-engine"
+          args:
+            - "--port={{ .Values.aiValidation.detectionServer.port }}"
+            - "--model-connection-config-path=/model-connection-config/model-connection-map.yaml"
+            - "--yaml-system-config-path=/config/system-config.yaml"
+            # TODO (RIML-2422): pass in a yaml system config path
+          startupProbe:
+            exec:
+              command: [ "/bin/grpc_health_probe", "-addr=:{{ .Values.aiValidation.detectionServer.port }}" ]
+              failureThreshold: 60
+              periodSeconds: 5
+          readinessProbe:
+            exec:
+              command: [ "/bin/grpc_health_probe", "-addr=:{{ .Values.aiValidation.detectionServer.port }}" ]
+            periodSeconds: 5
+          volumeMounts:
+            - name: {{ include "ai-validation.fullname" . }}-{{ .Values.aiValidation.detectionServer.name }}-config
+              mountPath: "/config"
+              readOnly: true
+            - name: model-connection-config
+              mountPath: "/model-connection-config"
+              readOnly: true
+            {{- with .Values.aiValidation.detectionServer.deployment.extraVolumeMounts }}
+                {{- toYaml . | nindent 12 }}
+            {{- end }}
+      volumes:
+        - name: {{ include "ai-validation.fullname" . }}-{{ .Values.aiValidation.detectionServer.name }}-config
+          configMap:
+            name: {{ include "ai-validation.fullname" . }}-{{ .Values.aiValidation.detectionServer.name }}-system-config
+            items:
+              - key: "systemConfig"
+                path: "system-config.yaml"
+        - name: model-connection-config
+          configMap:
+            name: {{ include "ai-validation.modelConnectionConfigMapName" . }}
+            items:
+              - key: "model-connection-map.yaml"
+                path: "model-connection-map.yaml"
+        {{- with .Values.aiValidation.detectionServer.deployment.extraVolumes }}
+          {{- toYaml . | nindent 8 }}
+        {{- end }}
+      {{- with .Values.aiValidation.detectionServer.deployment.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.aiValidation.detectionServer.deployment.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.aiValidation.detectionServer.deployment.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}
