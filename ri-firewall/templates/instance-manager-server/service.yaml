@@ -1,0 +1,27 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "ri-firewall.fullname" . }}-{{ .Values.riFirewall.instanceManagerServer.name }}
+  labels:
+    {{- include "ri-firewall.labels" . | nindent 4 }}
+    {{- with .Values.riFirewall.instanceManagerServer.service.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  annotations:
+    {{- include "ri-firewall.annotations" . | nindent 4 }}
+    {{- with .Values.riFirewall.instanceManagerServer.service.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  type: {{ .Values.riFirewall.instanceManagerServer.service.type }}
+  ports:
+    - port: {{ .Values.riFirewall.instanceManagerServer.port }}
+      targetPort: {{ .Values.riFirewall.instanceManagerServer.port }}
+      protocol: TCP
+      name: mgr
+    - port: {{ .Values.riFirewall.instanceManagerServer.restPort }}
+      targetPort: {{ .Values.riFirewall.instanceManagerServer.restPort }}
+      protocol: TCP
+      name: mgr-rest
+  selector:
+    app: {{ .Values.riFirewall.instanceManagerServer.name }}

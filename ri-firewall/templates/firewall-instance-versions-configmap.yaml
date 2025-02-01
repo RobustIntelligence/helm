@@ -1,0 +1,162 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: firewall-instance-versions-conf
+data:
+  # This default firewall instance will always be created for each deployment.
+  # This is primarily a (likely temporary) measure to make sure everything
+  # continues to work as expected until all work is done with the migration
+  # to using the versioned instances.
+  defaultFirewallInstance: |
+    firewallServerImage: {{ .Values.riFirewall.images.firewallServerImage.registry}}/{{ .Values.riFirewall.images.firewallServerImage.name }}
+    firewallBackendImage: {{ .Values.riFirewall.images.backendImage.registry}}/{{ .Values.riFirewall.images.backendImage.name }}
+    modelServers:
+      ## START MODEL SERVER VALUES
+      - name: prompt-injection-multiclass
+        # This should only be non-empty for local minikube servers
+        remoteModelServerAddress: {{ .Values.riFirewall.modelServers.promptInjectionMulticlass.remoteModelServerAddress }}
+        huggingface_config:
+          model_task: text-classification
+          repository: robustintelligence/prompt-injection-multiclass
+          revision: c73b1c054ea3b966ca550bcc1d4a4f6d1c43f460
+          tokenizer_kwargs_json: '{"padding": true, "max_length": 512, "truncation": true}'
+        resourceConfig:
+{{ toYaml .Values.riFirewall.modelServers.promptInjectionMulticlass.resources | indent 10 }}
+        modelServerImage: {{ .Values.riFirewall.images.modelServerImage.registry}}/{{ .Values.riFirewall.images.modelServerImage.name }}
+      - name: prompt-injection-binary
+        # This should only be non-empty for local minikube servers
+        remoteModelServerAddress: {{ .Values.riFirewall.modelServers.promptInjectionBinary.remoteModelServerAddress }}
+        huggingface_config:
+          model_task: text-classification
+          repository: robustintelligence/prompt-injection-technique-only
+          revision: d523ea44d4a1c61f1e3e6d2cf726c967b4379bad
+          tokenizer_kwargs_json: '{"padding": true, "max_length": 512, "truncation": true}'
+        classification_config:
+          prompt_injection:
+            default_sensitivity: RULE_SENSITIVITY_LOW
+            fixed_threshold: null
+            positive_class_index: 1
+            sensitivity_based_thresholds:
+              RULE_SENSITIVITY_HIGH: '0.018790094181895256'
+              RULE_SENSITIVITY_LOW: '0.964767575263977'
+              RULE_SENSITIVITY_MEDIUM: '0.9346742630004883'
+              RULE_SENSITIVITY_VERY_HIGH: '0.0016304121818393469'
+              RULE_SENSITIVITY_VERY_LOW: '0.9816083312034607'
+        resourceConfig:
+{{ toYaml .Values.riFirewall.modelServers.promptInjectionBinary.resources | indent 10 }}
+        modelServerImage: {{ .Values.riFirewall.images.modelServerImage.registry}}/{{ .Values.riFirewall.images.modelServerImage.name }}
+      - name: toxicity-intent-multi-label
+        # This should only be non-empty for local minikube servers
+        remoteModelServerAddress: {{ .Values.riFirewall.modelServers.toxicityIntentMultiLabel.remoteModelServerAddress }}
+        huggingface_config:
+          model_task: text-classification
+          repository: robustintelligence/intent-model
+          revision: b426769da0185cbb5e7b645736e23b515bab16a2
+          tokenizer_kwargs_json: '{"padding": true, "max_length": 512, "truncation": true}'
+        resourceConfig:
+{{ toYaml .Values.riFirewall.modelServers.toxicityIntentMultiLabel.resources | indent 10 }}
+        modelServerImage: {{ .Values.riFirewall.images.modelServerImage.registry}}/{{ .Values.riFirewall.images.modelServerImage.name }}
+      - name: toxicity
+        # This should only be non-empty for local minikube servers
+        remoteModelServerAddress: {{ .Values.riFirewall.modelServers.toxicity.remoteModelServerAddress }}
+        huggingface_config:
+          model_task: text-classification
+          repository: robustintelligence/toxicity-2.10-snowflake-model
+          revision: 2028465ee1d876421bfe739996e1297dae320cd0
+          tokenizer_kwargs_json: '{"padding": true, "max_length": 512, "truncation": true}'
+        classification_config:
+          toxicity:
+            default_sensitivity: RULE_SENSITIVITY_LOW
+            fixed_threshold: null
+            positive_class_index: 1
+            sensitivity_based_thresholds:
+              RULE_SENSITIVITY_HIGH: '0.0805626'
+              RULE_SENSITIVITY_LOW: '0.7731783'
+              RULE_SENSITIVITY_MEDIUM: '0.3715801'
+              RULE_SENSITIVITY_VERY_HIGH: '0.0148664'
+              RULE_SENSITIVITY_VERY_LOW: '0.9318446'
+        resourceConfig:
+{{ toYaml .Values.riFirewall.modelServers.toxicity.resources | indent 10 }}
+        modelServerImage: {{ .Values.riFirewall.images.modelServerImage.registry}}/{{ .Values.riFirewall.images.modelServerImage.name }}
+      - name: toxicity-interpretability
+        # This should only be non-empty for local minikube servers
+        remoteModelServerAddress: {{ .Values.riFirewall.modelServers.toxicityInterpretability.remoteModelServerAddress }}
+        huggingface_config:
+          model_task: text-classification
+          repository: robustintelligence/toxicity-interpretability-2.10-model
+          revision: 091e1f76bdc8795b4248b8c8621a6889419f6e27
+          tokenizer_kwargs_json: '{"padding": true, "max_length": 512, "truncation": true}'
+        resourceConfig:
+{{ toYaml .Values.riFirewall.modelServers.toxicityInterpretability.resources | indent 10 }}
+        modelServerImage: {{ .Values.riFirewall.images.modelServerImage.registry}}/{{ .Values.riFirewall.images.modelServerImage.name }}
+      - name: toxicity-ja
+        # This should only be non-empty for local minikube servers
+        remoteModelServerAddress: {{ .Values.riFirewall.modelServers.toxicityJa.remoteModelServerAddress }}
+        huggingface_config:
+          model_task: text-classification
+          repository: robustintelligence/toxicity-japanese-model
+          revision: f5fae45e6cb6b97e5a92a7259ee475728435ad3d
+          tokenizer_kwargs_json: '{"padding": true, "max_length": 512, "truncation": true}'
+        classification_config:
+          toxicity:
+            default_sensitivity: RULE_SENSITIVITY_LOW
+            fixed_threshold: null
+            positive_class_index: 1
+            sensitivity_based_thresholds:
+              RULE_SENSITIVITY_HIGH: '2.6e-06'
+              RULE_SENSITIVITY_LOW: '0.9999681'
+              RULE_SENSITIVITY_MEDIUM: '0.0001519'
+              RULE_SENSITIVITY_VERY_HIGH: '1.1e-06'
+              RULE_SENSITIVITY_VERY_LOW: '0.9999917'
+        resourceConfig:
+{{ toYaml .Values.riFirewall.modelServers.toxicityJa.resources | indent 10 }}
+        modelServerImage: {{ .Values.riFirewall.images.modelServerImage.registry}}/{{ .Values.riFirewall.images.modelServerImage.name }}
+      - name: xlm-multilingual-toxicity
+        # This should only be non-empty for local minikube servers
+        remoteModelServerAddress: {{ .Values.riFirewall.modelServers.xlmMultilingualToxicity.remoteModelServerAddress }}
+        huggingface_config:
+          model_task: text-classification
+          repository: robustintelligence/xlm-multilingual-toxicity
+          revision: 8367d4e4dbcd7f0924b0dfee07d6ffd406b486d4
+          tokenizer_kwargs_json: '{"padding": true, "max_length": 512, "truncation": true}'
+        classification_config:
+          toxicity:
+            default_sensitivity: RULE_SENSITIVITY_LOW
+            fixed_threshold: null
+            positive_class_index: 1
+            sensitivity_based_thresholds:
+              RULE_SENSITIVITY_HIGH: '0.0199036616832'
+              RULE_SENSITIVITY_LOW: '0.5912460088729858'
+              RULE_SENSITIVITY_MEDIUM: '0.20845957100391388'
+              RULE_SENSITIVITY_VERY_HIGH: '0.0033531838562339544'
+              RULE_SENSITIVITY_VERY_LOW: '0.8264020681381226'
+        resourceConfig:
+{{ toYaml .Values.riFirewall.modelServers.xlmMultilingualToxicity.resources | indent 10 }}
+        modelServerImage: {{ .Values.riFirewall.images.modelServerImage.registry}}/{{ .Values.riFirewall.images.modelServerImage.name }}
+      - name: xlm-multilingual-harmful
+        # This should only be non-empty for local minikube servers
+        remoteModelServerAddress: {{ .Values.riFirewall.modelServers.xlmMultilingualHarmful.remoteModelServerAddress }}
+        huggingface_config:
+          model_task: text-classification
+          repository: robustintelligence/xlm-multilingual-harmful
+          revision: 89f209d529ecc0f44962b618763bb1647d41c1c1
+          tokenizer_kwargs_json: '{"padding": true, "max_length": 512, "truncation": true}'
+        classification_config:
+          harmful:
+            default_sensitivity: RULE_SENSITIVITY_LOW
+            fixed_threshold: null
+            positive_class_index: 1
+            sensitivity_based_thresholds:
+              RULE_SENSITIVITY_HIGH: '0.999916672706604'
+              RULE_SENSITIVITY_LOW: '0.9999251365661621'
+              RULE_SENSITIVITY_MEDIUM: '0.999923825263977'
+              RULE_SENSITIVITY_VERY_HIGH: '0.9998924732208252'
+              RULE_SENSITIVITY_VERY_LOW: '0.9999257326126099'
+        resourceConfig:
+{{ toYaml .Values.riFirewall.modelServers.xlmMultilingualHarmful.resources | indent 10 }}
+        modelServerImage: {{ .Values.riFirewall.images.modelServerImage.registry}}/{{ .Values.riFirewall.images.modelServerImage.name }}
+      ## END MODEL SERVER VALUES
+    yaraServer:
+      rimeYaraGitRef: {{ .Values.riFirewall.hotfixYaraServer.ruleRepoRef }}
+  firewallInstances: |
+{{ toYaml .Values.riFirewall.firewallInstanceConfigs | indent 4 }}
