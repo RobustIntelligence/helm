@@ -1,0 +1,521 @@
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.16.3
+  name: firewallinstances.fw.rbst.io
+spec:
+  group: fw.rbst.io
+  names:
+    kind: FirewallInstance
+    listKind: FirewallInstanceList
+    plural: firewallinstances
+    singular: firewallinstance
+  scope: Namespaced
+  versions:
+  - additionalPrinterColumns:
+    - jsonPath: .spec.description
+      name: Description
+      type: string
+    - jsonPath: .metadata.creationTimestamp
+      name: Age
+      type: date
+    name: v1
+    schema:
+      openAPIV3Schema:
+        description: FirewallInstance is the Schema for the firewallinstance API.
+        properties:
+          apiVersion:
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
+            type: string
+          kind:
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: |-
+              FirewallInstanceSpec defines the desired state of FirewallInstance.
+              K8s is a declarative API; the operator will reconcile the state on the
+              cluster step-by-step until the actual state reaches the desired state
+              specified here.
+              The desired state of the FirewallInstance is a firewall deployment with the
+              specified rule configuration.
+            properties:
+              description:
+                description: |-
+                  Description is a human-readable description of the FirewallInstance to
+                  help users know what the purpose of it is.
+                type: string
+              kubernetesSpec:
+                description: |-
+                  Optional kubernetes settings for the FirewallInstance.
+                  Values already have defaults set by the underlying resource templates.
+                properties:
+                  autoscalingOverrides:
+                    description: |-
+                      AutoscalingConfig is configuration for the autoscaling of the firewall
+                      instance server.
+                      This is an override for Helm-deployment-wide defaults.
+                    properties:
+                      maxReplicasOverride:
+                        description: |-
+                          MaxReplicasOverride is the override for the maximum number of firewall
+                          instance server replicas.
+                          If not specified, the default set by Helm chart values will be used.
+                        format: int32
+                        minimum: 0
+                        type: integer
+                      minReplicasOverride:
+                        description: |-
+                          MinReplicasOverride is the override for the minimum number of firewall
+                          instance server replicas.
+                          If not specified, the default set by Helm chart values will be used.
+                        format: int32
+                        minimum: 0
+                        type: integer
+                    type: object
+                  firewallServerResourceOverrides:
+                    description: |-
+                      FirewallServerResourceOverrides is an override for the default
+                      resource requirements for the `firewall-server` container.
+                    properties:
+                      limits:
+                        additionalProperties:
+                          anyOf:
+                          - type: integer
+                          - type: string
+                          pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                          x-kubernetes-int-or-string: true
+                        description: |-
+                          Limits describes the maximum amount of compute resources allowed.
+                          More info:
+                          https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
+                        type: object
+                      requests:
+                        additionalProperties:
+                          anyOf:
+                          - type: integer
+                          - type: string
+                          pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                          x-kubernetes-int-or-string: true
+                        description: |-
+                          Requests describes the minimum amount of compute resources required.
+                          If Requests is omitted for a container, it defaults to Limits if that is
+                          explicitly specified, otherwise to an implementation-defined value.
+                          Requests cannot exceed Limits. More info:
+                          https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
+                        type: object
+                    type: object
+                  podAnnotations:
+                    additionalProperties:
+                      type: string
+                    description: |-
+                      PodAnnotations are tags that are propagated to all the firewall instance
+                      pods for this deployment.
+                    type: object
+                type: object
+              ruleConfig:
+                description: |-
+                  RuleConfig is serialized JSON of the FirewallRuleConfig Protobuf.
+                  Users control this field to determine the behavior of the firewall
+                  rules.
+                type: string
+            type: object
+          status:
+            description: FirewallInstanceStatus defines the observed state of FirewallInstance.
+            properties:
+              conditions:
+                description: Represents the observations of a FirewallInstance current
+                  state.
+                items:
+                  description: |-
+                    FirewallInstanceCondition describes a single condition for the
+                    FirewallInstance status.
+                    This follows the common conventions for representing status in K8s.
+                    https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md#typical-status-properties.
+                  properties:
+                    lastTransitionTime:
+                      description: Last time the condition transitioned from one status
+                        to another.
+                      format: date-time
+                      type: string
+                    lastUpdateTime:
+                      description: The last time this condition was updated.
+                      format: date-time
+                      type: string
+                    message:
+                      description: A human-readable message indicating details about
+                        the transition.
+                      type: string
+                    reason:
+                      description: The reason for the condition's last transition.
+                      type: string
+                    status:
+                      description: Status of the condition, one of True, False, Unknown.
+                      type: string
+                    type:
+                      description: Type of the FirewallInstance condition.
+                      type: string
+                  required:
+                  - status
+                  - type
+                  type: object
+                type: array
+            type: object
+        type: object
+    served: true
+    storage: false
+    subresources:
+      status: {}
+  - additionalPrinterColumns:
+    - jsonPath: .spec.description
+      name: Description
+      type: string
+    - jsonPath: .metadata.creationTimestamp
+      name: Age
+      type: date
+    name: v2
+    schema:
+      openAPIV3Schema:
+        description: FirewallInstance is the Schema for the firewallinstance API.
+        properties:
+          apiVersion:
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
+            type: string
+          kind:
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: |-
+              FirewallInstanceSpec defines the desired state of FirewallInstance.
+              K8s is a declarative API; the operator will reconcile the state on the
+              cluster step-by-step until the actual state reaches the desired state
+              specified here.
+              The desired state of the FirewallInstance is a firewall deployment with the
+              specified rule configuration.
+            properties:
+              firewallBackendImage:
+                description: |-
+                  Full name, including registry and tag, of the image for the firewall
+                  instance backend image. This is only used for the grpc-gateway-proxy
+                  container that converts HTTP requests into gRPC for the firewall server.
+                  In general, the tag should match the firewall server image's, though it
+                  is not critical unless protos have changed between the two versions.
+                type: string
+              firewallServerImage:
+                description: |-
+                  Full name, including registry and tag, of the image for the firewall
+                  server, which contains all rules and detection logic.
+                type: string
+              kubernetesSpec:
+                description: |-
+                  Optional kubernetes settings for the FirewallInstance.
+                  Values already have defaults set by the underlying resource templates.
+                properties:
+                  autoscalingOverrides:
+                    description: |-
+                      AutoscalingConfig is configuration for the autoscaling of the firewall
+                      instance server.
+                      This is an override for Helm-deployment-wide defaults.
+                    properties:
+                      maxReplicasOverride:
+                        description: |-
+                          MaxReplicasOverride is the override for the maximum number of firewall
+                          instance server replicas.
+                          If not specified, the default set by Helm chart values will be used.
+                        format: int32
+                        minimum: 0
+                        type: integer
+                      minReplicasOverride:
+                        description: |-
+                          MinReplicasOverride is the override for the minimum number of firewall
+                          instance server replicas.
+                          If not specified, the default set by Helm chart values will be used.
+                        format: int32
+                        minimum: 0
+                        type: integer
+                    type: object
+                  firewallServerResourceOverrides:
+                    description: |-
+                      FirewallServerResourceOverrides is an override for the default
+                      resource requirements for the `firewall-server` container.
+                    properties:
+                      limits:
+                        additionalProperties:
+                          anyOf:
+                          - type: integer
+                          - type: string
+                          pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                          x-kubernetes-int-or-string: true
+                        description: |-
+                          Limits describes the maximum amount of compute resources allowed.
+                          More info:
+                          https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
+                        type: object
+                      requests:
+                        additionalProperties:
+                          anyOf:
+                          - type: integer
+                          - type: string
+                          pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                          x-kubernetes-int-or-string: true
+                        description: |-
+                          Requests describes the minimum amount of compute resources required.
+                          If Requests is omitted for a container, it defaults to Limits if that is
+                          explicitly specified, otherwise to an implementation-defined value.
+                          Requests cannot exceed Limits. More info:
+                          https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
+                        type: object
+                    type: object
+                  podAnnotations:
+                    additionalProperties:
+                      type: string
+                    description: |-
+                      PodAnnotations are tags that are propagated to all the firewall instance
+                      pods for this deployment.
+                    type: object
+                type: object
+              modelServersConfig:
+                description: |-
+                  ModelServersConfig contains the configs for the model servers that
+                  this firewall instance should use.
+                properties:
+                  modelServers:
+                    items:
+                      description: ModelServerConfig is the config for a single model
+                        server.
+                      properties:
+                        classification_config:
+                          additionalProperties:
+                            description: ClassifierConfig contains threshold and class
+                              index information.
+                            properties:
+                              default_sensitivity:
+                                description: |-
+                                  Default sensitivity value for the model if a sensitivity is not
+                                  provided in the inference request.
+                                type: string
+                              fixed_threshold:
+                                description: Threshold value used for fixed threshold
+                                  models.
+                                type: string
+                              positive_class_index:
+                                description: Index of the model's positive class.
+                                type: integer
+                              sensitivity_based_thresholds:
+                                additionalProperties:
+                                  type: string
+                                description: |-
+                                  Threshold value for each sensitivity value used for configurable
+                                  threshold models.
+                                type: object
+                            type: object
+                          description: |-
+                            Optional configuration for classification models with threshold and
+                            class index information.
+                            This is a mapping from a label to be classified to configuration on
+                            how it can be classified.
+                          type: object
+                        classifier_config:
+                          description: |-
+                            Optional configuration for classification models with threshold and
+                            class index information.
+                            deprecated - use ClassificationConfig instead
+                          properties:
+                            default_sensitivity:
+                              description: |-
+                                Default sensitivity value for the model if a sensitivity is not
+                                provided in the inference request.
+                              type: string
+                            fixed_threshold:
+                              description: Threshold value used for fixed threshold
+                                models.
+                              type: string
+                            positive_class_index:
+                              description: Index of the model's positive class.
+                              type: integer
+                            sensitivity_based_thresholds:
+                              additionalProperties:
+                                type: string
+                              description: |-
+                                Threshold value for each sensitivity value used for configurable
+                                threshold models.
+                              type: object
+                          type: object
+                        huggingface_config:
+                          description: Config for the HuggingFace model that the model
+                            server should run.
+                          properties:
+                            model_task:
+                              description: ModelTask for the model.
+                              type: string
+                            repository:
+                              description: Repository on Huggingface from which to
+                                download the model.
+                              type: string
+                            revision:
+                              description: Revision of the Huggingface repository
+                                to use.
+                              type: string
+                            tokenizer_kwargs_json:
+                              description: Optional params with which to initialize
+                                the model's tokenizer.
+                              type: string
+                          type: object
+                        modelServerImage:
+                          description: |-
+                            Full name, including registry and tag, of the image that should be used
+                            for the model server.
+                          type: string
+                        name:
+                          description: |-
+                            Name of the model server. This should coincide with the model names
+                            specified in `python/firewall/firewall/utils/constants.py` for the
+                            provided firewall server image tag.
+                          type: string
+                        remoteModelServerAddress:
+                          description: |-
+                            Optional address for a remote model server for the firewall instance to
+                            use. If provided, the inference service will not be created, and the
+                            firewall instance will be configured to call the remote address instead.
+                            THIS SHOULD ONLY BE PROVIDED FOR LOCAL DEVELOPMENT MINIKUBE SERVERS.
+                          type: string
+                        resourceConfig:
+                          description: Optional config of resource requests and replicas.
+                          properties:
+                            limits:
+                              additionalProperties:
+                                anyOf:
+                                - type: integer
+                                - type: string
+                                pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                                x-kubernetes-int-or-string: true
+                              description: |-
+                                Limits describes the maximum amount of compute resources allowed.
+                                More info:
+                                https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
+                              type: object
+                            max_replicas:
+                              description: Max replicas of the firewall instance pod
+                                to use for HPA.
+                              type: integer
+                            min_replicas:
+                              description: Min replicas of the firewall instance pod
+                                to use for HPA.
+                              type: integer
+                            requests:
+                              additionalProperties:
+                                anyOf:
+                                - type: integer
+                                - type: string
+                                pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                                x-kubernetes-int-or-string: true
+                              description: |-
+                                Requests describes the minimum amount of compute resources required.
+                                If Requests is omitted for a container, it defaults to Limits if that is
+                                explicitly specified, otherwise to an implementation-defined value.
+                                Requests cannot exceed Limits. More info:
+                                https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
+                              type: object
+                          type: object
+                      required:
+                      - name
+                      type: object
+                    type: array
+                type: object
+              systemConfigOverrides:
+                description: Optional overrides for the firewall server system config.
+                properties:
+                  requireYaraPrefilter:
+                    description: |-
+                      Whether matching a YARA prefilter pattern is required in order for
+                      a model to flag a request.
+                    type: boolean
+                type: object
+              yaraServerConfig:
+                description: |-
+                  YaraServerConfig is the configs for the YARA server that this
+                  firewall instance should use.
+                properties:
+                  image:
+                    description: |-
+                      Docker image to use for the YARA server. In general, this does not
+                      need to be updated frequently and does not need to match the firewall
+                      server image version unless breaking changes to the YARA API occurred.
+                    type: string
+                  rimeYaraGitRef:
+                    description: |-
+                      Git ref of the rime-yara repo to load for the YARA server. This is
+                      the primary lever for updating the YARA version and for hotfixing the
+                      firewall in general.
+                    type: string
+                type: object
+            type: object
+          status:
+            description: FirewallInstanceStatus defines the observed state of FirewallInstance.
+            properties:
+              conditions:
+                description: Represents the observations of a FirewallInstance current
+                  state.
+                items:
+                  description: |-
+                    FirewallInstanceCondition describes a single condition for the
+                    FirewallInstance status.
+                    This follows the common conventions for representing status in K8s.
+                    https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md#typical-status-properties.
+                  properties:
+                    lastTransitionTime:
+                      description: Last time the condition transitioned from one status
+                        to another.
+                      format: date-time
+                      type: string
+                    lastUpdateTime:
+                      description: The last time this condition was updated.
+                      format: date-time
+                      type: string
+                    message:
+                      description: A human-readable message indicating details about
+                        the transition.
+                      type: string
+                    reason:
+                      description: The reason for the condition's last transition.
+                      type: string
+                    status:
+                      description: Status of the condition, one of True, False, Unknown.
+                      type: string
+                    type:
+                      description: Type of the FirewallInstance condition.
+                      type: string
+                  required:
+                  - status
+                  - type
+                  type: object
+                type: array
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
