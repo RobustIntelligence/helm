@@ -1,0 +1,71 @@
+# Value overrides created by the ri_firewall_helm_release Terraform module.
+riFirewall:
+  commonAnnotations:
+    prometheus.io/scrape: 'true'
+    prometheus.io/port: '8080'
+    ad.datadoghq.com/tags: '{"user":"firewall-abx"}'
+
+  secrets:
+    existingIntegrationSecretsName: firewall-abx-secrets-terraform
+    auth0Enabled: false
+
+  images:
+    backendImage:
+      name: "robustintelligencehq/firewall-backend:2.11.0-rc.11"
+      pullPolicy: "IfNotPresent"
+    firewallServerImage:
+      name: "robustintelligencehq/ri-firewall:2.11.0-rc.11"
+      pullPolicy: "IfNotPresent"
+
+  operator:
+    firewallInstanceIngress:
+      disabled: False
+
+  firewallSystemConfig:
+    enableHotfixYara: true
+    validateResponseVisibilitySettings:
+      ruleEvalMetadataVisibility:
+        enableStdoutLogging: true
+        enableApiResponse: true
+      firewallRequestVisibility:
+        enableStdoutLogging: true
+        enableApiResponse: true
+  hotfixYaraServer:
+    autoUpdateEnabled: true
+    yaraPatternUpdateFrequency: ""
+
+  tracing:
+    # -- Whether to enable OpenTelemetry tracing for all services on the Firewall
+    enabled: true
+    env_name: "stg"
+    otel_remote_backend_grpc_port: "4317"
+    cluster_name: "stg-ai-defence-us-west-2"
+    namespace: "stg-runtime"
+
+  registerFirewallAgent:
+    enabled: true
+    name: "register-firewall-agent-job"
+    agentID: "cae297ec-e5c2-4761-9b16-0d272701581c"
+    platformAddress: "https://rime.abx.rbst.io"
+    agentURL: "firewall.abx.rbst.io"
+    apiKey: "b1db32ed47487276a9751c13a7ebb89d"
+    backoffLimit: 2
+    serviceAccount:
+      create: true
+      name: ""
+      annotations: {}
+      labels: {}
+    job:
+      labels: {}
+      annotations: {}
+      securityContext: {}
+      resources:
+        limits:
+          memory: "100Mi"
+        requests:
+          memory: "100Mi"
+          cpu: "100m"
+
+  shimServer:
+    name: "shim"
+    enabled: true

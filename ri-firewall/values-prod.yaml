@@ -1,0 +1,164 @@
+riFirewall:
+  commonAnnotations:
+    prometheus.io/scrape: 'true'
+    prometheus.io/port: '8080'
+    ad.datadoghq.com/tags: '{"user":"firewall-abx"}'
+
+  secrets:
+    existingIntegrationSecretsName: firewall-abx-secrets-terraform
+    auth0Enabled: false
+
+  productionOptimizations:
+    overprovisionGPUNode:
+      enabled: true
+    overprovisionComputeNode:
+      enabled: true
+
+  images:
+    backendImage:
+      name: "robustintelligencehq/firewall-backend:2.11.0-rc.11"
+      pullPolicy: "IfNotPresent"
+    firewallServerImage:
+      name: "robustintelligencehq/ri-firewall:2.11.0-rc.11"
+      pullPolicy: "IfNotPresent"
+
+  operator:
+    firewallInstanceIngress:
+      disabled: True
+    firewallInstanceTemplate:
+      hpa:
+        minReplicas: 2
+        maxReplicas: 10
+
+  firewallSystemConfig:
+    enableHotfixYara: true
+    validateResponseVisibilitySettings:
+      ruleEvalMetadataVisibility:
+        enableStdoutLogging: true
+        enableApiResponse: true
+      firewallRequestVisibility:
+        enableStdoutLogging: true
+        enableApiResponse: true
+  hotfixYaraServer:
+    autoUpdateEnabled: true
+    ruleRepoRef: ""
+    yaraPatternUpdateFrequency: ""
+    hpa:
+      minReplicas: 2
+      maxReplicas: 10
+    deployment:
+      replicaCount: 2
+  shimServer:
+    name: "shim"
+    enabled: true
+    hpa:
+      minReplicas: 2
+      maxReplicas: 10
+    deployment:
+      replicaCount: 2
+
+  tracing:
+    # -- Whether to enable OpenTelemetry tracing for all services on the Firewall
+    enabled: true
+    env_name: "prod"
+    otel_remote_backend_grpc_port: "4317"
+    cluster_name: "prod-ai-defense-us-west-2"
+    namespace: "prod-runtime"
+
+  registerFirewallAgent:
+    enabled: true
+    name: "register-firewall-agent-job"
+    agentID: "a331a2ea-9f95-4e1d-ac0c-0511a48fc569"
+    platformAddress: "https://rime.abx.rbst.io"
+    agentURL: "firewall.abx.rbst.io"
+    apiKey: "8553647925e8a66a41b94058a070bd10"
+    backoffLimit: 2
+    serviceAccount:
+      create: true
+      name: ""
+      annotations: {}
+      labels: {}
+    job:
+      labels: {}
+      annotations: {}
+      securityContext: {}
+      resources:
+        limits:
+          memory: "100Mi"
+        requests:
+          memory: "100Mi"
+          cpu: "100m"
+
+  modelServers:
+    promptInjectionMulticlass:
+      resources:
+        limits:
+          gpu: 2
+        max_replicas: 10
+        min_replicas: 1
+        requests:
+          gpu: 2
+    promptInjectionBinary:
+      resources:
+        limits:
+          gpu: 2
+        max_replicas: 10
+        min_replicas: 1
+        requests:
+          gpu: 2
+    toxicityIntentMultiLabel:
+      resources:
+        limits:
+          gpu: 2
+        max_replicas: 10
+        min_replicas: 1
+        requests:
+          gpu: 2
+    toxicityIntentModel:
+      resources:
+        limits:
+          gpu: 2
+        max_replicas: 10
+        min_replicas: 1
+        requests:
+          gpu: 2
+    toxicity:
+      resources:
+        limits:
+          gpu: 2
+        max_replicas: 10
+        min_replicas: 1
+        requests:
+          gpu: 2
+    toxicityInterpretability:
+      resources:
+        limits:
+          gpu: 2
+        max_replicas: 10
+        min_replicas: 1
+        requests:
+          gpu: 2
+    toxicityJa:
+      resources:
+        limits:
+          gpu: 2
+        max_replicas: 10
+        min_replicas: 1
+        requests:
+          gpu: 2
+    xlmMultilingualToxicity:
+      resources:
+        limits:
+          gpu: 2
+        max_replicas: 10
+        min_replicas: 1
+        requests:
+          gpu: 2
+    xlmMultilingualHarmful:
+      resources:
+        limits:
+          gpu: 2
+        max_replicas: 10
+        min_replicas: 1
+        requests:
+          gpu: 2

@@ -1,0 +1,72 @@
+# Value overrides created by the ri_firewall_helm_release Terraform module.
+riFirewall:
+  commonAnnotations:
+    prometheus.io/scrape: 'true'
+    prometheus.io/port: '8080'
+    ad.datadoghq.com/tags: '{"user":"firewall-abx"}'
+  secrets:
+    existingIntegrationSecretsName: firewall-abx-secrets-terraform
+    auth0Enabled: false
+  ingress:
+    ingressClassName: nginx
+  images:
+    backendImage:
+      name: "robustintelligencehq/firewall-backend:2.12.0-rc.3"
+      pullPolicy: "IfNotPresent"
+    firewallServerImage:
+      name: "robustintelligencehq/ri-firewall:2.12.0-rc.3"
+      pullPolicy: "IfNotPresent"
+    modelServerImage:
+      name: "robustintelligencehq/firewall-model-server:2.12.0-rc.3"
+      pullPolicy: "IfNotPresent"
+      # Enable firewall instance ingress for preview for peerlinked snowflake access
+  operator:
+    firewallInstanceIngress:
+      disabled: False
+  firewallSystemConfig:
+    enableHotfixYara: true
+    validateResponseVisibilitySettings:
+      ruleEvalMetadataVisibility:
+        enableStdoutLogging: true
+        enableApiResponse: true
+      firewallRequestVisibility:
+        enableStdoutLogging: true
+        enableApiResponse: true
+  hotfixYaraServer:
+    autoUpdateEnabled: true
+    yaraPatternUpdateFrequency: ""
+  tracing:
+    # -- Whether to enable OpenTelemetry tracing for all services on the Firewall
+    enabled: true
+    env_name: "preview"
+    otel_remote_backend_grpc_port: "4317"
+    cluster_name: "dev-ai-defence-us-west-2"
+    namespace: "preview-runtime"
+  registerFirewallAgent:
+    enabled: true
+    name: "register-firewall-agent-job"
+    agentID: "a6e047eb-66d9-4456-90c7-9b6f4dd9908f"
+    platformAddress: "https://rime.abx.rbst.io"
+    agentURL: "firewall.abx.rbst.io"
+    apiKey: "16a694a267fd2f993e4bcd9d4c36585f"
+    backoffLimit: 2
+    serviceAccount:
+      create: true
+      name: ""
+      annotations: {}
+      labels: {}
+    job:
+      labels: {}
+      annotations: {}
+      securityContext: {}
+      resources:
+        limits:
+          memory: "100Mi"
+        requests:
+          memory: "100Mi"
+          cpu: "100m"
+  shimServer:
+    name: "shim"
+    ingress:
+      enabled: false
+    enabled: true
