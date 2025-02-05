@@ -1,0 +1,62 @@
+{{- if .Values.aiValidation.generativeValidationService.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.aiValidation.generativeValidationService.name }}
+  labels:
+    app: {{ .Values.aiValidation.generativeValidationService.name }}
+    {{- include "ai-validation.labels" . | nindent 4 }}
+  annotations:
+    {{- include "ai-validation.annotations" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Values.aiValidation.generativeValidationService.name }}
+      {{- include "ai-validation.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.aiValidation.generativeValidationService.name }}
+        {{- include "ai-validation.labels" . | nindent 8 }}
+        {{- include "ai-validation.selectorLabels" . | nindent 8 }}
+      annotations:
+        {{- include "ai-validation.annotations" . | nindent 8 }}
+        {{- include "ai-validation.monitoringAnnotations" (dict "monitoring" .Values.aiValidation.monitoring "name" .Values.aiValidation.generativeValidationService.name ) | nindent 8 }}
+    spec:
+      {{- include "ai-validation.imagePullSecretsYaml" .  | nindent 6 }}
+      {{- with .Values.aiValidation.generativeValidationService.deployment.securityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "ai-validation.generativeValidationService.serviceAccountName" . }}
+      containers:
+        - name: {{ .Values.aiValidation.generativeValidationService.name }}
+          image: "{{ .Values.aiValidation.images.aiValidationImage.registry }}/{{ .Values.aiValidation.images.aiValidationImage.name }}"
+          imagePullPolicy: {{ .Values.aiValidation.images.aiValidationImage.pullPolicy }}
+          ports:
+            - name: service
+              containerPort: {{ .Values.aiValidation.generativeValidationService.port }}
+              protocol: TCP
+          resources:
+            {{- toYaml .Values.aiValidation.generativeValidationService.deployment.resources | nindent 12 }}
+          env:
+            - name: RI_SERVICE_NAME
+              value: {{ .Values.aiValidation.generativeValidationService.name }}
+          {{- include "component-otel-env-vars" (dict "ServiceKey" .Values.aiValidation.generativeValidationService "Root" .) | indent 12 }}
+          command:
+            - "/ai-validation/generativeValidationService"
+          args:
+            - "--server-config-path=/config/server.config"
+          volumeMounts:
+            - name: {{ .Values.aiValidation.generativeValidationService.name }}-config
+              mountPath: "/config"
+              readOnly: true
+      volumes:
+        - name: {{ .Values.aiValidation.generativeValidationService.name }}-config
+          configMap:
+            name: {{ .Values.aiValidation.generativeValidationService.name }}-conf
+            items:
+              - key: "server.config"
+                path: "server.config"
+{{- end }}
