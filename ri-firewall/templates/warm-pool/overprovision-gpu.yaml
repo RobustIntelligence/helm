@@ -1,0 +1,44 @@
+{{- if .Values.riFirewall.productionOptimizations.overprovisionGPUNode.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: overprovision-gpu
+  labels:
+    {{- include "ri-firewall.labels" . | nindent 4 }}
+  annotations:
+    {{- include "ri-firewall.annotations" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      app: overprovision-gpu
+  template:
+    metadata:
+      labels:
+        app: overprovision-gpu
+        {{- include "ri-firewall.labels" . | nindent 8 }}
+      annotations:
+        {{- include "ri-firewall.annotations" . | nindent 8 }}
+    spec:
+      replicas: {{ .Values.riFirewall.productionOptimizations.overprovisionGPUNode.poolSize }}
+      priorityClassName: overprovisioning
+      {{- with .Values.riFirewall.images.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        # Container to pull and cache model server image.
+        - name: model-server-resources
+          image: "{{ .Values.riFirewall.images.modelServerImage.registry}}/{{ .Values.riFirewall.images.modelServerImage.name }}"
+          imagePullPolicy: {{ .Values.riFirewall.images.backendImage.pullPolicy }}
+          resources:
+            requests:
+              {{- toYaml .Values.riFirewall.productionOptimizations.overprovisionGPUNode.resources | nindent 14 }}
+            limits:
+              {{- toYaml .Values.riFirewall.productionOptimizations.overprovisionGPUNode.resources | nindent 14 }}
+          command: ["/bin/sh", "-c", "while true; do sleep 3600; done"]
+      tolerations:
+      - effect: NoSchedule
+        key: dedicated
+        operator: Equal
+        value: gpu-dedicated
+{{- end }}
