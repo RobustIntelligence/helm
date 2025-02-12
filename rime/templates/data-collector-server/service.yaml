@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "rime.fullname" . }}-{{ .Values.rime.dataCollectorServer.name }}
+  labels:
+    {{- include "rime.labels" . | nindent 4 }}
+    {{- with .Values.rime.dataCollectorServer.service.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  annotations:
+    {{- include "rime.annotations" . | nindent 4 }}
+    {{- with .Values.rime.dataCollectorServer.service.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  type: {{ .Values.rime.dataCollectorServer.service.type }}
+  ports:
+    - port: {{ .Values.rime.dataCollectorServer.port }}
+      targetPort: {{ .Values.rime.dataCollectorServer.port }}
+      protocol: TCP
+      name: dc
+    - port: {{ .Values.rime.dataCollectorServer.restPort }}
+      targetPort: {{ .Values.rime.dataCollectorServer.restPort }}
+      protocol: TCP
+      name: dc-rest
+  selector:
+    app: {{ .Values.rime.dataCollectorServer.name }}
+    {{- include "rime.labels" . | nindent 4 }}
