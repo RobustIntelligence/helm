@@ -1,0 +1,50 @@
+commonAnnotations:
+  ad.datadoghq.com/tags: '{"user":"firewall-abx"}'
+  prometheus.io/scrape: 'true'
+  prometheus.io/port: '8080'
+secrets:
+  existingIntegrationSecretsName: firewall-abx-secrets-terraform
+images:
+  modelServerImage:
+    name: "robustintelligencehq/firewall-model-server:2.12.0-rc.9"
+    pullPolicy: "IfNotPresent"
+  firewallBackendImage:
+    name: "robustintelligencehq/firewall-backend:2.12.0-rc.9"
+    pullPolicy: "IfNotPresent"
+modelServers:
+  promptInjectionMulticlass:
+    resources:
+      requests:
+        gpu: 2
+      limits:
+        gpu: 2
+  promptInjectionBinary:
+    resources:
+      requests:
+        gpu: 2
+      limits:
+        gpu: 2
+  toxicity:
+    resources:
+      requests:
+        gpu: 2
+      limits:
+        gpu: 2
+  factualInconsistency:
+    resources:
+      requests:
+        gpu: 2
+      limits:
+        gpu: 2
+  toxicityInterpretability:
+    resources:
+      requests:
+        gpu: 2
+      limits:
+        gpu: 2
+  toxicityJa:
+    resources:
+      requests:
+        gpu: 2
+      limits:
+        gpu: 2
