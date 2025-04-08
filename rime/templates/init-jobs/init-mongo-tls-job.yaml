@@ -60,5 +60,9 @@ spec:
             - "-debug"
             {{- end }}
       restartPolicy: OnFailure
+      {{- with .Values.rime.initMongoTLS.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
   backoffLimit: 2
 {{- end }}

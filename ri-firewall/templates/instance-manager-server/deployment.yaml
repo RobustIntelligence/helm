@@ -33,6 +33,10 @@ spec:
         {{- toYaml . | nindent 8 }}
         {{- end }}
     spec:
+      {{- with .Values.riFirewall.instanceManagerServer.deployment.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       {{- with .Values.riFirewall.images.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
