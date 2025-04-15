@@ -1,0 +1,75 @@
+# Value overrides created by the ri_firewall_helm_release Terraform module.
+riFirewall:
+  commonAnnotations:
+    prometheus.io/scrape: 'true'
+    prometheus.io/port: '8080'
+    ad.datadoghq.com/tags: '{"user":"firewall-abx"}'
+
+  secrets:
+    existingIntegrationSecretsName: firewall-abx-secrets-terraform
+    auth0Enabled: false
+
+  ingress:
+    ingressClassName: nginx
+
+  images:
+    backendImage:
+      name: "robustintelligencehq/firewall-backend:2.11.0-rc.9"
+      pullPolicy: "IfNotPresent"
+    firewallServerImage:
+      name: "robustintelligencehq/ri-firewall:2.11.0-rc.9"
+      pullPolicy: "IfNotPresent"
+    modelServerImage:
+      name: "robustintelligencehq/firewall-model-server:2.11.0-rc.9"
+      pullPolicy: "IfNotPresent"
+
+  rimeFirewallDeployment:
+    enabled: false
+
+  operator:
+    firewallInstanceIngress:
+      disabled: true
+
+  firewallSystemConfig:
+    enableHotfixYara: true
+    validateResponseVisibilitySettings:
+      ruleEvalMetadataVisibility:
+        enableStdoutLogging: true
+        enableApiResponse: true
+      firewallRequestVisibility:
+        enableStdoutLogging: true
+        enableApiResponse: true
+  hotfixYaraServer:
+    autoUpdateEnabled: false
+    ruleRepoRef: "main"
+    yaraPatternUpdateFrequency: ""
+
+  registerFirewallAgent:
+    enabled: true
+    name: "register-firewall-agent-job"
+    agentID: "48e21fdf-b0a4-4c20-884d-347478141e69"
+    platformAddress: "https://rime.abx.rbst.io"
+    agentURL: "firewall.abx.rbst.io"
+    apiKey: "8a5bc6b14b46ff635977e4820775aae4"
+    backoffLimit: 2
+    serviceAccount:
+      create: true
+      name: ""
+      annotations: {}
+      labels: {}
+    job:
+      labels: {}
+      annotations: {}
+      securityContext: {}
+      resources:
+        limits:
+          memory: "100Mi"
+        requests:
+          memory: "100Mi"
+          cpu: "100m"
+
+  shimServer:
+    name: "shim"
+    ingress:
+      enabled: false
+    enabled: true

@@ -1,0 +1,20 @@
+{{- if .Values.aiValidation.generativeValidationService.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.aiValidation.generativeValidationService.name }}
+  labels:
+    {{- include "ai-validation.labels" . | nindent 4 }}
+  annotations:
+    {{- include "ai-validation.annotations" . | nindent 4 }}
+spec:
+  type: {{ .Values.aiValidation.generativeValidationService.service.type }}
+  ports:
+    - port: {{ .Values.aiValidation.generativeValidationService.port }}
+      targetPort: {{ .Values.aiValidation.generativeValidationService.port }}
+      protocol: TCP
+      name: rime
+  selector:
+    app: {{ .Values.aiValidation.generativeValidationService.name }}
+    {{- include "ai-validation.selectorLabels" . | nindent 4 }}
+{{- end }}

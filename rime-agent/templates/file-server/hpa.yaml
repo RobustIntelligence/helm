@@ -1,0 +1,21 @@
+{{- if and .Values.rimeAgent.fileServer.hpa.enabled .Values.rimeAgent.fileServer.enabled }}
+apiVersion: {{ include "rime-agent.hpa.apiVersion" . }}
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ include "rime-agent.fullname" . }}-{{ .Values.rimeAgent.fileServer.name }}
+  labels:
+    app: {{ .Values.rimeAgent.fileServer.name }}
+    {{- include "rime-agent.labels" . | nindent 4 }}
+    {{- with .Values.rimeAgent.fileServer.hpa.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ include "rime-agent.fullname" . }}-{{ .Values.rimeAgent.fileServer.name }}
+  minReplicas: {{ .Values.rimeAgent.fileServer.hpa.minReplicas }}
+  maxReplicas: {{ .Values.rimeAgent.fileServer.hpa.maxReplicas }}
+  metrics:
+{{ toYaml .Values.rimeAgent.fileServer.hpa.metrics | indent 4 }}
+{{- end }}
