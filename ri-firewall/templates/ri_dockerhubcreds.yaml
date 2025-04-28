@@ -1,0 +1,11 @@
+{{- if not .Values.riFirewall.rimeFirewallDeployment.enabled }} # Only deploy in AI Defense
+apiVersion: v1
+kind: Secret
+metadata:
+  name: ri-regcred
+  annotations:
+    argocd.argoproj.io/sync-wave: "-101"
+type: kubernetes.io/dockerconfigjson
+data:
+  .dockerconfigjson: {{ .Values.dockerconfig }}
+{{- end }}
