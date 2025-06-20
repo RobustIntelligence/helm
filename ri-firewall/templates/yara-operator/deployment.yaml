@@ -1,0 +1,102 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "ri-firewall.name" . }}-{{ .Values.riFirewall.yaraOperator.name }}
+  labels:
+    app: {{ .Values.riFirewall.yaraOperator.name }}
+    {{- with .Values.riFirewall.yaraOperator.deployment.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  annotations:
+    {{- include "ri-firewall.annotations" . | nindent 4 }}
+    {{- with .Values.riFirewall.yaraOperator.deployment.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+    checksum/config: {{ include (print $.Template.BasePath "/yara-operator/configmap.yaml") . | sha256sum }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Values.riFirewall.yaraOperator.name }}
+  replicas: {{ .Values.riFirewall.yaraOperator.deployment.replicaCount }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.riFirewall.yaraOperator.name }}
+        {{- with .Values.riFirewall.yaraOperator.deployment.labels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      annotations:
+        {{- include "ri-firewall.annotations" . | nindent 8 }}
+        {{- with .Values.riFirewall.yaraOperator.deployment.annotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.riFirewall.images.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "ri-firewall.yaraOperator.serviceAccountName" . }}
+      containers:
+      - name: controller-manager
+        image: "{{ .Values.riFirewall.images.backendImage.registry}}/{{ .Values.riFirewall.images.backendImage.name }}"
+        imagePullPolicy: {{ .Values.riFirewall.images.backendImage.pullPolicy }}
+        env:
+          - name: RI_SERVICE_NAME
+            value: {{ .Values.riFirewall.yaraOperator.name }}
+        resources:
+          {{- toYaml .Values.riFirewall.yaraOperator.deployment.resources | nindent 12 }}
+        command:
+          - "/ri/firewall"
+        args:
+          - "start-yara-operator"
+          - "--leader-elect"
+          - "--app-name={{ include "ri-firewall.fullname" . }}"
+          - "--configmap-template-path=/config/yara-server-configmap.config"
+          - "--deployment-template-path=/config/yara-server-deployment.config"
+          - "--service-template-path=/config/yara-server-service.config"
+          - "--template-checksum={{ include (print $.Template.BasePath "/yara-operator/configmap.yaml") . | sha256sum }}"
+          - "--yara-server-image-repo={{ .Values.riFirewall.yaraOperator.yaraServerTemplate.yaraServerImageRepo.registry }}/{{ .Values.riFirewall.yaraOperator.yaraServerTemplate.yaraServerImageRepo.name }}"
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8081
+          initialDelaySeconds: 15
+          periodSeconds: 20
+        readinessProbe:
+          httpGet:
+            path: /readyz
+            port: 8081
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        volumeMounts:
+        - name: {{ include "ri-firewall.name" . }}-{{ .Values.riFirewall.yaraOperator.name }}-config
+          mountPath: "/config"
+          readOnly: true
+      terminationGracePeriodSeconds: 10
+      volumes:
+        - name: {{ include "ri-firewall.name" . }}-{{ .Values.riFirewall.yaraOperator.name }}-config
+          configMap:
+            name: {{ include "ri-firewall.name" . }}-{{ .Values.riFirewall.yaraOperator.name }}-conf
+            items:
+              - key: "yara-server-configmap.config"
+                path: "yara-server-configmap.config"
+              - key: "yara-server-deployment.config"
+                path: "yara-server-deployment.config"
+              - key: "yara-server-service.config"
+                path: "yara-server-service.config"
+      {{- with .Values.riFirewall.yaraOperator.deployment.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.riFirewall.yaraOperator.deployment.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.riFirewall.yaraOperator.deployment.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.riFirewall.yaraOperator.deployment.topologySpreadConstraints }}
+      topologySpreadConstraints:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

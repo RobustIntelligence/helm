@@ -1,0 +1,28 @@
+{{- if .Values.tls.enableCertManager }}
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ .Values.rime.imageRegistryServer.imageRegistryJob.name }}-{{ .Release.Namespace }}-certificate
+spec:
+  secretName: {{ .Values.rime.imageRegistryServer.imageRegistryJob.name }}-{{ .Release.Namespace }}-tls
+  duration: 2160h # 90d
+  renewBefore: 360h # 15d
+{{- with .Values.tls.certificateSpec.subject }}
+  subject: {{ toYaml . | nindent 4 }}
+{{- end}}
+  isCA: false
+  privateKey:
+    algorithm: RSA
+    encoding: PKCS1
+    size: 2048
+  usages:
+    - server auth
+    - client auth
+  dnsNames:
+    - image-builder-job
+    - localhost
+  issuerRef:
+    name: {{ include "tls.certificateIssuerName" . }}
+    kind: {{ .Values.tls.certificateSpec.issuerRef.kind }}
+    group: {{ .Values.tls.certificateSpec.issuerRef.group }}
+{{- end }}

@@ -1,0 +1,30 @@
+aiValidation:
+  images:
+    imagePullSecrets:
+      - name: "ri-regcred"
+    aiValidationImage:
+      registry: "docker.io"
+      name: "robustintelligencehq/ai-validation:latest"
+      pullPolicy: "Always"
+    detectionEngineImage:
+      registry: "docker.io"
+      name: "robustintelligencehq/ri-firewall:latest"
+      pullPolicy: "Always"
+  detectionServer:
+    hpa:
+      minReplicas: 1
+  generativeValidationService:
+    serviceAccount:
+      annotations: {
+        eks.amazonaws.com/role-arn: arn:aws:iam::422940237045:role/ai-defense-dev-ai-validation-generative-validation-irsa
+      }
+    hpa:
+      minReplicas: 1
+
+  metrics:
+    enabled: true
+    env_name: "dev"
+    otel_remote_backend_grpc_port: "4317"
+    cluster_name: "dev-ai-defence-us-west-2"
+    namespace: "sandbox-1-validation"
+    meter_name: "ai-validation-meter"
