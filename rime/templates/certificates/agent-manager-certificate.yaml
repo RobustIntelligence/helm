@@ -1,0 +1,30 @@
+{{- if .Values.tls.enableCertManager }}
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ include "rime.fullname" . }}-{{ .Values.rime.agentManagerServer.name }}-certificate
+spec:
+  secretName: {{ include "rime.fullname" . }}-{{ .Values.rime.agentManagerServer.name }}-tls
+  duration: 4320h # 180d
+  renewBefore: 744h # 31d
+{{- with .Values.tls.certificateSpec.subject }}
+  subject: {{ toYaml . | nindent 4 }}
+{{- end}}
+  isCA: false
+  privateKey:
+    algorithm: RSA
+    encoding: PKCS1
+    size: 2048
+    rotationPolicy: Always
+  usages:
+    - server auth
+    - client auth
+  dnsNames:
+    - {{ include "rime.fullname" . }}-{{ .Values.rime.agentManagerServer.name }}.{{ .Release.Namespace }}
+    - {{ include "rime.fullname" . }}-{{ .Values.rime.agentManagerServer.name }}
+    - localhost
+  issuerRef:
+    name: {{ include "tls.certificateIssuerName" . }}
+    kind: {{ .Values.tls.certificateSpec.issuerRef.kind }}
+    group: {{ .Values.tls.certificateSpec.issuerRef.group }}
+{{- end }}
