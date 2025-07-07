@@ -1,0 +1,1042 @@
+riFirewall:
+  # @ignored -- Override for the chart name. If used, this will be appended to the
+  # release name to form the fully qualified app name
+  # (e.g., `ri-${nameOverride}` instead of just `ri`)
+  nameOverride: ""
+  # Common annotations added to all K8s resources
+  commonAnnotations: {}
+  # Common labels added to all K8s resources
+  commonLabels: {}
+
+  # -- Values for the internal RI K8 secret used by the Firewall.
+  # @default -- (see individual values in `values`.yaml)
+  secrets:
+    # If existingIntegrationSecretsName is set, the secret will not be created. Must have yaraGithubAppPem,
+    # and huggingfaceAPIKey keys set.
+    existingIntegrationSecretsName: ""
+    # If existingAuthSecretsName is set, the secret will not be created. Must have domain,
+    # clientID, clientSecret and callback keys set.
+    existingAuthSecretsName: ""
+    # auth0Enabled (bool): Whether to enable Auth0 for the Firewall.
+    auth0Enabled: false
+    auth0:
+      # domain (str): Auth0 domain (optional)
+      domain: ""
+      # clientID (str): Auth0 client ID (optional)
+      clientID: ""
+      # clientSecret (str): Auth0 client secret (optional)
+      clientSecret: ""
+      # callback (str): Auth0 callback URL (optional)
+      callback: ""
+
+  # -- productionOptimizations defines optimizations for production deployments.
+  productionOptimizations:
+    # overprovisionGPUNode controls wether additional GPU EKS nodes should
+    # be provisioned, to allow quick scale up of GPU based model servers.
+    overprovisionGPUNode:
+      enabled: false
+      # poolSize (int): Number of pods to create in the warm pool.
+      poolSize: 12
+      # resources: Resources to allocat for each pod in the warm pool.
+      resources:
+        memory: 3500Mi
+        cpu: 1000m
+        nvidia.com/gpu: 2
+    # overprovisionComputeNode controls wether additional non GPU EKS nodes
+    # should be provisioned, to allow quick scale up of firewall server pods.
+    overprovisionComputeNode:
+      enabled: false
+      # poolSize (int): Number of pods to create in the warm pool.
+      poolSize: 12
+
+  # -- Whether to deploy rime-specific manifests for firewall.
+  rimeFirewallDeployment:
+    enabled: true
+  # -- firewallSystemConfig is system configuration for the RI Firewall.
+  firewallSystemConfig:
+    # maxRequestTokens (int): The maximum number of tokens that Firewall accepts from a single input/output field in the API request.
+    maxRequestTokens: 4096
+
+    # -- validateResponseVisibilitySettings control how different parts of the Validate response
+    # are output in the logs or the API response.
+    # This controls sensitive data such as internal rule evaluation or RAW USER DATA.
+    # Be careful with this setting.
+    validateResponseVisibilitySettings:
+      # ruleEvalMetadataVisibility controls the visibility of internal firewall rule
+      # evaluation metadata such as model scores or model versions.
+      ruleEvalMetadataVisibility:
+        enableStdoutLogging: true
+        enableApiResponse: false
+      # firewall_request_visibility controls the visibility of the processed firewall request
+      # in the validate response.
+      # This includes the raw user input.
+      firewallRequestVisibility:
+        enableStdoutLogging: false
+        enableApiResponse: false
+
+    # enableHotfixYara (bool): Whether to use the YARA rules in firewall rule evaluation.
+    enableHotfixYara: true
+    # azureOpenaiModelProvider: This specifies how to connect to Azure OpenAI models for internal rule evaluation.
+    azureOpenaiModelProvider:
+      # enabled (bool): Turn on/off using Azure OpenAI model provider.
+      # The base firewall in English does not require Azure so this can be turned off by default.
+      enabled: false
+      # apiBaseURL (str): The URL where the firewall can access Azure models.
+      apiBaseURL: ""
+      # apiVersion (str): API version of Azure OpenAI to use.
+      apiVersion: ""
+      # chatModelDeploymentName (str): Name of the chat model deployment to use.
+      # This can be found in the Azure OpenAI console.
+      # We prefer GPT3.5-Turbo for the firewall.
+      chatModelDeploymentName: ""
+
+    # requireYaraPrefilter (bool): whether YARA prefilters are required in order to flag a request
+    requireYaraPrefilter: false
+
+  # -- firewallLicenseLimits defines the usage limits for the firewall deployment.
+  firewallLicenseLimits:
+    # firewallInstances (int): Maximum number of FirewallInstances that the customer is allowed to
+    # create. If resource quota is enabled, this should be less than firewallInstanceResourceQuota.maxObjectCount.
+    firewallInstances: 10
+    # validateRequestsPerDay (int): Maximum number of /validate calls that the customer can make in one day.
+    validateRequestsPerDay: 500000
+
+  # -- firewallInstanceResourceQuota is configuration for a resource quota to
+  # limit the number of FirewallInstances a user can create in this deployment.
+  firewallInstanceResourceQuota:
+    # enabled (bool): Enable the creation of the resource quota.
+    enabled: true
+    # maxObjectCount (int): The maximum allowed number of FirewallInstances in the namespace.
+    maxObjectCount: 15
+
+  # -- Image specification for the RI Firewall.
+  # @default -- (see individual values in `values.yaml`)
+  images:
+    imagePullSecrets:
+      - name: ri-regcred
+    backendImage:
+      registry: "docker.io"
+      name: "robustintelligencehq/firewall-backend:latest"
+      pullPolicy: "Always"
+    firewallServerImage:
+      registry: "docker.io"
+      name: "robustintelligencehq/ri-firewall:latest"
+      pullPolicy: "Always"
+    modelServerImage:
+      registry: "docker.io"
+      name: "robustintelligencehq/firewall-model-server:latest"
+      pullPolicy: "Always"
+    tritonPromptInjectionServerImage:
+      registry: "docker.io"
+      name: "robustintelligencehq/triton-inference-server:prompt-injection-trt-25.05-gpu-optimized-512-tokens-2-model-rep-v3"
+      pullPolicy: "Always"
+    tritonToxicityIntentMultiLabelsServerImage:
+      registry: "docker.io"
+      name: "robustintelligencehq/triton-inference-server:toxicity-detection-trt-25.05-gpu-1-model-rep-v4"
+      pullPolicy: "Always"
+
+  # -- `authServer` K8s-level configurations
+  # @default -- (see individual values in `values.yaml`)
+  authServer:
+    name: "auth-server"
+    port: 15021
+    # Service for authServer
+    service:
+      type: ClusterIP
+      annotations: {}
+      labels: {}
+    serviceAccount:
+      create: true
+      # If not set and create is true, a name is generated using the fullname template
+      name:
+      annotations: {}
+      labels: {}
+    # HPA for the authServer. If disabled, will use `replicaCount` for the deployment.
+    hpa:
+      annotations: {}
+      labels: {}
+      enabled: true
+      minReplicas: 2
+      maxReplicas: 10
+      metrics:
+        - type: Resource
+          resource:
+            name: cpu
+            target:
+              type: Utilization
+              averageUtilization: 60
+    # PDB for authServer
+    pdb:
+      enabled: true
+      minAvailable: 1
+    # Deployment for authServer
+    deployment:
+      annotations: {}
+      labels: {}
+      replicaCount: 2
+      resources:
+        limits:
+          memory: 90Mi
+        requests:
+          cpu: 100m
+          memory: 90Mi
+
+      topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: "topology.kubernetes.io/zone"
+        whenUnsatisfiable: ScheduleAnyway
+        labelSelector:
+          matchLabels:
+            app: "auth-server"
+
+      tolerations:
+        - effect: NoSchedule
+          key: dedicated
+          operator: Equal
+          value: dps
+
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: node_group
+                operator: In
+                values:
+                - dps
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  app: "auth-server"
+              topologyKey: topology.kubernetes.io/zone
+            weight: 100
+          - podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  app: "auth-server"
+              topologyKey: kubernetes.io/hostname
+            weight: 99
+
+    tokenLifetimeHours:
+      userTokenLifetime: 10  # 10 hours
+      systemTokenLifetime: 720  # 30 days
+
+  # -- `operator` K8s-level configurations
+  # @default -- (see individual values in `values.yaml`)
+  # The operator is responsible for reconciling FirewallInstance CRs.
+  # It creates individual firewall deployments and makes them available over
+  # the network.
+  operator:
+    name: "operator"
+    # Service Account for operator to manipulate k8s objects.
+    serviceAccount:
+      create: true
+      # If not set and create is true, a name is generated using the fullname template
+      name:
+      annotations: {}
+      labels: {}
+    # HPA for the operator. If disabled, will use `replicaCount` for the deployment.
+    hpa:
+      annotations: {}
+      labels: {}
+      enabled: true
+      minReplicas: 2
+      maxReplicas: 10
+      metrics:
+        - type: Resource
+          resource:
+            name: cpu
+            target:
+              type: Utilization
+              averageUtilization: 60
+    # PDB for operator
+    pdb:
+      enabled: true
+      minAvailable: 1
+    deployment:
+      annotations: {}
+      labels: {}
+      replicaCount: 2
+      resources:
+        limits:
+          memory: 300Mi
+        requests:
+          cpu: 10m
+          memory: 100Mi
+
+      topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: "topology.kubernetes.io/zone"
+        whenUnsatisfiable: ScheduleAnyway
+        labelSelector:
+          matchLabels:
+            app: "operator"
+
+      tolerations:
+        - effect: NoSchedule
+          key: dedicated
+          operator: Equal
+          value: dps
+
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: node_group
+                operator: In
+                values:
+                - dps
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  app: "operator"
+              topologyKey: topology.kubernetes.io/zone
+            weight: 100
+          - podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  app: "operator"
+              topologyKey: kubernetes.io/hostname
+            weight: 99
+
+    firewallInstanceTemplate:
+      proxyPort: 8081
+      # Internal local port for communication between containers in the same deployment.
+      firewallServerLocalPort: 50052
+      # Service for the firewall-instances
+      service:
+        type: ClusterIP
+        annotations: {}
+        labels: {}
+      # Deployment for the firewall server.
+      deployment:
+        annotations: {}
+        labels: {}
+        # Replica count for the firewall-server: only use if HPA disabled.
+        replicaCount: 1
+        # Resources for the firewall server container.
+        serverResources:
+          limits:
+            cpu: 3000m
+            memory: 5000Mi
+          requests:
+            cpu: 3000m
+            memory: 5000Mi
+        # Resources for the gRPC-gateway proxy container.
+        proxyResources:
+          limits:
+            memory: 150Mi
+          requests:
+            cpu: 10m
+            memory: 150Mi
+        topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: "topology.kubernetes.io/zone"
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              service-type: "firewall-instance"
+
+        tolerations:
+          - effect: NoSchedule
+            key: dedicated
+            operator: Equal
+            value: dps
+
+        affinity:
+          nodeAffinity:
+            requiredDuringSchedulingIgnoredDuringExecution:
+              nodeSelectorTerms:
+                - matchExpressions:
+                    - key: node_group
+                      operator: In
+                      values:
+                        - dps
+                        - dps-20250508
+                        - dps-2505
+          podAntiAffinity:
+            preferredDuringSchedulingIgnoredDuringExecution:
+              - podAffinityTerm:
+                  labelSelector:
+                    matchLabels:
+                      service-type: "firewall-instance"
+                  topologyKey: topology.kubernetes.io/zone
+                weight: 100
+              - podAffinityTerm:
+                  labelSelector:
+                    matchLabels:
+                      service-type: "firewall-instance"
+                  topologyKey: kubernetes.io/hostname
+                weight: 99
+      # Horizontal pod autoscaler for the firewall instance.
+      hpa:
+        annotations: {}
+        labels: {}
+        minReplicas: 1
+        maxReplicas: 3
+        metrics:
+          - type: Resource
+            resource:
+              name: cpu
+              target:
+                type: Value
+                averageValue: 600m
+    firewallInstanceIngress:
+      disabled: false
+    guardrailSnowflakeIngress:
+      enabled: false
+      ingressClassName: sf-ai-runtime
+    piiParallelization:
+      enabled: true
+      # Chunk size in characters. Assumes 1 token ~= 5 characters.
+      chunkSize: 5000
+
+  yaraOperator:
+    name: "yara-operator"
+    serviceAccount:
+      create: true
+      # If not set and create is true, a name is generated using the fullname template
+      name:
+      annotations: {}
+      labels: {}
+    # Horizontal pod autoscaler for the yaraOperator.
+    hpa:
+      enabled: true
+      annotations: {}
+      labels: {}
+      minReplicas: 2
+      maxReplicas: 3
+      metrics:
+      - type: Resource
+        resource:
+          name: cpu
+          target:
+            type: Utilization
+            averageUtilization: 60
+    # PDB for yaraOperator
+    pdb:
+      enabled: true
+      minAvailable: 1
+    deployment:
+      annotations: {}
+      labels: {}
+      replicaCount: 2
+      resources:
+        limits:
+          memory: 300Mi
+        requests:
+          cpu: 10m
+          memory: 100Mi
+
+      topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: "topology.kubernetes.io/zone"
+        whenUnsatisfiable: ScheduleAnyway
+        labelSelector:
+          matchLabels:
+            app: "yara-operator"
+
+      tolerations:
+        - effect: NoSchedule
+          key: dedicated
+          operator: Equal
+          value: dps
+
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: node_group
+                operator: In
+                values:
+                - dps
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  app: "yara-operator"
+              topologyKey: topology.kubernetes.io/zone
+            weight: 100
+          - podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  app: "yara-operator"
+              topologyKey: kubernetes.io/hostname
+            weight: 99
+
+    yaraServerTemplate:
+      yaraServerImageRepo:
+        registry: "docker.io"
+        name: "robustintelligencehq/firewall-backend"
+
+  # -- `yaraServer` K8s-level configurations
+  # @default -- (see individual values in `values.yaml`)
+  hotfixYaraServer:
+    name: "yara"
+    port: 5023
+    # Service for hotfixYaraServer
+    service:
+      type: ClusterIP
+      annotations: {}
+      labels: {}
+    # TODO: Create HPA for yara server (https://cisco-sbg.atlassian.net/browse/AIFW-5168)
+    # hpa:
+    #   enable: false
+      # annotations: {}
+      # labels: {}
+      # minReplicas: 1
+      # maxReplicas: 10
+      # metrics:
+      #   - type: Resource
+      #     resource:
+      #       name: cpu
+      #       target:
+      #         type: Utilization
+      #         averageUtilization: 60
+    # Deployment for hotfixYaraServer
+    deployment:
+      annotations: {}
+      labels: {}
+      replicaCount: 1
+      resources:
+        limits:
+          memory: 2500Mi
+          ephemeral-storage: "4Gi"
+        requests:
+          cpu: 1000m
+          memory: 2500Mi
+          ephemeral-storage: "2Gi"
+    # autoUpdateEnabled (bool): Whether to allow yara server to periodically update its rules via a pull mechanism.
+    autoUpdateEnabled: true
+    # ruleRepoRef (str): The revision of the YARA rule git repo to pull at server initialization.
+    ruleRepoRef: ""
+    # yaraPatternUpdateFrequency (str): The cron frequency at which yara server should update its rules.
+    yaraPatternUpdateFrequency: ""
+    # useEmbeddedYaraRules (bool): Whether to use the YARA rules embedded in the image.
+    useEmbeddedYaraRules: false
+    # installationID (str): The installation ID for the RI Github App.
+    installationID: ""
+    # appID (str): The app ID for the RI Github App.
+    appID: ""
+
+  # -- `piiAnalyzer` K8s-level configurations
+  # @default -- (see individual values in `values.yaml`)
+  piiAnalyzer:
+    enabled: true
+    name: "pii-analyzer"
+    port: 5026
+    restPort: 15026
+    # Service Account for piiAnalyzer
+    serviceAccount:
+      create: true
+      # If not set and create is true, a name is generated using the fullname template
+      name: ""
+      annotations: {}
+      labels: {}
+    # Service for piiAnalyzer
+    service:
+      type: ClusterIP
+      # gRPC uses HTTP/2, which maintains a single connection to the server
+      # and, in effect, bypasses the k8s service load balancer. Creating a
+      # headless service addresses this issue by allowing the client to use
+      # round-robin load balancing to distribute load.
+      headless: true
+      annotations: {}
+      labels: {}
+    # HPA for the piiAnalyzer
+    hpa:
+      annotations: {}
+      labels: {}
+      enabled: true
+      minReplicas: 3
+      maxReplicas: 5
+      metrics:
+        - type: Resource
+          resource:
+            name: cpu
+            target:
+              type: Utilization
+              averageUtilization: 25
+    # Deployment for piiAnalyzer
+    deployment:
+      annotations: {}
+      labels: {}
+      replicaCount: 1
+      maxWorkers: 50
+      resources:
+        limits:
+          cpu: 4000m
+          memory: 3000Mi
+        requests:
+          cpu: 4000m
+          memory: 3000Mi
+      topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: "topology.kubernetes.io/zone"
+        whenUnsatisfiable: ScheduleAnyway
+        labelSelector:
+          matchLabels:
+            app: "pii-analyzer"
+      tolerations:
+        - effect: NoSchedule
+          key: dedicated
+          operator: Equal
+          value: dps
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: node_group
+                operator: In
+                values:
+                - dps
+                - dps-20250508
+                - dps-2505
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  app: "pii-analyzer"
+              topologyKey: topology.kubernetes.io/zone
+            weight: 100
+          - podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  app: "pii-analyzer"
+              topologyKey: kubernetes.io/hostname
+            weight: 99
+
+  # -- `instanceManagerServer` K8s-level configurations
+  # @default -- (see individual values in `values.yaml`)
+  instanceManagerServer:
+    name: "instance-manager-server"
+    port: 5024
+    restPort: 15024
+    # Service Account for instanceManagerServer to manipulate k8s firewall instances.
+    serviceAccount:
+      create: true
+      # If not set and create is true, a name is generated using the fullname template
+      name:
+      annotations: {}
+      labels: {}
+    # Service for instanceManagerServer
+    service:
+      type: ClusterIP
+      annotations: {}
+      labels: {}
+    # No HPA for instanceManagerServer as it is a singleton.
+    hpa:
+      annotations: {}
+      labels: {}
+      enabled: true
+      minReplicas: 1
+      maxReplicas: 3
+      metrics:
+        - type: Resource
+          resource:
+            name: cpu
+            target:
+              type: Utilization
+              averageUtilization: 60
+    # Deployment for instanceManagerServer
+    deployment:
+      annotations: {}
+      labels: {}
+      replicaCount: 1
+      resources:
+        limits:
+          memory: 250Mi
+        requests:
+          cpu: 100m
+          memory: 250Mi
+
+      topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: "topology.kubernetes.io/zone"
+        whenUnsatisfiable: ScheduleAnyway
+        labelSelector:
+          matchLabels:
+            app: "instance-manager-server"
+
+      tolerations:
+        - effect: NoSchedule
+          key: dedicated
+          operator: Equal
+          value: dps
+
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: node_group
+                operator: In
+                values:
+                - dps
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  app: "instance-manager-server"
+              topologyKey: topology.kubernetes.io/zone
+            weight: 100
+          - podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  app: "instance-manager-server"
+              topologyKey: kubernetes.io/hostname
+            weight: 99
+
+  # -- `ingress` K8s-level configurations
+  # @default -- (see individual values in `values.yaml`)
+  ingress:
+    annotations: {}
+    labels: {}
+    tls: []
+    ingressClassName: nginx
+
+  # -- `monitoring` (Prometheus metrics/Datadog) K8s-level configurations
+  # @default -- (see individual values in `values.yaml`)
+  monitoring:
+    # -- Whether to enable Prometheus metrics for all services on the Firewall
+    enabled: true
+    # -- Port to expose Prometheus metrics on
+    port: 8080
+
+  # -- `tracing` (OpenTelemetry tracing) K8s-level configurations
+  # @default -- (see individual values in `values.yaml`)
+  tracing:
+    # -- Whether to enable OpenTelemetry tracing for all services on the Firewall
+    enabled: true
+    env_name: "dev"
+    otel_remote_backend_grpc_port: "4317"
+    cluster_name: "dev-ai-defence-us-west-2"
+    namespace: "sandbox-1-runtime"
+
+  registerFirewallAgent:
+    enabled: false
+    registerVersion: "0"
+    name: "register-firewall-agent-job"
+    agentID: ""
+    platformAddress: ""
+    agentURL: ""
+    apiKey: ""
+    backoffLimit: 2
+    serviceAccount:
+      create: true
+      name: ""
+      annotations: {}
+      labels: {}
+    job:
+      labels: {}
+      annotations: {}
+      securityContext: {}
+      resources:
+        limits:
+          memory: "100Mi"
+        requests:
+          memory: "100Mi"
+          cpu: "100m"
+
+  detectionEngineDeployment:
+    enabled: false
+    githubPrivateKeyPEM: ""
+    githubAppID: "989224"
+    githubInstallationID: "54537739"
+    configRepoURL: "https://api.github.com/repos/RobustIntelligence/rime"
+
+  firewallInstanceConfigs: null
+
+  modelServers:
+    deployment:
+      tolerations:
+        - effect: NoSchedule
+          key: dedicated
+          operator: Equal
+          # If GPUs requested for a given model server is greater than zero,
+          # then the operator will override this to be "gpu-dedicated"
+          value: dps
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: "topology.kubernetes.io/zone"
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              service-type: "model-server"
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    service-type: "model-server"
+                topologyKey: topology.kubernetes.io/zone
+              weight: 100
+            - podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    service-type: "model-server"
+                topologyKey: kubernetes.io/hostname
+              weight: 99
+    pdb:
+      minAvailable: 1
+    ## START MODEL SERVER VALUES
+    promptInjectionBinary:
+      remoteModelServerAddress: ""
+      useCachedArtifact:
+        enabled: false
+        dockerImageOverride:
+          registry: "docker.io"
+          name: "robustintelligencehq/firewall-model-server-prompt-injection-binary:latest"
+      resources:
+        limits:
+          cpu: 5000m
+          gpu: 0
+          memory: 5000Mi
+        max_replicas: 3
+        min_replicas: 1
+        requests:
+          cpu: 1000m
+          gpu: 0
+          memory: 5000Mi
+    tritonPromptInjectionBinary:
+      remoteModelServerAddress: ""
+      useCachedArtifact:
+        enabled: false
+        dockerImageOverride:
+          registry: "docker.io"
+          name: "robustintelligencehq/triton-inference-server:prompt-injection-trt-25.05-gpu-optimized-512-tokens-2-model-rep-v2"
+      resources:
+        limits:
+          cpu: 5000m
+          gpu: 1
+          memory: 6000Mi
+        max_replicas: 1
+        min_replicas: 1
+        requests:
+          cpu: 1000m
+          gpu: 1
+          memory: 6000Mi
+    toxicityIntentMultiLabel:
+      remoteModelServerAddress: ""
+      useCachedArtifact:
+        enabled: false
+        dockerImageOverride:
+          registry: "docker.io"
+          name: "robustintelligencehq/firewall-model-server-toxicity-intent-multi-label:latest"
+      resources:
+        limits:
+          cpu: 5000m
+          gpu: 0
+          memory: 1700Mi
+        max_replicas: 3
+        min_replicas: 1
+        requests:
+          cpu: 1000m
+          gpu: 0
+          memory: 1700Mi
+    tritonToxicityIntentMultiLabels:
+      remoteModelServerAddress: ""
+      useCachedArtifact:
+        enabled: false
+        dockerImageOverride:
+          registry: "docker.io"
+          name: "robustintelligencehq/triton-inference-server:toxicity-detection-trt-25.05-gpu-1-model-rep-v4"
+      resources:
+        limits:
+          cpu: 5000m
+          gpu: 1
+          memory: 6000Mi
+        max_replicas: 1
+        min_replicas: 1
+        requests:
+          cpu: 1000m
+          gpu: 1
+          memory: 6000Mi
+    xlmMultilingualToxicity:
+      remoteModelServerAddress: ""
+      useCachedArtifact:
+        enabled: false
+        dockerImageOverride:
+          registry: "docker.io"
+          name: "robustintelligencehq/firewall-model-server-xlm-multilingual-toxicity:latest"
+      resources:
+        limits:
+          cpu: 5000m
+          gpu: 0
+          memory: 3500Mi
+        max_replicas: 3
+        min_replicas: 1
+        requests:
+          cpu: 1000m
+          gpu: 0
+          memory: 3500Mi
+    xlmMultilingualHarmful:
+      remoteModelServerAddress: ""
+      useCachedArtifact:
+        enabled: false
+        dockerImageOverride:
+          registry: "docker.io"
+          name: "robustintelligencehq/firewall-model-server-xlm-multilingual-harmful:latest"
+      resources:
+        limits:
+          cpu: 5000m
+          gpu: 0
+          memory: 3500Mi
+        max_replicas: 3
+        min_replicas: 1
+        requests:
+          cpu: 1000m
+          gpu: 0
+          memory: 3500Mi
+    toxicity:
+      remoteModelServerAddress: ""
+      useCachedArtifact:
+        enabled: false
+        dockerImageOverride:
+          registry: "docker.io"
+          name: "robustintelligencehq/firewall-model-server-toxicity:latest"
+      resources:
+        limits:
+          cpu: 5000m
+          gpu: 0
+          memory: 3500Mi
+        max_replicas: 3
+        min_replicas: 1
+        requests:
+          cpu: 1000m
+          gpu: 0
+          memory: 3500Mi
+    ## END MODEL SERVER VALUES
+
+# -- Ingress-nginx controller sub-chart. See https://artifacthub.io/packages/helm/ingress-nginx/ingress-nginx for all parameters.
+# @default -- (see individual values in `values`.yaml)
+ingress-nginx:
+  enabled: false
+  imagePullSecrets:
+    - name: ri-regcred
+  controller:
+    image:
+      registry: "docker.io"
+      image: "robustintelligencehq/ingress-nginx-controller"
+      tag: "v1.12.1"
+      digest: "sha256:d2fbc4ec70d8aa2050dd91a91506e998765e86c96f32cffb56c503c9c34eed5b"
+    extraVolumeMounts:
+      - name: geoip
+        mountPath: "/etc/ingress-controller/geoip/GeoLite2-Country.mmdb"
+        subPath: GeoLite2-Country.mmdb
+    extraVolumes:
+      - name: geoip
+        emptyDir: {}
+    extraInitContainers:
+      - name: download-geoip
+        image: "robustintelligencehq/utility:1.0.0"
+        command: ["/bin/sh", "-c"]
+        args: ['aws s3api get-object --bucket geoip2-s3-storage-bucket --key GeoLite2-Country.mmdb GeoLite2-Country.mmdb && mv GeoLite2-Country.mmdb /home/GeoLite2-Country.mmdb']
+        volumeMounts:
+          - name: geoip
+            mountPath: /home
+    resources:
+      requests:
+        memory: "700Mi"
+    scope:
+      enabled: true
+      # -- K8s namespace for the ingress
+      namespace: ""
+    ingressClassResource:
+      enabled: true
+      default: false
+    admissionWebhooks:
+      enabled: false
+    service:
+      externalTrafficPolicy: Local
+      targetPorts:
+        http: http
+        https: http
+      # -- For full list of annotations, see
+      # https://kubernetes-sigs.github.io/aws-load-balancer-controller/v2.2/guide/service/annotations/
+      annotations:
+        service.beta.kubernetes.io/aws-load-balancer-proxy-protocol: "*"
+        service.beta.kubernetes.io/aws-load-balancer-target-group-attributes: preserve_client_ip.enabled=true
+        service.beta.kubernetes.io/aws-load-balancer-healthcheck-protocol: http
+        service.beta.kubernetes.io/aws-load-balancer-healthcheck-path: /healthz
+        service.beta.kubernetes.io/aws-load-balancer-healthcheck-port: 80
+      enableHttp: false
+    metrics:
+      # Enable Prometheus metrics by default for the ingress-nginx controller.
+      # It is accessible on port 10254.
+      enabled: true
+    config:
+      force-ssl-redirect: "false"
+      ssl-redirect: "false"
+      log-format-upstream: '{"msg": "nginx request log", "remote_addr": "$remote_addr", "request_method": "$request_method", "request_uri": "$request_uri", "status": $status, "body_bytes_sent": $body_bytes_sent, "request_time": $request_time, "http_referrer": "$http_referer", "http_user_agent": "$http_user_agent", "upstream_service": "$upstream_addr", "upstream_response_length": $upstream_response_length, "upstream_response_time": $upstream_response_time, "upstream_status": $upstream_status}'
+      use-proxy-protocol: "true"
+      allow-snippet-annotations: "true"
+      use-geoip: "false"
+      use-geoip2: "true"
+      # https://github.com/kubernetes/ingress-nginx/issues/12655
+      annotations-risk-level: "Critical"
+      http-snippet: |
+        map $geoip2_country_code $allowed_country {
+          default yes;
+          IR no;
+          CU no;
+          SY no;
+          KP no;
+          UA no;
+        }
+    extraArgs:
+      # https://kubernetes.github.io/ingress-nginx/user-guide/monitoring/#wildcard-ingresses
+      # We use a "wildcard host" character so unless we use this option, no
+      # metrics will be logged.
+      # They disable it by default because the cardinality blows up quickly.
+      metrics-per-host: "false"
+      maxmind-edition-ids: GeoLite2-Country
+    topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: "topology.kubernetes.io/zone"
+        whenUnsatisfiable: ScheduleAnyway
+        labelSelector:
+          matchLabels:
+            app: "ingress-nginx"
+    tolerations:
+      - effect: NoSchedule
+        key: dedicated
+        operator: Equal
+        value: dps
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+            - matchExpressions:
+                - key: node_group
+                  operator: In
+                  values:
+                    - dps
+      podAntiAffinity:
+        preferredDuringSchedulingIgnoredDuringExecution:
+          - podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  app: "ingress-nginx"
+              topologyKey: topology.kubernetes.io/zone
+            weight: 100
+          - podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  app: "ingress-nginx"
+              topologyKey: kubernetes.io/hostname
+            weight: 99
+
+valkey:
+  enabled: false
