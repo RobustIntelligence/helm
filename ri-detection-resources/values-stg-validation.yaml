@@ -1,0 +1,15 @@
+commonAnnotations:
+  ad.datadoghq.com/tags: '{"user":"firewall-abx"}'
+  prometheus.io/scrape: 'true'
+  prometheus.io/port: '8080'
+
+secrets:
+  existingIntegrationSecretsName: validation-abx-secrets-terraform
+
+images:
+  modelServerImage:
+    name: "robustintelligencehq/firewall-model-server:2.12.11"
+    pullPolicy: "IfNotPresent"
+  firewallBackendImage:
+    name: "robustintelligencehq/firewall-backend:2.12.11"
+    pullPolicy: "IfNotPresent"
