@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "ri-firewall.fullname" . }}-{{ .Values.riFirewall.licenseServer.name }}
+  labels:
+    {{- with .Values.riFirewall.licenseServer.service.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  annotations:
+    {{- include "ri-firewall.annotations" . | nindent 4 }}
+    {{- with .Values.riFirewall.licenseServer.service.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  type: {{ .Values.riFirewall.licenseServer.service.type }}
+  ports:
+    - port: {{ .Values.riFirewall.licenseServer.port }}
+      targetPort: {{ .Values.riFirewall.licenseServer.port }}
+      protocol: TCP
+      name: license
+  selector:
+    app: {{ .Values.riFirewall.licenseServer.name }}
