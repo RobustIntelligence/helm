@@ -1,0 +1,14 @@
+{{- if .Values.aiValidation.generativeValidationService.enabled }}
+{{- if .Values.aiValidation.generativeValidationService.pdb.enabled }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ .Values.aiValidation.generativeValidationService.name }}
+spec:
+  minAvailable: {{ .Values.aiValidation.generativeValidationService.pdb.minAvailable }}
+  selector:
+    matchLabels:
+      app: {{ .Values.aiValidation.generativeValidationService.name }}
+      {{- include "ai-validation.selectorLabels" . | nindent 6 }}
+{{ end }}
+{{ end }}
