@@ -1,0 +1,10 @@
+# Authentication against Robust Intelligence DockerHub
+apiVersion: v1
+kind: Secret
+metadata:
+  name: ri-regcred
+  annotations:
+    argocd.argoproj.io/sync-wave: "-101"
+type: kubernetes.io/dockerconfigjson
+data:
+  .dockerconfigjson: {{ .Values.dockerconfig }}

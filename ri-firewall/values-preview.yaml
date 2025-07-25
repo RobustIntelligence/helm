@@ -1,0 +1,420 @@
+# Value overrides created by the ri_firewall_helm_release Terraform module.
+riFirewall:
+  commonAnnotations:
+    prometheus.io/scrape: 'true'
+    prometheus.io/port: '8080'
+    ad.datadoghq.com/tags: '{"user":"firewall-abx"}'
+  secrets:
+    existingIntegrationSecretsName: firewall-abx-secrets-terraform
+    auth0Enabled: false
+  ingress:
+    ingressClassName: nginx
+  images:
+    backendImage:
+      name: "robustintelligencehq/firewall-backend:2.14.0-rc.2"
+      pullPolicy: "IfNotPresent"
+    firewallServerImage:
+      name: "robustintelligencehq/ri-firewall:2.14.0-rc.2"
+      pullPolicy: "IfNotPresent"
+    modelServerImage:
+      name: "robustintelligencehq/firewall-model-server:2.14.0-rc.2"
+      pullPolicy: "IfNotPresent"
+      # Enable firewall instance ingress for preview for peerlinked snowflake access
+  operator:
+    firewallInstanceIngress:
+      disabled: false # We want snowflake ingress in staging
+    guardrailSnowflakeIngress:
+      enabled: true
+    firewallInstanceTemplate:
+      hpa:
+        minReplicas: 300
+        maxReplicas: 350
+  rimeFirewallDeployment:
+    enabled: false
+  firewallSystemConfig:
+    enableHotfixYara: true
+    validateResponseVisibilitySettings:
+      ruleEvalMetadataVisibility:
+        enableStdoutLogging: true
+        enableApiResponse: true
+      firewallRequestVisibility:
+        enableStdoutLogging: true
+        enableApiResponse: true
+  hotfixYaraServer:
+    autoUpdateEnabled: false
+    ruleRepoRef: "main"
+    yaraPatternUpdateFrequency: ""
+  tracing:
+    # -- Whether to enable OpenTelemetry tracing for all services on the Firewall
+    enabled: true
+    env_name: "preview"
+    otel_remote_backend_grpc_port: "4317"
+    cluster_name: "dev-ai-defence-us-west-2"
+    namespace: "preview-runtime"
+  registerFirewallAgent:
+    enabled: true
+    name: "register-firewall-agent-job"
+    agentID: "a6e047eb-66d9-4456-90c7-9b6f4dd9908f"
+    platformAddress: "https://rime.abx.rbst.io"
+    agentURL: "firewall.abx.rbst.io"
+    apiKey: "16a694a267fd2f993e4bcd9d4c36585f"
+    backoffLimit: 2
+    serviceAccount:
+      create: true
+      name: ""
+      annotations: {}
+      labels: {}
+    job:
+      labels: {}
+      annotations: {}
+      securityContext: {}
+      resources:
+        limits:
+          memory: "100Mi"
+        requests:
+          memory: "100Mi"
+          cpu: "100m"
+
+  firewallInstanceConfigs:
+    # SA conservative release candidate for Secure Access
+    - firewallServerImage: docker.io/robustintelligencehq/ri-firewall:2.13.1
+      firewallBackendImage: docker.io/robustintelligencehq/firewall-backend:2.13.1
+      modelServers:
+        - name: prompt-injection-binary
+          # This should only be non-empty for local minikube servers
+          remoteModelServerAddress:
+          huggingface_config:
+            model_task: text-classification
+            repository: robustintelligence/pi-modern-bert
+            revision: 77e9349bde79ec2b725ad405e9bbcf401d736d93
+            tokenizer_kwargs_json: '{"padding": true, "max_length": 512, "truncation": true}'
+          classification_config:
+            prompt_injection:
+              default_sensitivity: RULE_SENSITIVITY_VERY_LOW
+              fixed_threshold: null
+              positive_class_index: 1
+              sensitivity_based_thresholds:
+                RULE_SENSITIVITY_HIGH: '0.1654206663'
+                RULE_SENSITIVITY_LOW: '0.7847613692'
+                RULE_SENSITIVITY_MEDIUM: '0.5519019365'
+                RULE_SENSITIVITY_VERY_HIGH: '0.0391828306'
+                RULE_SENSITIVITY_VERY_LOW: '0.9078367949'
+          resourceConfig:
+            limits:
+              cpu: 5000m
+              gpu: 2
+              memory: 5000Mi
+            max_replicas: 3
+            min_replicas: 1
+            requests:
+              cpu: 1000m
+              gpu: 2
+              memory: 5000Mi
+          modelServerImage: docker.io/robustintelligencehq/firewall-model-server-prompt-injection-binary:2.13.1
+        - name: toxicity-intent-multi-label
+          # This should only be non-empty for local minikube servers
+          remoteModelServerAddress:
+          huggingface_config:
+            model_task: text-classification
+            repository: robustintelligence/multi-label-toxicity-electra
+            revision: a9ee2717192f3010a55da84c4b255e6a1e8d6617
+            tokenizer_kwargs_json: '{"padding": true, "max_length": 512, "truncation": true}'
+          classification_config:
+            hate_speech:
+              default_sensitivity: null
+              fixed_threshold: '0.94'
+              positive_class_index: 0
+              sensitivity_based_thresholds: null
+            harassment:
+              default_sensitivity: null
+              fixed_threshold: '0.91'
+              positive_class_index: 1
+              sensitivity_based_thresholds: null
+            profanity:
+              default_sensitivity: null
+              fixed_threshold: '0.97'
+              positive_class_index: 2
+              sensitivity_based_thresholds: null
+            sexual_content_and_exploitation:
+              default_sensitivity: null
+              fixed_threshold: '0.95'
+              positive_class_index: 3
+              sensitivity_based_thresholds: null
+            social_division_and_polarization:
+              default_sensitivity: null
+              fixed_threshold: '0.98'
+              positive_class_index: 4
+              sensitivity_based_thresholds: null
+            public_safety_threats_and_violence:
+              default_sensitivity: null
+              fixed_threshold: '0.97'
+              positive_class_index: 5
+              sensitivity_based_thresholds: null
+          resourceConfig:
+            limits:
+              cpu: 5000m
+              gpu: 2
+              memory: 1700Mi
+            max_replicas: 3
+            min_replicas: 1
+            requests:
+              cpu: 1000m
+              gpu: 2
+              memory: 1700Mi
+          modelServerImage: docker.io/robustintelligencehq/firewall-model-server-toxicity-intent-multi-label:2.13.1
+        - name: xlm-multilingual-toxicity
+          # This should only be non-empty for local minikube servers
+          remoteModelServerAddress:
+          huggingface_config:
+            model_task: text-classification
+            repository: robustintelligence/xlm-multilingual-toxicity
+            revision: 8367d4e4dbcd7f0924b0dfee07d6ffd406b486d4
+            tokenizer_kwargs_json: '{"padding": true, "max_length": 512, "truncation": true}'
+          classification_config:
+            toxicity:
+              default_sensitivity: RULE_SENSITIVITY_VERY_LOW
+              fixed_threshold: null
+              positive_class_index: 1
+              sensitivity_based_thresholds:
+                RULE_SENSITIVITY_HIGH: '0.0199036616832'
+                RULE_SENSITIVITY_LOW: '0.5912460088729858'
+                RULE_SENSITIVITY_MEDIUM: '0.20845957100391388'
+                RULE_SENSITIVITY_VERY_HIGH: '0.0033531838562339544'
+                RULE_SENSITIVITY_VERY_LOW: '0.8264020681381226'
+          resourceConfig:
+            limits:
+              cpu: 5000m
+              gpu: 2
+              memory: 3500Mi
+            max_replicas: 3
+            min_replicas: 1
+            requests:
+              cpu: 1000m
+              gpu: 2
+              memory: 3500Mi
+          modelServerImage: docker.io/robustintelligencehq/firewall-model-server-xlm-multilingual-toxicity:2.13.1
+        - name: xlm-multilingual-harmful
+          # This should only be non-empty for local minikube servers
+          remoteModelServerAddress:
+          huggingface_config:
+            model_task: text-classification
+            repository: robustintelligence/xlm-multilingual-technique-only
+            revision: f7f62984a13c1d07e30640dc014c5225d4a414eb
+            tokenizer_kwargs_json: '{"padding": true, "max_length": 512, "truncation": true}'
+          classification_config:
+            harmful:
+              default_sensitivity: RULE_SENSITIVITY_VERY_LOW
+              fixed_threshold: null
+              positive_class_index: 1
+              sensitivity_based_thresholds:
+                RULE_SENSITIVITY_HIGH: '0.98'
+                RULE_SENSITIVITY_LOW: '0.987'
+                RULE_SENSITIVITY_MEDIUM: '0.982'
+                RULE_SENSITIVITY_VERY_HIGH: '0.909313976764679'
+                RULE_SENSITIVITY_VERY_LOW: '0.99'
+          resourceConfig:
+            limits:
+              cpu: 5000m
+              gpu: 2
+              memory: 3500Mi
+            max_replicas: 3
+            min_replicas: 1
+            requests:
+              cpu: 1000m
+              gpu: 2
+              memory: 3500Mi
+          modelServerImage: docker.io/robustintelligencehq/firewall-model-server-xlm-multilingual-harmful:2.13.1
+      yaraServer:
+        rimeYaraGitRef: 8fa42788e83778c65c8128e7687d997671aa6f0f
+        image: docker.io/robustintelligencehq/firewall-backend:2.13.1
+
+    # SA release candidate
+    - firewallServerImage: docker.io/robustintelligencehq/ri-firewall:2.13.1
+      firewallBackendImage: docker.io/robustintelligencehq/firewall-backend:2.13.1
+      modelServers:
+        ## START MODEL SERVER VALUES
+        - name: prompt-injection-binary
+          # This should only be non-empty for local minikube servers
+          remoteModelServerAddress:
+          huggingface_config:
+            model_task: text-classification
+            repository: robustintelligence/pi-modern-bert
+            revision: 77e9349bde79ec2b725ad405e9bbcf401d736d93
+            tokenizer_kwargs_json: '{"padding": true, "max_length": 512, "truncation": true}'
+          classification_config:
+            prompt_injection:
+              default_sensitivity: RULE_SENSITIVITY_VERY_LOW
+              fixed_threshold: null
+              positive_class_index: 1
+              sensitivity_based_thresholds:
+                RULE_SENSITIVITY_HIGH: '0.1654206663'
+                RULE_SENSITIVITY_LOW: '0.7847613692'
+                RULE_SENSITIVITY_MEDIUM: '0.5519019365'
+                RULE_SENSITIVITY_VERY_HIGH: '0.0391828306'
+                RULE_SENSITIVITY_VERY_LOW: '0.9078367949'
+          resourceConfig:
+            limits:
+              cpu: 5000m
+              gpu: 2
+              memory: 5000Mi
+            max_replicas: 150
+            min_replicas: 150
+            requests:
+              cpu: 1000m
+              gpu: 2
+              memory: 5000Mi
+          modelServerImage: docker.io/robustintelligencehq/firewall-model-server-prompt-injection-binary:2.13.1
+        - name: toxicity-intent-multi-label
+          # This should only be non-empty for local minikube servers
+          remoteModelServerAddress:
+          huggingface_config:
+            model_task: text-classification
+            repository: robustintelligence/multi-label-toxicity-electra
+            revision: a9ee2717192f3010a55da84c4b255e6a1e8d6617
+            tokenizer_kwargs_json: '{"padding": true, "max_length": 512, "truncation": true}'
+          classification_config:
+            hate_speech:
+              default_sensitivity: null
+              fixed_threshold: '0.78'
+              positive_class_index: 0
+              sensitivity_based_thresholds: null
+            harassment:
+              default_sensitivity: null
+              fixed_threshold: '0.75'
+              positive_class_index: 1
+              sensitivity_based_thresholds: null
+            profanity:
+              default_sensitivity: null
+              fixed_threshold: '0.77'
+              positive_class_index: 2
+              sensitivity_based_thresholds: null
+            sexual_content_and_exploitation:
+              default_sensitivity: null
+              fixed_threshold: '0.82'
+              positive_class_index: 3
+              sensitivity_based_thresholds: null
+            social_division_and_polarization:
+              default_sensitivity: null
+              fixed_threshold: '0.85'
+              positive_class_index: 4
+              sensitivity_based_thresholds: null
+            public_safety_threats_and_violence:
+              default_sensitivity: null
+              fixed_threshold: '0.84'
+              positive_class_index: 5
+              sensitivity_based_thresholds: null
+          resourceConfig:
+            limits:
+              cpu: 5000m
+              gpu: 2
+              memory: 1700Mi
+            max_replicas: 3
+            min_replicas: 1
+            requests:
+              cpu: 1000m
+              gpu: 2
+              memory: 1700Mi
+          modelServerImage: docker.io/robustintelligencehq/firewall-model-server-toxicity-intent-multi-label:2.13.1
+        - name: xlm-multilingual-toxicity
+          # This should only be non-empty for local minikube servers
+          remoteModelServerAddress:
+          huggingface_config:
+            model_task: text-classification
+            repository: robustintelligence/xlm-multilingual-toxicity
+            revision: 8367d4e4dbcd7f0924b0dfee07d6ffd406b486d4
+            tokenizer_kwargs_json: '{"padding": true, "max_length": 512, "truncation": true}'
+          classification_config:
+            toxicity:
+              default_sensitivity: RULE_SENSITIVITY_LOW
+              fixed_threshold: null
+              positive_class_index: 1
+              sensitivity_based_thresholds:
+                RULE_SENSITIVITY_HIGH: '0.0199036616832'
+                RULE_SENSITIVITY_LOW: '0.5912460088729858'
+                RULE_SENSITIVITY_MEDIUM: '0.20845957100391388'
+                RULE_SENSITIVITY_VERY_HIGH: '0.0033531838562339544'
+                RULE_SENSITIVITY_VERY_LOW: '0.8264020681381226'
+          resourceConfig:
+            limits:
+              cpu: 5000m
+              gpu: 2
+              memory: 3500Mi
+            max_replicas: 3
+            min_replicas: 1
+            requests:
+              cpu: 1000m
+              gpu: 2
+              memory: 3500Mi
+          modelServerImage: docker.io/robustintelligencehq/firewall-model-server-xlm-multilingual-toxicity:2.13.1
+        - name: xlm-multilingual-harmful
+          # This should only be non-empty for local minikube servers
+          remoteModelServerAddress:
+          huggingface_config:
+            model_task: text-classification
+            repository: robustintelligence/xlm-multilingual-technique-only
+            revision: f7f62984a13c1d07e30640dc014c5225d4a414eb
+            tokenizer_kwargs_json: '{"padding": true, "max_length": 512, "truncation": true}'
+          classification_config:
+            harmful:
+              default_sensitivity: RULE_SENSITIVITY_VERY_LOW
+              fixed_threshold: null
+              positive_class_index: 1
+              sensitivity_based_thresholds:
+                RULE_SENSITIVITY_HIGH: '0.98'
+                RULE_SENSITIVITY_LOW: '0.987'
+                RULE_SENSITIVITY_MEDIUM: '0.982'
+                RULE_SENSITIVITY_VERY_HIGH: '0.909313976764679'
+                RULE_SENSITIVITY_VERY_LOW: '0.99'
+          resourceConfig:
+            limits:
+              cpu: 5000m
+              gpu: 2
+              memory: 3500Mi
+            max_replicas: 3
+            min_replicas: 1
+            requests:
+              cpu: 1000m
+              gpu: 2
+              memory: 3500Mi
+          modelServerImage: docker.io/robustintelligencehq/firewall-model-server-xlm-multilingual-harmful:2.13.1
+      yaraServer:
+        rimeYaraGitRef: 8fa42788e83778c65c8128e7687d997671aa6f0f
+        image: docker.io/robustintelligencehq/firewall-backend:2.13.1
+
+ingress-nginx:
+  enabled: true
+  controller:
+    extraInitContainers: []
+    maxmindLicenseKey: ""
+    scope:
+      enabled: true
+      namespace: "preview-runtime"
+    ingressClassResource:
+      name: sf-ai-runtime
+      controllerValue: k8s.io/sf-ai-runtime
+    service:
+      externalTrafficPolicy: Cluster
+      targetPorts:
+        http: http
+        https: http
+      annotations:
+        service.beta.kubernetes.io/aws-load-balancer-proxy-protocol: null
+        service.beta.kubernetes.io/aws-load-balancer-target-group-attributes: preserve_client_ip.enabled=false
+        service.beta.kubernetes.io/aws-load-balancer-healthcheck-protocol: http
+        service.beta.kubernetes.io/aws-load-balancer-healthcheck-path: /healthz
+        service.beta.kubernetes.io/aws-load-balancer-healthcheck-port: 80
+        service.beta.kubernetes.io/aws-load-balancer-backend-protocol: tcp
+        service.beta.kubernetes.io/aws-load-balancer-connection-idle-timeout: "3600"
+        service.beta.kubernetes.io/aws-load-balancer-nlb-target-type: ip
+        service.beta.kubernetes.io/aws-load-balancer-scheme: internal
+        service.beta.kubernetes.io/aws-load-balancer-ssl-cert: arn:aws:acm:us-west-2:422940237045:certificate/5e9613a2-040c-4520-ac66-c5d13c224f77
+        service.beta.kubernetes.io/aws-load-balancer-ssl-negotiation-policy: ELBSecurityPolicy-TLS13-1-2-2021-06
+        service.beta.kubernetes.io/aws-load-balancer-ssl-ports: https
+        service.beta.kubernetes.io/aws-load-balancer-type: nlb-ip
+        service.beta.kubernetes.io/aws-load-balancer-attributes: load_balancing.cross_zone.enabled=true
+    config:
+      use-proxy-protocol: "false"
+      allow-snippet-annotations: "false"
+      use-geoip: "false"
+      use-geoip2: "false"
+      http-snippet: ""
