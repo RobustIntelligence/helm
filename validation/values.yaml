@@ -1,0 +1,397 @@
+aiValidation:
+  verbose: true
+
+  monitoring:
+    enabled: true
+    port: 8080
+
+  images:
+    imagePullSecrets:
+      - name: "ri-regcred"
+    aiValidationImage:
+      registry: "docker.io"
+      name: "robustintelligencehq/ai-validation:latest"
+      # See https://kubernetes.io/docs/concepts/containers/images/#image-pull-policy
+      pullPolicy: "Always"
+    detectionEngineImage:
+      registry: "docker.io"
+      name: "robustintelligencehq/ri-firewall:2.12.3"
+      pullPolicy: "Always"
+
+  detectionServer:
+    name: "detection-server"
+    enabled: true
+    port: 50053
+    logLevel: info
+    # Whether to enable the gRPC-gateway proxy for internal data platform usage.
+    # We expose the detection server via REST on internal clusters only.
+    # DO NOT ENABLE IN PRODUCTION.
+    enableGrpcGateway: false
+    # port for the gRPC-gateway proxy
+    proxyPort: 15053
+    service:
+      type: ClusterIP
+      annotations: {}
+      labels: {}
+    hpa:
+      annotations: {}
+      labels: {}
+      enabled: true
+      minReplicas: 2
+      maxReplicas: 10
+      metrics:
+        - type: Resource
+          resource:
+            name: cpu
+            target:
+              type: Utilization
+              averageUtilization: 60
+    pdb:
+      enabled: true
+      minAvailable: 1
+    deployment:
+      annotations: {}
+      labels: {}
+      replicaCount: 2
+      serverResources:
+        limits:
+          memory: 3500Mi
+        requests:
+          cpu: 250m
+          memory: 3500Mi
+      # Resources for the gRPC-gateway proxy container.
+      proxyResources:
+        limits:
+          memory: 100Mi
+        requests:
+          cpu: 10m
+          memory: 100Mi
+
+      # SecurityContext to add to the deployment. Default is just set to not run as root.
+      # ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#securitycontext-v1-core
+      securityContext:
+        runAsNonRoot: true
+
+      # Extra env variables to add to the deployment. Make sure these don't
+      # conflict with the ones already defined in the deployment.
+      # ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#envvar-v1-core
+      extraEnv: []
+
+      # Extra volumes to add to the deployment. Make sure these don't
+      # conflict with the ones already defined in the deployment.
+      # ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#volumedevice-v1-core
+      extraVolumes: []
+
+      # Extra volume mounts to add to the deployment. Make sure these don't
+      # conflict with the ones already defined in the deployment.
+      # ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#volumemount-v1-core
+      extraVolumeMounts: []
+
+      ## Node labels for pod assignment
+      ## ref: https://kubernetes.io/docs/user-guide/node-selection/
+      nodeSelector: {}
+
+      topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: "topology.kubernetes.io/zone"
+        whenUnsatisfiable: ScheduleAnyway
+        labelSelector:
+          matchLabels:
+            app: "detection-server"
+
+      tolerations:
+        - effect: NoSchedule
+          key: dedicated
+          operator: Equal
+          value: dps
+
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: node_group
+                operator: In
+                values:
+                - dps
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  app: "detection-server"
+              topologyKey: topology.kubernetes.io/zone
+            weight: 100
+          - podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  app: "detection-server"
+              topologyKey: kubernetes.io/hostname
+            weight: 99
+
+  generativeValidationService:
+    enabled: true
+    name: generative-validation-service
+    port: 5040
+    logLevel: info
+    serviceAccount:
+      create: true
+      annotations: {}
+    service:
+      type: ClusterIP
+    env:
+      validationManagerGrpcEndpoint: "ai-defense-ai-validation-manager.default.svc.cluster.local:5555"
+    hpa:
+      annotations: {}
+      labels: {}
+      enabled: true
+      minReplicas: 2
+      maxReplicas: 10
+      metrics:
+        - type: Resource
+          resource:
+            name: cpu
+            target:
+              type: Utilization
+              averageUtilization: 60
+    pdb:
+      enabled: true
+      minAvailable: 1
+    deployment:
+      environment: cloud
+      # SecurityContext to add to the deployment. Default is just set to not run as root.
+      # ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#securitycontext-v1-core
+      securityContext:
+        runAsNonRoot: true
+      replicaCount: 2
+      resources:
+        limits:
+          memory: "1000Mi"
+          cpu: "1000m"
+        requests:
+          memory: "1000Mi"
+          cpu: "1000m"
+
+      topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: "topology.kubernetes.io/zone"
+        whenUnsatisfiable: ScheduleAnyway
+        labelSelector:
+          matchLabels:
+            app: "generative-validation-service"
+
+      tolerations:
+        - effect: NoSchedule
+          key: dedicated
+          operator: Equal
+          value: dps
+
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: node_group
+                operator: In
+                values:
+                - dps
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  app: "generative-validation-service"
+              topologyKey: topology.kubernetes.io/zone
+            weight: 100
+          - podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  app: "generative-validation-service"
+              topologyKey: kubernetes.io/hostname
+            weight: 99
+    networkPolicy:
+      enabled: true
+      egressExceptCIDR:
+      - 10.0.0.0/8  #  Private network range - rfc1918
+      - 192.168.0.0/16  #  Private network range - rfc1918
+      - 127.0.0.1/32  #  localhost
+      - 64.102.211.28/32  #  Cisco internal IPs allowed via SCI
+      - 64.103.72.16/32  #  Cisco internal IPs allowed via SCI
+      - 64.103.72.33/32  #  Cisco internal IPs allowed via SCI
+      - 64.103.217.31/32  #  Cisco internal IPs allowed via SCI
+      - 64.103.217.36/32  #  Cisco internal IPs allowed via SCI
+      - 171.70.42.30/32  #  Cisco internal IPs allowed via SCI
+      - 171.70.43.20/32  #  Cisco internal IPs allowed via SCI
+      - 171.70.43.14/32  #  Cisco internal IPs allowed via SCI
+      - 171.70.43.15/32  #  Cisco internal IPs allowed via SCI
+      - 12.19.88.217/32  #  Cisco internal IPs allowed via SCI
+      - 173.36.224.109/32  #  SCI default allowed http/https
+      - 173.36.224.108/32  #  SCI default allowed http/https
+      - 64.102.255.40/32  #  SCI default allowed http/https
+      - 173.39.112.118/32  #  SCI default allowed http/https
+      - 64.103.36.135/32  #  SCI default allowed http/https
+      - 72.163.217.41/32  #  SCI default allowed http/https
+      - 64.104.249.166/32  #  SCI default allowed http/https
+      - 64.102.255.47/32  #  SCI default allowed http/https
+      - 72.163.217.40/32  #  SCI default allowed http/https
+      - 64.104.249.167/32  #  SCI default allowed http/https
+      - 173.39.112.117/32  #  SCI default allowed http/https
+    cpHostAddr: "localhost:8080"
+  metrics:
+    enabled: true
+    env_name: "dev"
+    otel_remote_backend_grpc_port: "4317"
+    cluster_name: "dev-ai-defence-us-west-2"
+    namespace: "sandbox-1-validation"
+    meter_name: "ai-validation-meter"
+
+global:
+  replicated:
+    # -- Value filled by replicated durign packaging
+    dockerconfigjson: ""
+# -- Override installation namespace
+namespace: ""
+
+image:
+  # -- Registry name
+  registry: dockerhub.cisco.com
+  # -- Repository name
+  repository: ai-team-dev-docker
+  # -- Image pull policy
+  pullPolicy: IfNotPresent
+  # -- Overrides the image tag whose default is the chart appVersion.
+  tag: "t1"
+  imagePullSecrets:
+    # -- Image pull secrets
+    - name: regcred
+env:
+  # -- Cluster name
+  CLUSTER_NAME: ""
+  # -- Cloud gateway gRPC endpoint
+  CLOUD_GATEWAY_GRPC_ENDPOINT: "environment.cloudgw.aidefense.aiteam.cisco.com:443"
+
+# -- Name of the chart
+nameOverride: ""
+# -- Full name of the chart
+fullnameOverride: ""
+
+# NOTE: Need to work on Replicated pieces for packaging and it is subject to changes.
+onpremGateway:
+  # -- Name of the on-prem gateway
+  name: "ai-defense-onprem-gateway"
+  # -- Enable or disable the on-prem gateway
+  enabled: false
+  # -- Number of replicas
+  replicaCount: 1
+  # @ignored
+  topologySpreadConstraints:
+    - maxSkew: 1
+      topologyKey: "topology.kubernetes.io/zone"
+      whenUnsatisfiable: ScheduleAnyway
+      labelSelector:
+        matchLabels:
+          app: "ai-defense-onprem-gateway"
+  # @ignored
+  affinity:
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - podAffinityTerm:
+            labelSelector:
+              matchLabels:
+                app: "ai-defense-onprem-gateway"
+            topologyKey: topology.kubernetes.io/zone
+          weight: 100
+        - podAffinityTerm:
+            labelSelector:
+              matchLabels:
+                app: "ai-defense-onprem-gateway"
+            topologyKey: kubernetes.io/hostname
+          weight: 99
+  pdb:
+    # -- Enable or disable the PodDisruptionBudget
+    enabled: false
+    # -- Minimum number of available pods
+    minAvailable: 1
+  labels:
+    # -- App labels
+    app: "ai-defense-onprem-gateway"
+    app.kubernetes.io/instance: ai-defense-onprem-gateway
+    app.kubernetes.io/name: "ai-defense-onprem-gateway"
+  image:
+    # -- Image name
+    service: onprem_gw
+    # -- Image tag, only set it for component level fixes, else default to appVersion set in Chart.yaml
+    tag: t1
+    # -- Image pull policy
+    pullPolicy: Always
+  env:
+    # -- Log level
+    LOG_LEVEL: "debug"
+    # -- OTEL tracing
+    OTEL_TRACING_ENABLED: "false"
+    # -- On-prem version
+    ONPREM_VERSION: "0.0.0"
+    # -- Size of the worker pool for handling requests
+    WORKER_POOL_SIZE: "10"
+
+    # -- Base delay in seconds for retry/back-off configuration
+    RETRY_CONN_BASE_DELAY_SEC: "1"
+    # -- Max delay in seconds for retry/back-off configuration
+    RETRY_CONN_MAX_DELAY_SEC: "30"
+
+    # -- gRPC keepalive constants for client connections
+    # -- How often to send pings in seconds if no activity
+    KEEPALIVE_TIME_SEC: "30"
+    # -- How long to wait for ping ACK in seconds before considering connection dead
+    KEEPALIVE_TIMEOUT_SEC: "10"
+    # -- Whether to permit keepalive pings without active streams
+    KEEPALIVE_PERMIT_WITHOUT_STREAM: "false"
+    API_KEY_SECRET_KEY: "api-key"
+  otel:
+    # -- OTEL tracing enabled
+    TRACING_ENABLED: "false"
+  # Endpoints map - Add new endpoints here as needed
+  # Keys will be automatically converted to uppercase in the config
+  serviceEndpoints:
+    # -- Runtime service endpoint
+    RUNTIME: "service-b:50052"
+    # -- Validation service endpoint
+    VALIDATION: "generative-validation-service:5040"
+    # Add additional endpoints as needed
+  serviceAccount:
+    # -- Service account name
+    name: "ai-defense-onprem-gateway"
+  resources:
+    # -- Resource limits
+    limits:
+      # -- Memory limit
+      memory: "1Gi"
+    # -- Resource requests
+    requests:
+      # -- CPU request
+      cpu: "500m"
+      # -- Memory request
+      memory: "1Gi"
+  service:
+    # -- Service type
+    type: ClusterIP
+    # -- Service ports
+    ports:
+      # -- gRPC port
+      grpc: 5555
+      # -- Debug port
+      debug: 6060
+    health:
+      # -- Liveness probe
+      livenessProbe:
+        # -- Initial delay in seconds
+        initialDelaySeconds: 60
+      # -- Readiness probe
+      readinessProbe:
+        # -- Initial delay in seconds
+        initialDelaySeconds: 10
+
+# Configuration for the hybrid deployment API key secret
+hybridDeploymentApiKeySecret:
+  enabled: true
+  name: "hybrid-deployment-api-key"

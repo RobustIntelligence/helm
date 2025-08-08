@@ -1,0 +1,16 @@
+{{- define "component-otel-env-vars-runtime"}}
+- name: OTEL_NODE_IP
+  valueFrom:
+    fieldRef:
+      fieldPath: status.hostIP
+- name: OTEL_REMOTE_BACKEND_GRPC_PORT
+  value: {{ $.Root.Values.riFirewall.tracing.otel_remote_backend_grpc_port | quote }}
+- name: OTEL_HOST_NAME
+  value: {{ printf "%s-%s" $.Root.Values.riFirewall.tracing.cluster_name $.Root.Values.riFirewall.tracing.namespace }}
+- name: OTEL_ENV_NAME
+  value: {{ $.Root.Values.riFirewall.tracing.env_name }}
+- name: OTEL_TRACER_NAME
+  value: {{ .ServiceKey.name }}
+- name: OTEL_SERVICE_NAME
+  value: {{ .ServiceKey.name }}
+{{- end }}
