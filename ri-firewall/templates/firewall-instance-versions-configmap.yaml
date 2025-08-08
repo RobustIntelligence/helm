@@ -1,0 +1,322 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: firewall-instance-versions-conf
+data:
+  # This default firewall instance will always be created for each deployment.
+  # This is primarily a (likely temporary) measure to make sure everything
+  # continues to work as expected until all work is done with the migration
+  # to using the versioned instances.
+  defaultFirewallInstance: |
+    firewallServerImage: {{ .Values.riFirewall.images.firewallServerImage.registry}}/{{ .Values.riFirewall.images.firewallServerImage.name }}
+    firewallBackendImage: {{ .Values.riFirewall.images.backendImage.registry}}/{{ .Values.riFirewall.images.backendImage.name }}
+    modelServers:
+      {{- if .Values.riFirewall.modelServers.extraDefaultModelServers }}
+{{ toYaml .Values.riFirewall.modelServers.extraDefaultModelServers | indent 6 }}
+      {{- end }}
+      ## START MODEL SERVER VALUES
+      - name: prompt-injection-binary
+        # This should only be non-empty for local minikube servers
+        remoteModelServerAddress: {{ .Values.riFirewall.modelServers.promptInjectionBinary.remoteModelServerAddress }}
+        huggingface_config:
+          model_task: text-classification
+          repository: robustintelligence/pi-multilingual-modern-bert
+          revision: efa6db0545125c48655c3148900a3b54043bc9cb
+          tokenizer_kwargs_json: '{"padding": true, "max_length": 512, "truncation": true}'
+          {{- if .Values.riFirewall.modelServers.promptInjectionBinary.useCachedArtifact.enabled }}
+          downloaded_model_local_path: '/model_downloaded_artifact'
+          {{- end }}
+        classification_config:
+          prompt_injection:
+            default_sensitivity: RULE_SENSITIVITY_VERY_LOW
+            fixed_threshold: null
+            positive_class_index: 1
+            sensitivity_based_thresholds:
+              RULE_SENSITIVITY_HIGH: '0.31665274500846863'
+              RULE_SENSITIVITY_LOW: '0.7946746349334717'
+              RULE_SENSITIVITY_MEDIUM: '0.6132546067237854'
+              RULE_SENSITIVITY_VERY_HIGH: '0.13113172352313995'
+              RULE_SENSITIVITY_VERY_LOW: '0.8996548056602478'
+        resourceConfig:
+{{ toYaml .Values.riFirewall.modelServers.promptInjectionBinary.resources | indent 10 }}
+        {{- if .Values.riFirewall.modelServers.promptInjectionBinary.useCachedArtifact.enabled }}
+        modelServerImage: {{ .Values.riFirewall.modelServers.promptInjectionBinary.useCachedArtifact.dockerImageOverride.registry }}/{{ .Values.riFirewall.modelServers.promptInjectionBinary.useCachedArtifact.dockerImageOverride.name }}
+        {{- else }}
+        modelServerImage: {{ .Values.riFirewall.images.modelServerImage.registry}}/{{ .Values.riFirewall.images.modelServerImage.name }}
+        {{- end }}
+      - name: triton-prompt-injection-binary
+        # This should only be non-empty for local minikube servers
+        remoteModelServerAddress: {{ .Values.riFirewall.modelServers.tritonPromptInjectionBinary.remoteModelServerAddress }}
+        huggingface_config:
+          model_task: text-classification
+          repository: robustintelligence/pi-modern-bert
+          revision: 77e9349bde79ec2b725ad405e9bbcf401d736d93
+          tokenizer_kwargs_json: '{"padding": true, "max_length": 512, "truncation": true}'
+          {{- if .Values.riFirewall.modelServers.tritonPromptInjectionBinary.useCachedArtifact.enabled }}
+          downloaded_model_local_path: '/model_downloaded_artifact'
+          {{- end }}
+        classification_config:
+          prompt_injection:
+            default_sensitivity: RULE_SENSITIVITY_VERY_LOW
+            fixed_threshold: null
+            positive_class_index: 1
+            sensitivity_based_thresholds:
+              RULE_SENSITIVITY_HIGH: '0.31665274500846863'
+              RULE_SENSITIVITY_LOW: '0.7946746349334717'
+              RULE_SENSITIVITY_MEDIUM: '0.6132546067237854'
+              RULE_SENSITIVITY_VERY_HIGH: '0.13113172352313995'
+              RULE_SENSITIVITY_VERY_LOW: '0.8996548056602478'
+        resourceConfig:
+{{ toYaml .Values.riFirewall.modelServers.tritonPromptInjectionBinary.resources | indent 10 }}
+        {{- if .Values.riFirewall.modelServers.tritonPromptInjectionBinary.useCachedArtifact.enabled }}
+        modelServerImage: {{ .Values.riFirewall.modelServers.tritonPromptInjectionBinary.useCachedArtifact.dockerImageOverride.registry }}/{{ .Values.riFirewall.modelServers.tritonPromptInjectionBinary.useCachedArtifact.dockerImageOverride.name }}
+        {{- else }}
+        modelServerImage: {{ .Values.riFirewall.images.tritonPromptInjectionServerImage.registry}}/{{ .Values.riFirewall.images.tritonPromptInjectionServerImage.name }}
+        {{- end }}
+      - name: toxicity
+        # This should only be non-empty for local minikube servers
+        remoteModelServerAddress: {{ .Values.riFirewall.modelServers.toxicity.remoteModelServerAddress }}
+        huggingface_config:
+          model_task: text-classification
+          repository: robustintelligence/toxicity-2.10-snowflake-model
+          revision: 2028465ee1d876421bfe739996e1297dae320cd0
+          tokenizer_kwargs_json: '{"padding": true, "max_length": 512, "truncation": true}'
+        classification_config:
+          toxicity:
+            default_sensitivity: RULE_SENSITIVITY_LOW
+            fixed_threshold: null
+            positive_class_index: 1
+            sensitivity_based_thresholds:
+              RULE_SENSITIVITY_HIGH: '0.0805626'
+              RULE_SENSITIVITY_LOW: '0.7731783'
+              RULE_SENSITIVITY_MEDIUM: '0.3715801'
+              RULE_SENSITIVITY_VERY_HIGH: '0.0148664'
+              RULE_SENSITIVITY_VERY_LOW: '0.9318446'
+        resourceConfig:
+{{ toYaml .Values.riFirewall.modelServers.toxicity.resources | indent 10 }}
+        {{- if .Values.riFirewall.modelServers.toxicity.useCachedArtifact.enabled }}
+        modelServerImage: {{ .Values.riFirewall.modelServers.toxicity.useCachedArtifact.dockerImageOverride.registry }}/{{ .Values.riFirewall.modelServers.toxicity.useCachedArtifact.dockerImageOverride.name }}
+        {{- else }}
+        modelServerImage: {{ .Values.riFirewall.images.modelServerImage.registry}}/{{ .Values.riFirewall.images.modelServerImage.name }}
+        {{- end }}
+      - name: toxicity-intent-multi-label
+        # This should only be non-empty for local minikube servers
+        remoteModelServerAddress: {{ .Values.riFirewall.modelServers.toxicityIntentMultiLabel.remoteModelServerAddress }}
+        huggingface_config:
+          model_task: text-classification
+          repository: robustintelligence/multi-label-toxicity-electra
+          revision: a9ee2717192f3010a55da84c4b255e6a1e8d6617
+          tokenizer_kwargs_json: '{"padding": true, "max_length": 512, "truncation": true}'
+          {{- if .Values.riFirewall.modelServers.toxicityIntentMultiLabel.useCachedArtifact.enabled }}
+          downloaded_model_local_path: '/model_downloaded_artifact'
+          {{- end }}
+        classification_config:
+          hate_speech:
+            default_sensitivity: null
+            fixed_threshold: '0.78'
+            positive_class_index: 0
+            sensitivity_based_thresholds: null
+          harassment:
+            default_sensitivity: null
+            fixed_threshold: '0.75'
+            positive_class_index: 1
+            sensitivity_based_thresholds: null
+          profanity:
+            default_sensitivity: null
+            fixed_threshold: '0.77'
+            positive_class_index: 2
+            sensitivity_based_thresholds: null
+          sexual_content_and_exploitation:
+            default_sensitivity: null
+            fixed_threshold: '0.82'
+            positive_class_index: 3
+            sensitivity_based_thresholds: null
+          social_division_and_polarization:
+            default_sensitivity: null
+            fixed_threshold: '0.85'
+            positive_class_index: 4
+            sensitivity_based_thresholds: null
+          public_safety_threats_and_violence:
+            default_sensitivity: null
+            fixed_threshold: '0.84'
+            positive_class_index: 5
+            sensitivity_based_thresholds: null
+        resourceConfig:
+{{ toYaml .Values.riFirewall.modelServers.toxicityIntentMultiLabel.resources | indent 10 }}
+        {{- if .Values.riFirewall.modelServers.toxicityIntentMultiLabel.useCachedArtifact.enabled }}
+        modelServerImage: {{ .Values.riFirewall.modelServers.toxicityIntentMultiLabel.useCachedArtifact.dockerImageOverride.registry }}/{{ .Values.riFirewall.modelServers.toxicityIntentMultiLabel.useCachedArtifact.dockerImageOverride.name }}
+        {{- else }}
+        modelServerImage: {{ .Values.riFirewall.images.modelServerImage.registry}}/{{ .Values.riFirewall.images.modelServerImage.name }}
+        {{- end }}
+      {{- if .Values.riFirewall.enableNewModernBert }}
+      - name: prompt-injection-toxicity
+        remoteModelServerAddress: {{ .Values.riFirewall.modelServers.promptInjectionToxicity.remoteModelServerAddress }}
+        huggingface_config:
+          model_task: text-classification
+          repository: robustintelligence/pi-tox-modern-bert
+          revision: 71da1fa33b0bc4538ff8041dbf378bd72243bc1e
+          tokenizer_kwargs_json: '{"padding": true, "max_length": 512, "truncation": true}'
+          {{- if .Values.riFirewall.modelServers.promptInjectionToxicity.useCachedArtifact.enabled }}
+          downloaded_model_local_path: '/model_downloaded_artifact'
+          {{- end }}
+        classification_config:
+          harassment:
+            default_sensitivity: null
+            fixed_threshold: '0.1510277987'
+            positive_class_index: 0
+            sensitivity_based_thresholds: null
+          hate_speech:
+            default_sensitivity: null
+            fixed_threshold: '0.2790419757'
+            positive_class_index: 1
+            sensitivity_based_thresholds: null
+          profanity:
+            default_sensitivity: null
+            fixed_threshold: '0.3468730748'
+            positive_class_index: 2
+            sensitivity_based_thresholds: null
+          prompt_injection:
+            default_sensitivity: null
+            fixed_threshold: '0.9149009585'
+            positive_class_index: 3
+            sensitivity_based_thresholds: null
+          sexual_content_and_exploitation:
+            default_sensitivity: null
+            fixed_threshold: '0.8233283758'
+            positive_class_index: 4
+            sensitivity_based_thresholds: null
+          social_division_and_polarization:
+            default_sensitivity: null
+            fixed_threshold: '0.4976653755'
+            positive_class_index: 5
+            sensitivity_based_thresholds: null
+          public_safety_threats_and_violence:
+            default_sensitivity: null
+            fixed_threshold: '0.5078118443'
+            positive_class_index: 6
+            sensitivity_based_thresholds: null
+        resourceConfig:
+{{ toYaml .Values.riFirewall.modelServers.promptInjectionToxicity.resources | indent 10 }}
+        {{- if .Values.riFirewall.modelServers.promptInjectionToxicity.useCachedArtifact.enabled }}
+        modelServerImage: {{ .Values.riFirewall.modelServers.promptInjectionToxicity.useCachedArtifact.dockerImageOverride.registry }}/{{ .Values.riFirewall.modelServers.promptInjectionToxicity.useCachedArtifact.dockerImageOverride.name }}
+        {{- else }}
+        modelServerImage: {{ .Values.riFirewall.images.modelServerImage.registry}}/{{ .Values.riFirewall.images.modelServerImage.name }}
+        {{- end }}
+      - name: triton-toxicity-intent-multi-labels
+        # This should only be non-empty for local minikube servers
+        remoteModelServerAddress: {{ .Values.riFirewall.modelServers.tritonToxicityIntentMultiLabels.remoteModelServerAddress }}
+        huggingface_config:
+          model_task: text-classification
+          repository: robustintelligence/multi-label-toxicity-electra
+          revision: a9ee2717192f3010a55da84c4b255e6a1e8d6617
+          tokenizer_kwargs_json: '{"padding": true, "max_length": 512, "truncation": true}'
+          {{- if .Values.riFirewall.modelServers.tritonToxicityIntentMultiLabels.useCachedArtifact.enabled }}
+          downloaded_model_local_path: '/model_downloaded_artifact'
+          {{- end }}
+        classification_config:
+          hate_speech:
+            default_sensitivity: null
+            fixed_threshold: '0.78'
+            positive_class_index: 0
+            sensitivity_based_thresholds: null
+          harassment:
+            default_sensitivity: null
+            fixed_threshold: '0.75'
+            positive_class_index: 1
+            sensitivity_based_thresholds: null
+          profanity:
+            default_sensitivity: null
+            fixed_threshold: '0.77'
+            positive_class_index: 2
+            sensitivity_based_thresholds: null
+          sexual_content_and_exploitation:
+            default_sensitivity: null
+            fixed_threshold: '0.82'
+            positive_class_index: 3
+            sensitivity_based_thresholds: null
+          social_division_and_polarization:
+            default_sensitivity: null
+            fixed_threshold: '0.85'
+            positive_class_index: 4
+            sensitivity_based_thresholds: null
+          public_safety_threats_and_violence:
+            default_sensitivity: null
+            fixed_threshold: '0.84'
+            positive_class_index: 5
+            sensitivity_based_thresholds: null
+        resourceConfig:
+{{ toYaml .Values.riFirewall.modelServers.tritonToxicityIntentMultiLabels.resources | indent 10 }}
+        {{- if .Values.riFirewall.modelServers.tritonToxicityIntentMultiLabels.useCachedArtifact.enabled }}
+        modelServerImage: {{ .Values.riFirewall.modelServers.tritonToxicityIntentMultiLabels.useCachedArtifact.dockerImageOverride.registry }}/{{ .Values.riFirewall.modelServers.tritonToxicityIntentMultiLabels.useCachedArtifact.dockerImageOverride.name }}
+        {{- else }}
+        modelServerImage: {{ .Values.riFirewall.images.tritonToxicityIntentMultiLabelsServerImage.registry}}/{{ .Values.riFirewall.images.tritonToxicityIntentMultiLabelsServerImage.name }}
+        {{- end }}
+      - name: xlm-multilingual-toxicity
+        # This should only be non-empty for local minikube servers
+        remoteModelServerAddress: {{ .Values.riFirewall.modelServers.xlmMultilingualToxicity.remoteModelServerAddress }}
+        huggingface_config:
+          model_task: text-classification
+          repository: robustintelligence/xlm-multilingual-toxicity
+          revision: 8367d4e4dbcd7f0924b0dfee07d6ffd406b486d4
+          tokenizer_kwargs_json: '{"padding": true, "max_length": 512, "truncation": true}'
+          {{- if .Values.riFirewall.modelServers.xlmMultilingualToxicity.useCachedArtifact.enabled }}
+          downloaded_model_local_path: '/model_downloaded_artifact'
+          {{- end }}
+        classification_config:
+          toxicity:
+            default_sensitivity: RULE_SENSITIVITY_VERY_LOW
+            fixed_threshold: null
+            positive_class_index: 1
+            sensitivity_based_thresholds:
+              RULE_SENSITIVITY_HIGH: '0.05363178625702858'
+              RULE_SENSITIVITY_LOW: '0.9936581254005432'
+              RULE_SENSITIVITY_MEDIUM: '0.8403524160385132'
+              RULE_SENSITIVITY_VERY_HIGH: '0.004731132183223963'
+              RULE_SENSITIVITY_VERY_LOW: '0.997'
+        resourceConfig:
+{{ toYaml .Values.riFirewall.modelServers.xlmMultilingualToxicity.resources | indent 10 }}
+        {{- if .Values.riFirewall.modelServers.xlmMultilingualToxicity.useCachedArtifact.enabled }}
+        modelServerImage: {{ .Values.riFirewall.modelServers.xlmMultilingualToxicity.useCachedArtifact.dockerImageOverride.registry }}/{{ .Values.riFirewall.modelServers.xlmMultilingualToxicity.useCachedArtifact.dockerImageOverride.name }}
+        {{- else }}
+        modelServerImage: {{ .Values.riFirewall.images.modelServerImage.registry}}/{{ .Values.riFirewall.images.modelServerImage.name }}
+        {{- end }}
+      - name: xlm-multilingual-harmful
+        # This should only be non-empty for local minikube servers
+        remoteModelServerAddress: {{ .Values.riFirewall.modelServers.xlmMultilingualHarmful.remoteModelServerAddress }}
+        huggingface_config:
+          model_task: text-classification
+          repository: robustintelligence/xlm-multilingual-technique-only
+          revision: f7f62984a13c1d07e30640dc014c5225d4a414eb
+          tokenizer_kwargs_json: '{"padding": true, "max_length": 512, "truncation": true}'
+          {{- if .Values.riFirewall.modelServers.xlmMultilingualHarmful.useCachedArtifact.enabled }}
+          downloaded_model_local_path: '/model_downloaded_artifact'
+          {{- end }}
+        classification_config:
+          harmful:
+            default_sensitivity: RULE_SENSITIVITY_VERY_LOW
+            fixed_threshold: null
+            positive_class_index: 1
+            sensitivity_based_thresholds:
+              RULE_SENSITIVITY_HIGH: '0.98'
+              RULE_SENSITIVITY_LOW: '0.987'
+              RULE_SENSITIVITY_MEDIUM: '0.982'
+              RULE_SENSITIVITY_VERY_HIGH: '0.909313976764679'
+              RULE_SENSITIVITY_VERY_LOW: '0.99'
+        resourceConfig:
+{{ toYaml .Values.riFirewall.modelServers.xlmMultilingualHarmful.resources | indent 10 }}
+        {{- if .Values.riFirewall.modelServers.xlmMultilingualHarmful.useCachedArtifact.enabled }}
+        modelServerImage: {{ .Values.riFirewall.modelServers.xlmMultilingualHarmful.useCachedArtifact.dockerImageOverride.registry }}/{{ .Values.riFirewall.modelServers.xlmMultilingualHarmful.useCachedArtifact.dockerImageOverride.name }}
+        {{- else }}
+        modelServerImage: {{ .Values.riFirewall.images.modelServerImage.registry}}/{{ .Values.riFirewall.images.modelServerImage.name }}
+        {{- end }}
+      ## END MODEL SERVER VALUES
+    yaraServer:
+      rimeYaraGitRef: {{ .Values.riFirewall.hotfixYaraServer.ruleRepoRef }}
+      {{- if .Values.riFirewall.hotfixYaraServer.useEmbeddedYaraRules }}
+      image: {{ .Values.riFirewall.hotfixYaraServer.dockerImageOverride.registry}}/{{ .Values.riFirewall.hotfixYaraServer.dockerImageOverride.name }}
+      {{- else }}
+      image: {{ .Values.riFirewall.images.backendImage.registry}}/{{ .Values.riFirewall.images.backendImage.name }}
+      {{- end }}
+      useEmbeddedYaraRules: {{ .Values.riFirewall.hotfixYaraServer.useEmbeddedYaraRules }}
+  firewallInstances: |
+{{ toYaml .Values.riFirewall.firewallInstanceConfigs | indent 4 }}
