@@ -1,0 +1,86 @@
+commonAnnotations:
+  ad.datadoghq.com/tags: '{"user":"firewall-abx"}'
+  prometheus.io/scrape: 'true'
+  prometheus.io/port: '8080'
+
+secrets:
+  existingIntegrationSecretsName: validation-abx-secrets-terraform
+
+images:
+  modelServerImage:
+    name: "robustintelligencehq/firewall-model-server:2.14.3"
+    pullPolicy: "IfNotPresent"
+  firewallBackendImage:
+    name: "robustintelligencehq/firewall-backend:2.14.3"
+    pullPolicy: "IfNotPresent"
+
+modelServers:
+  promptInjectionMulticlass:
+    minReplicas: 2
+    resources:
+      requests:
+        gpu: 1
+      limits:
+        gpu: 1
+  promptInjectionBinary:
+    minReplicas: 2
+    resources:
+      requests:
+        gpu: 1
+      limits:
+        gpu: 1
+  toxicity:
+    minReplicas: 2
+    resources:
+      requests:
+        gpu: 1
+      limits:
+        gpu: 1
+  refusalHarmfulDetector:
+    useCachedArtifact:
+      enabled: true
+      dockerImageOverride:
+        registry: "docker.io"
+        name: "robustintelligencehq/firewall-model-server-refusal-harmful-detector:2.14.3"
+        pullPolicy: "IfNotPresent"
+    minReplicas: 2
+    resources:
+      requests:
+        gpu: 1
+      limits:
+        gpu: 1
+  factualInconsistency:
+    minReplicas: 2
+    resources:
+      requests:
+        gpu: 1
+      limits:
+        gpu: 1
+  toxicityInterpretability:
+    minReplicas: 2
+    resources:
+      requests:
+        gpu: 1
+      limits:
+        gpu: 1
+  factualInconsistencyJa:
+    minReplicas: 2
+    resources:
+      requests:
+        gpu: 1
+      limits:
+        gpu: 1
+  toxicityJa:
+    minReplicas: 2
+    resources:
+      requests:
+        gpu: 1
+      limits:
+        gpu: 1
+  languageDetection:
+    maxReplicas: 2
+    minReplicas: 2
+  textEmbedding:
+    minReplicas: 2
+  textEmbeddingJa:
+    minReplicas: 2

@@ -1,0 +1,38 @@
+aiValidation:
+  images:
+    imagePullSecrets:
+      - name: "ri-regcred"
+    aiValidationImage:
+      registry: "docker.io"
+      name: "robustintelligencehq/ai-validation:2.15.1"
+      pullPolicy: "Always"
+    detectionEngineImage:
+      registry: "docker.io"
+      name: "robustintelligencehq/ri-firewall:2.15.1"
+      pullPolicy: "Always"
+  generativeValidationService:
+    serviceAccount:
+      annotations: {
+        eks.amazonaws.com/role-arn: arn:aws:iam::422940237045:role/ai-defense-dev-ai-validation-generative-validation-irsa
+      }
+    env:
+      validationManagerGrpcEndpoint: "ai-defense-ai-validation-manager.preview.svc.cluster.local:5555"
+
+  metrics:
+    enabled: true
+    env_name: "preview"
+    otel_remote_backend_grpc_port: "4317"
+    cluster_name: "dev-ai-defence-us-west-2"
+    namespace: "preview-validation"
+    meter_name: "ai-validation-meter"
+
+env:
+  # -- Cluster name
+  CLUSTER_NAME: ""
+  # -- Cloud gateway gRPC endpoint
+  CLOUD_GATEWAY_GRPC_ENDPOINT: "preview.cloudgw.aidefense.aiteam.cisco.com:443"
+
+onpremGateway:
+  enabled: true
+  image:
+    tag: bbe5cac4
