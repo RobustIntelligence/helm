@@ -1,0 +1,82 @@
+# Common annotations added to all K8s resources
+commonAnnotations: {}
+# Common labels added to all K8s resources
+commonLabels: {}
+
+# -- Image specification for the RI detection resources.
+# @default -- (see individual values in `values.yaml`)
+images:
+  imagePullSecrets:
+    - name: ri-regcred
+  modelServerImage:
+    registry: "docker.io"
+    name: "robustintelligencehq/firewall-model-server:latest"
+    pullPolicy: "Always"
+  firewallBackendImage:
+    registry: "docker.io"
+    name: "robustintelligencehq/firewall-backend:latest"
+    pullPolicy: "Always"
+
+# -- Values for the internal RI K8 secret used by the detection resources.
+# @default -- (see individual values in `values`.yaml)
+secrets:
+  # If existingIntegrationSecretsName is set, the secret will not be created.
+  # Must have huggingfaceAPIKey key set.
+  existingIntegrationSecretsName: ""
+
+# -- `modelServers` K8s-level configurations
+# @default -- (see individual values in `values.yaml`)
+modelServers:   # Disable all the model servers except for those used in detection.
+  ## START MODEL SERVER VALUES
+  promptInjectionMulticlass:
+    enabled: false
+  promptInjectionBinary:
+    enabled: false
+  toxicityInterpretability:
+    enabled: false
+  factualInconsistency:
+    enabled: false
+  toxicity:
+    enabled: false
+  languageDetection:
+    enabled: false
+  textEmbedding:
+    enabled: false
+  factualInconsistencyJa:
+    enabled: false
+  textEmbeddingJa:
+    enabled: false
+  xlmMultilingualToxicity:
+    enabled: false
+  xlmMultilingualHarmful:
+    enabled: false
+  toxicityIntentMultiLabel:
+    enabled: false
+  refusalHarmfulDetector:
+    enabled: true
+    maxReplicas: 3
+    minReplicas: 1
+    # Settings for loading the model from an artifact cached in the Docker image
+    # instead of downloading it during server startup time.
+    useCachedArtifact:
+      enabled: true
+      dockerImageOverride:
+        registry: "docker.io"
+        name: "robustintelligencehq/firewall-model-server-refusal-harmful-detector:latest"
+        pullPolicy: "Always"
+    # Use an existing model server outside the cluster instead of spinning up a
+    # model server in this Helm deployment.
+    # Only enable this for local Minikube.
+    remoteModelServer:
+      enabled: false
+      address: ""
+    resources:
+      requests:
+        memory: "1800Mi"
+        cpu: "1000m"
+        gpu: 1
+      limits:
+        memory: "1800Mi"
+        cpu: "5000m"
+        gpu: 1
+  ## END MODEL SERVER VALUES

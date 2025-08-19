@@ -1,0 +1,11 @@
+{{- if .Values.riFirewall.operator.pdb.enabled }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "ri-firewall.fullname" . }}-{{ .Values.riFirewall.operator.name }}
+spec:
+  minAvailable: {{ .Values.riFirewall.operator.pdb.minAvailable }}
+  selector:
+    matchLabels:
+      app: {{ .Values.riFirewall.operator.name }}
+{{ end }}
