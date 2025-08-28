@@ -1,0 +1,12 @@
+{{- if and .Values.aiValidation.detectionServer.enabled .Values.aiValidation.detectionServer.pdb.enabled }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ .Values.aiValidation.detectionServer.name }}
+spec:
+  minAvailable: {{ .Values.aiValidation.detectionServer.pdb.minAvailable }}
+  selector:
+    matchLabels:
+      app: {{ .Values.aiValidation.detectionServer.name }}
+      {{- include "ai-validation.selectorLabels" . | nindent 6 }}
+{{ end }}

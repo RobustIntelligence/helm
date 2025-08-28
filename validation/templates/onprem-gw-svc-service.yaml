@@ -1,0 +1,20 @@
+{{- if .Values.onpremGateway.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.onpremGateway.name }}
+  labels:
+    {{- include "ai-defense-onpremises.labels" . | nindent 4 -}}
+    {{- toYaml .Values.onpremGateway.labels | nindent 4 }}
+spec:
+  selector:
+    {{- toYaml .Values.onpremGateway.labels | nindent 4 }}
+  ports:
+    - name: grpc
+      port: {{ .Values.onpremGateway.service.ports.grpc }}
+      targetPort: {{ .Values.onpremGateway.service.ports.grpc }}
+    - name: debug
+      port: {{ .Values.onpremGateway.service.ports.debug }}
+      targetPort: {{ .Values.onpremGateway.service.ports.debug }}
+  type: ClusterIP
+{{ end }}
