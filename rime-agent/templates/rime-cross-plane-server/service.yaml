@@ -1,0 +1,24 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "rime-agent.fullname" . }}-{{ .Values.rimeAgent.rimeCrossPlaneServer.name }}
+  labels:
+    {{- include "rime-agent.labels" . | nindent 4 }}
+    {{- with .Values.rimeAgent.rimeCrossPlaneServer.service.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  annotations:
+    {{- include "rime-agent.annotations" . | nindent 4 }}
+    {{- with .Values.rimeAgent.rimeCrossPlaneServer.service.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  type: {{ .Values.rimeAgent.rimeCrossPlaneServer.service.type }}
+  ports:
+    - port: {{ .Values.rimeAgent.rimeCrossPlaneServer.port }}
+      targetPort: {{ .Values.rimeAgent.rimeCrossPlaneServer.port }}
+      protocol: TCP
+      name: rime
+  selector:
+    app: {{ .Values.rimeAgent.rimeCrossPlaneServer.name }}
+    {{- include "rime-agent.selectorLabels" . | nindent 4 }}

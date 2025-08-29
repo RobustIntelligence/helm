@@ -1,0 +1,16 @@
+{{- define "component-otel-env-vars"}}
+- name: OTEL_NODE_IP
+  valueFrom:
+    fieldRef:
+      fieldPath: status.hostIP
+- name: OTEL_REMOTE_BACKEND_GRPC_PORT
+  value: {{ $.Root.Values.aiValidation.metrics.otel_remote_backend_grpc_port | quote }}
+- name: OTEL_HOST_NAME
+  value: {{ printf "%s-%s" ($.Root.Values.aiValidation.metrics.cluster_name | default "unknown-cluster") ($.Root.Values.aiValidation.metrics.namespace | default "unknown-namespace") }}
+- name: OTEL_ENV_NAME
+  value: {{ $.Root.Values.aiValidation.metrics.env_name }}
+- name: OTEL_METER_NAME
+  value: {{ $.Root.Values.aiValidation.metrics.meter_name }}
+- name: OTEL_SERVICE_NAME
+  value: {{ .ServiceKey.name }}
+{{- end }}
