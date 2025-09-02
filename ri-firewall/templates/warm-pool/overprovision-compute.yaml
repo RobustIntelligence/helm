@@ -1,0 +1,78 @@
+{{- if .Values.riFirewall.productionOptimizations.overprovisionComputeNode.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: overprovision-compute
+  labels:
+    {{- include "ri-firewall.labels" . | nindent 4 }}
+  annotations:
+    {{- include "ri-firewall.annotations" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      app: overprovision-compute
+  replicas: {{ .Values.riFirewall.productionOptimizations.overprovisionComputeNode.poolSize }}
+  template:
+    metadata:
+      labels:
+        app: overprovision-compute
+        {{- include "ri-firewall.labels" . | nindent 8 }}
+      annotations:
+        {{- include "ri-firewall.annotations" . | nindent 8 }}
+    spec:
+      priorityClassName: overprovisioning
+      {{- with .Values.riFirewall.images.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        # Container to pull and cache backend image.
+        - name: backend-resources
+          image: "{{ .Values.riFirewall.images.backendImage.registry}}/{{ .Values.riFirewall.images.backendImage.name }}"
+          imagePullPolicy: {{ .Values.riFirewall.images.backendImage.pullPolicy }}
+          resources:
+            {{- toYaml .Values.riFirewall.operator.firewallInstanceTemplate.deployment.proxyResources | nindent 12 }}
+          command: ["/bin/sh", "-c", "while true; do sleep 3600; done"]
+        # Container to pull and cache firewall server image.
+        - name: firewall-server-resources
+          image: "{{ .Values.riFirewall.images.firewallServerImage.registry}}/{{ .Values.riFirewall.images.firewallServerImage.name }}"
+          imagePullPolicy: "{{ .Values.riFirewall.images.firewallServerImage.pullPolicy }}"
+          resources:
+            {{- toYaml .Values.riFirewall.operator.firewallInstanceTemplate.deployment.serverResources | nindent 12 }}
+          command: ["/bin/sh", "-c", "while true; do sleep 3600; done"]
+      topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: "topology.kubernetes.io/zone"
+        whenUnsatisfiable: ScheduleAnyway
+        labelSelector:
+          matchLabels:
+            app: "overprovision-compute"
+      tolerations:
+        - effect: NoSchedule
+          key: dedicated
+          operator: Equal
+          value: dps
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: node_group
+                operator: In
+                values:
+                - dps
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  app: "overprovision-compute"
+              topologyKey: topology.kubernetes.io/zone
+            weight: 100
+          - podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  app: "overprovision-compute"
+              topologyKey: kubernetes.io/hostname
+            weight: 99
+{{- end }}
