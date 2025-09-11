@@ -1,0 +1,12 @@
+{{- if or .Values.riFirewall.productionOptimizations.overprovisionGPUNode.enabled .Values.riFirewall.productionOptimizations.overprovisionComputeNode.enabled }}
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: overprovisioning
+# Since default priority value for a Pod is 0, any pods with
+# overprovisioning PriorityClass will be the first to be
+# evicted when the cluster runs out of space.
+value: -1
+globalDefault: false
+description: 'Priority class used for overprovisioning.'
+{{- end }}
