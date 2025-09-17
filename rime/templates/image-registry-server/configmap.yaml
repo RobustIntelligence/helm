@@ -1,0 +1,14 @@
+{{- if .Values.rime.imageRegistryServer.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "rime.fullname" . }}-{{ .Values.rime.imageRegistryServer.name }}-conf
+data:
+  server.config: |
+{{ include "rime.serverArgs" . | indent 4 }}
+{{ include "rime.imageRegistryServer.serverArgs" . | indent 4 }}
+  image_builder_job_configmap.config: |
+{{ include "rime.imageRegistryServer.imageBuilderJobConfigMap" . | indent 4 }}
+  image_builder_job.config: |
+{{ include "rime.imageRegistryServer.imageBuilderJob" . | indent 4 }}
+{{- end }}

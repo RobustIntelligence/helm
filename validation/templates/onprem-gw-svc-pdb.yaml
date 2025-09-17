@@ -1,0 +1,16 @@
+{{- if .Values.onpremGateway.enabled }}
+{{- if .Values.onpremGateway.pdb.enabled }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ .Values.onpremGateway.name }}
+  labels:
+    {{- include "ai-defense-onpremises.labels" . | nindent 4 -}}
+    {{- toYaml .Values.onpremGateway.labels | nindent 4 }}
+spec:
+  minAvailable: {{ .Values.onpremGateway.pdb.minAvailable }}
+  selector:
+    matchLabels:
+      {{- toYaml .Values.onpremGateway.labels | nindent 6 }}
+{{ end }}
+{{ end }}
