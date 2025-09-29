@@ -1,0 +1,17 @@
+aiValidation:
+  images:
+    imagePullSecrets:
+      - name: "ri-regcred"
+    aiValidationImage:
+      registry: "docker.io"
+      name: "robustintelligencehq/ai-validation:2.11.0"
+      pullPolicy: "Always"
+    detectionEngineImage:
+      registry: "docker.io"
+      name: "robustintelligencehq/ri-firewall:2.11.0"
+      pullPolicy: "Always"
+  generativeValidationService:
+    serviceAccount:
+      annotations: {
+        eks.amazonaws.com/role-arn: arn:aws:iam::422940237045:role/ai-defense-dev-ai-validation-generative-validation-irsa
+      }
