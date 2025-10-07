@@ -1,0 +1,21 @@
+{{- if and .Values.rime.imageRegistryServer.enabled .Values.rime.imageRegistryServer.hpa.enabled }}
+apiVersion: {{ include "rime.hpa.apiVersion" . }}
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ include "rime.fullname" . }}-{{ .Values.rime.imageRegistryServer.name }}
+  labels:
+    app: {{ .Values.rime.imageRegistryServer.name }}
+    {{- include "rime.labels" . | nindent 4 }}
+    {{- with .Values.rime.imageRegistryServer.hpa.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ include "rime.fullname" . }}-{{ .Values.rime.imageRegistryServer.name }}
+  minReplicas: {{ .Values.rime.imageRegistryServer.hpa.minReplicas }}
+  maxReplicas: {{ .Values.rime.imageRegistryServer.hpa.maxReplicas }}
+  metrics:
+{{ toYaml .Values.rime.imageRegistryServer.hpa.metrics | indent 4 }}
+{{- end }}
