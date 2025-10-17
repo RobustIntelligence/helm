@@ -1,0 +1,474 @@
+# Config map that defines templates for Firewall instances.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "ri-firewall.fullname" . }}-{{ .Values.riFirewall.operator.name }}-conf
+data:
+  firewall-instance-configmap.config: |
+    apiVersion: v1
+    kind: ConfigMap
+    metadata:
+      # Controller will set the name based on the firewall instance name.
+      name: PLACEHOLDER
+    data:
+      system-conf.yaml: |
+        max_request_tokens: {{ .Values.riFirewall.firewallSystemConfig.maxRequestTokens }}
+        validate_response_visibility:
+        {{- with .Values.riFirewall.firewallSystemConfig.validateResponseVisibilitySettings.ruleEvalMetadataVisibility }}
+          rule_eval_metadata_visibility:
+            enable_stdout_logging: {{ .enableStdoutLogging }}
+            enable_api_response: {{ .enableApiResponse }}
+        {{- end }}
+        {{- with .Values.riFirewall.firewallSystemConfig.validateResponseVisibilitySettings.firewallRequestVisibility }}
+          firewall_request_visibility:
+            enable_stdout_logging: {{ .enableStdoutLogging }}
+            enable_api_response: {{ .enableApiResponse }}
+        {{- end }}
+        hotfix_yara_config:
+          enable_hotfix_yara: {{ .Values.riFirewall.firewallSystemConfig.enableHotfixYara }}
+          hotfix_yara_server_address: PLACEHOLDER
+        pii_analyzer_config:
+          enable_pii_analyzer: {{ .Values.riFirewall.piiAnalyzer.enabled }}
+          pii_analyzer_server_address: {{ .Values.riFirewall.piiAnalyzer.name }}-service:{{ .Values.riFirewall.piiAnalyzer.port }}
+      {{- if .Values.riFirewall.registerFirewallAgent.enabled }}
+        platform_address: "{{ .Values.riFirewall.registerFirewallAgent.platformAddress }}"
+        agent_id: "{{ .Values.riFirewall.registerFirewallAgent.agentID }}"
+      {{- end }}
+        require_yara_prefilter: {{ .Values.riFirewall.firewallSystemConfig.requireYaraPrefilter }}
+  firewall-instance-service.config: |
+    apiVersion: v1
+    kind: Service
+    metadata:
+      # Controller will set the name based on the firewall instance name.
+      name: PLACEHOLDER
+      labels:
+        {{- include "ri-firewall.labels" . | nindent 8 }}
+        {{- with .Values.riFirewall.operator.firewallInstanceTemplate.service.labels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      annotations:
+        {{- include "ri-firewall.annotations" . | nindent 8 }}
+        {{- with .Values.riFirewall.operator.firewallInstanceTemplate.service.annotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      type: {{ .Values.riFirewall.operator.firewallInstanceTemplate.service.type }}
+      ports:
+        - port: {{ .Values.riFirewall.operator.firewallInstanceTemplate.proxyPort }}
+          targetPort: {{ .Values.riFirewall.operator.firewallInstanceTemplate.proxyPort }}
+          protocol: TCP
+          name: fw-proxy
+      selector:
+        # Controller needs to fill in this value so the service matches pods
+        # for the firewall instance.
+        app: PLACEHOLDER
+  firewall-instance-deployment.config: |
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      # Controller will set the name based on the firewall instance name.
+      name: PLACEHOLDER
+      labels:
+        {{- include "ri-firewall.labels" . | nindent 8 }}
+        {{- with .Values.riFirewall.operator.firewallInstanceTemplate.deployment.labels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      annotations:
+        {{- include "ri-firewall.annotations" . | nindent 8 }}
+        {{- with .Values.riFirewall.operator.firewallInstanceTemplate.deployment.annotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      selector:
+        matchLabels:
+          # Each Deployment needs its own matchlabels so the firewall instance
+          # replica sets are independent.
+          app: PLACEHOLDER
+      replicas: {{ .Values.riFirewall.operator.firewallInstanceTemplate.deployment.replicaCount }}
+      template:
+        metadata:
+          labels:
+            # Each Deployment needs its own matchlabels so the firewall instance
+            # replica sets are independent.
+            app: PLACEHOLDER
+            service-type: "firewall-instance"
+            {{- include "ri-firewall.labels" . | nindent 12 }}
+            {{- with .Values.riFirewall.operator.firewallInstanceTemplate.deployment.labels }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          annotations:
+            checksum/system-config: {{ include (print $.Template.BasePath "/system-firewall-config.yaml") . | sha256sum }}
+            {{- include "ri-firewall.annotations" . | nindent 12 }}
+            {{- with .Values.riFirewall.operator.firewallInstanceTemplate.deployment.annotations }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+        spec:
+          {{- with .Values.riFirewall.images.imagePullSecrets }}
+          imagePullSecrets:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- if .Values.riFirewall.terminationGracePeriodSeconds.enabled }}
+          terminationGracePeriodSeconds: {{ .Values.riFirewall.terminationGracePeriodSeconds.seconds }}
+          {{- end }}
+          containers:
+            # gRPC-gateway is a sidecar container that proxies traffic from REST to gRPC.
+            - name: grpc-gateway-proxy
+              image: "{{ .Values.riFirewall.images.backendImage.registry}}/{{ .Values.riFirewall.images.backendImage.name }}"
+              imagePullPolicy: {{ .Values.riFirewall.images.backendImage.pullPolicy }}
+              ports:
+                - name: fw-proxy
+                  containerPort: {{ .Values.riFirewall.operator.firewallInstanceTemplate.proxyPort }}
+                  protocol: TCP
+              resources:
+                {{- toYaml .Values.riFirewall.operator.firewallInstanceTemplate.deployment.proxyResources | nindent 16 }}
+              command:
+                - "/ri/firewall"
+              args:
+                - "start-firewall-gateway-proxy"
+                - "--proxy-addr=:{{ .Values.riFirewall.operator.firewallInstanceTemplate.proxyPort }}"
+                # Use a local port of the other container.
+                # Containers can use the local network to communicate with each other.
+                - "--backend-addr=:{{ .Values.riFirewall.operator.firewallInstanceTemplate.firewallServerLocalPort }}"
+              startupProbe:
+                httpGet:
+                  path: /healthz?service=ri.api.generativefirewall.Firewall
+                  port: {{ .Values.riFirewall.operator.firewallInstanceTemplate.proxyPort }}
+                  httpHeaders:
+                    # There is no auth needed for this check, but the server
+                    # expects this key to be present in the request headers.
+                    - name: X-Firewall-Auth-Token
+                      value: test
+                failureThreshold: 20
+                periodSeconds: 5
+              readinessProbe:
+                httpGet:
+                  path: /healthz?service=ri.api.generativefirewall.Firewall
+                  port: {{ .Values.riFirewall.operator.firewallInstanceTemplate.proxyPort }}
+                  httpHeaders:
+                    # There is no auth needed for this check, but the server
+                    # expects this key to be present in the request headers.
+                  - name: X-Firewall-Auth-Token
+                    value: test
+                periodSeconds: 5
+              {{- if .Values.riFirewall.lifecyclePreStop.enabled }}
+              lifecycle:
+                preStop:
+                  exec:
+                    command:
+                    - /bin/sh
+                    - -c
+                    - sleep {{ .Values.riFirewall.lifecyclePreStop.sleepSeconds }}
+              {{- end }}
+            - name: firewall-server
+              image: "{{ .Values.riFirewall.images.firewallServerImage.registry}}/{{ .Values.riFirewall.images.firewallServerImage.name }}"
+              imagePullPolicy: "{{ .Values.riFirewall.images.firewallServerImage.pullPolicy }}"
+              readinessProbe:
+                exec:
+                  command: [ "/bin/grpc_health_probe", "-addr=:{{ .Values.riFirewall.operator.firewallInstanceTemplate.firewallServerLocalPort }}" ]
+                periodSeconds: 5
+              startupProbe:
+                exec:
+                  command: [ "/bin/grpc_health_probe", "-addr=:{{ .Values.riFirewall.operator.firewallInstanceTemplate.firewallServerLocalPort }}" ]
+                failureThreshold: 60
+                periodSeconds: 5
+              env:
+                - name: RI_SERVICE_NAME
+                  value: firewall-server
+                # Purely optional key for local firewall deployments to allow access to remote
+                # model servers.
+                - name: REMOTE_FIREWALL_AUTH_TOKEN
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ .Values.riFirewall.secrets.existingIntegrationSecretsName }}
+                      key: remoteFirewallAuthToken
+                      optional: true
+                {{- include "component-otel-env-vars-runtime" (dict "ServiceKey" (dict "name" "firewall-server") "Root" .) | indent 16 }}
+                {{- if .Values.riFirewall.registerFirewallAgent.enabled }}
+                - name: RIME_CROSS_SERVICE_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ include "ri-firewall.generatedSecretsName" . }}
+                      key: crossServiceKey
+                {{- end}}
+              resources:
+                {{- toYaml .Values.riFirewall.operator.firewallInstanceTemplate.deployment.serverResources | nindent 16 }}
+              command:
+                - "ri-firewall"
+              args:
+                - "--port={{ .Values.riFirewall.operator.firewallInstanceTemplate.firewallServerLocalPort }}"
+                # This relies on the controller mounting the connection map and
+                # system config with this mount directory and these names.
+                - "--model-connection-config-path=/config/connection-map.yaml"
+                - "--yaml-system-config-path=/config/system-conf.yaml"
+                {{- if .Values.riFirewall.operator.piiParallelization.enabled }}
+                - "--enable-pii-parallelization"
+                - "--pii-parallelization-chunk-size={{ .Values.riFirewall.operator.piiParallelization.chunkSize }}"
+                {{- end }}
+                {{- if .Values.riFirewall.enableNewModernBert }}
+                - "--use-new-modernbert"
+                {{- end }}
+              {{- if .Values.riFirewall.lifecyclePreStop.enabled }}
+              lifecycle:
+                preStop:
+                  exec:
+                    command:
+                    - /bin/sh
+                    - -c
+                    - sleep {{ .Values.riFirewall.lifecyclePreStop.sleepSeconds }}
+              {{- end }}
+          {{- with .Values.riFirewall.operator.firewallInstanceTemplate.deployment.tolerations }}
+          tolerations:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.riFirewall.operator.firewallInstanceTemplate.deployment.affinity }}
+          affinity:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.riFirewall.operator.firewallInstanceTemplate.deployment.topologySpreadConstraints }}
+          topologySpreadConstraints:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+  firewall-instance-ingress.config: |
+    apiVersion: networking.k8s.io/v1
+    kind: Ingress
+    metadata:
+      name: {{ include "ri-firewall.fullname" . }}-firewall-instance-ingress
+      namespace: '{{.Release.Namespace}}'
+      labels:
+        {{- include "ri-firewall.labels" . | nindent 8 }}
+        {{- with .Values.riFirewall.ingress.labels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      annotations:
+        {{- include "ri-firewall.annotations" . | nindent 8 }}
+        nginx.ingress.kubernetes.io/auth-url: http://{{ include "ri-firewall.fullname" . }}-{{ .Values.riFirewall.authServer.name }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.riFirewall.authServer.port}}/v1/auth/validate
+        nginx.ingress.kubernetes.io/auth-method: POST
+        {{- with .Values.riFirewall.ingress.annotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      ingressClassName: {{ .Values.riFirewall.ingress.ingressClassName }}
+      # Controller will add rules when creating the ingress.
+  snowflake-ingress.config: |
+    apiVersion: networking.k8s.io/v1
+    kind: Ingress
+    metadata:
+      name: firewall-internal-testing-ingress
+    spec:
+      ingressClassName: {{ .Values.riFirewall.operator.guardrailSnowflakeIngress.ingressClassName }}
+      # Controller will add rules when creating the ingress.
+  firewall-instance-hpa.config: |
+    apiVersion: autoscaling/v2
+    kind: HorizontalPodAutoscaler
+    metadata:
+      name: PLACEHOLDER
+      labels:
+        {{- include "ri-firewall.labels" . | nindent 8 }}
+        {{- with .Values.riFirewall.operator.firewallInstanceTemplate.hpa.labels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      annotations:
+        {{- include "ri-firewall.annotations" . | nindent 8 }}
+        {{- with .Values.riFirewall.operator.firewallInstanceTemplate.hpa.annotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      scaleTargetRef:
+        apiVersion: apps/v1
+        kind: Deployment
+        name: PLACEHOLDER
+      minReplicas: {{ .Values.riFirewall.operator.firewallInstanceTemplate.hpa.minReplicas }}
+      maxReplicas: {{ .Values.riFirewall.operator.firewallInstanceTemplate.hpa.maxReplicas }}
+      metrics:
+{{ toYaml .Values.riFirewall.operator.firewallInstanceTemplate.hpa.metrics | indent 8 }}
+  yara-server.config: |
+    apiVersion: fw.rbst.io/v1
+    kind: YaraServer
+    metadata:
+      # Controller will set the name based on the firewall instance name.
+      name: PLACEHOLDER
+    spec:
+      versionConfig:
+        patternRepoRef: PLACEHOLDER
+  inference-service.config: |
+    apiVersion: serving.kserve.io/v1beta1
+    kind: InferenceService
+    metadata:
+      # Controller will set the name based on the firewall instance name.
+      name: PLACEHOLDER
+      labels:
+        service-type: "model-server"
+    spec:
+      predictor:
+        labels:
+          model-server-type: PLACEHOLDER
+        {{- with .Values.riFirewall.images.imagePullSecrets }}
+        imagePullSecrets:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+        securityContext:
+          runAsUser: 1000
+          runAsGroup: 1000
+          fsGroup: 1000
+        {{- if .Values.riFirewall.enableHybridDeployment }}
+        serviceAccountName: rde-operator
+         {{- end }}
+        containers:
+          - name: model-server
+            image: PLACEHOLDER
+            imagePullPolicy: "IfNotPresent"
+            env:
+              - name: HUGGINGFACE_API_KEY
+                valueFrom:
+                  secretKeyRef:
+                    name: {{ .Values.riFirewall.secrets.existingIntegrationSecretsName }}
+                    key: huggingfaceAPIKey
+            ports:
+              - name: rest
+                protocol: TCP
+                containerPort: 8080
+            command:
+              - "run_server"
+            args:
+              - "--model-config-path=/model_server/model-settings.json"
+              - "--cache-dir=/model_cache"
+            startupProbe:
+              httpGet:
+                path: PLACEHOLDER
+                port: 8080
+              failureThreshold: 20
+              periodSeconds: 5
+            readinessProbe:
+              httpGet:
+                path: PLACEHOLDER
+                port: 8080
+              periodSeconds: 5
+            resources:
+              requests:
+                memory: 3300Mi
+                cpu: 1000m
+              limits:
+                memory: 3300Mi
+                cpu: 1000m
+            volumeMounts:
+            - name: model-settings-config
+              mountPath: "/model_server"
+              readOnly: true
+            - name: model-cache
+              mountPath: "/model_cache"
+              readOnly: false
+        volumes:
+          - name: model-settings-config
+            configMap:
+              name: PLACEHOLDER
+              items:
+                - key: "model-settings.json"
+                  path: "model-settings.json"
+          - name: model-cache
+            emptyDir: { }
+        {{- with .Values.riFirewall.modelServers.deployment.tolerations }}
+        tolerations:
+          {{- toYaml . | nindent 12 }}
+        {{- end }}
+        {{- with .Values.riFirewall.modelServers.deployment.affinity }}
+        affinity:
+          {{- toYaml . | nindent 12 }}
+        {{- end }}
+        {{- with .Values.riFirewall.modelServers.deployment.topologySpreadConstraints }}
+        topologySpreadConstraints:
+          {{- toYaml . | nindent 12 }}
+        {{- end }}
+  triton-inference-service.config: |
+    apiVersion: serving.kserve.io/v1beta1
+    kind: InferenceService
+    metadata:
+      name: triton-inference-service
+      labels:
+        service-type: "model-server"
+    spec:
+      predictor:
+        labels:
+          model-server-type: triton
+        imagePullSecrets:
+          - name: ri-regcred
+        containers:
+          - name: triton-inference-server
+            image: PLACEHOLDER
+            imagePullPolicy: "IfNotPresent"
+            ports:
+              - name: http
+                protocol: TCP
+                containerPort: 8080
+              - name: grpc
+                protocol: TCP
+                containerPort: 8001
+              - name: metrics
+                protocol: TCP
+                containerPort: 8002
+            command:
+              - "tritonserver"
+            args:
+              - "--model-repository=/models"
+              - "--model-control-mode=poll"
+              - "--http-port=8080"
+            startupProbe:
+              # https://github.com/triton-inference-server/server/blob/main/deploy/k8s-onprem/templates/deployment.yaml#L100
+              httpGet:
+                path: /v2/health/ready
+                port: 8080
+              periodSeconds: 10
+              failureThreshold: 30  # 30 * 10s = 5 minutes max startup time
+            readinessProbe:
+              httpGet:
+                path: /v2/health/ready
+                port: 8080
+              initialDelaySeconds: 5
+              periodSeconds: 5
+              failureThreshold: 3
+            resources:
+              requests:
+                cpu: "1"
+                memory: "6Gi"
+              limits:
+                cpu: "5"
+                memory: "6Gi"
+            volumeMounts:
+            - name: model-settings-config
+              mountPath: "/home/model_server/model-settings.json"
+              subPath: "model-settings.json"
+              readOnly: true
+        volumes:
+          - name: model-settings-config
+            configMap:
+              name: PLACEHOLDER
+              items:
+                - key: "model-settings.json"
+                  path: "model-settings.json"
+        {{- with .Values.riFirewall.modelServers.deployment.tolerations }}
+        tolerations:
+          {{- toYaml . | nindent 12 }}
+        {{- end }}
+        {{- with .Values.riFirewall.modelServers.deployment.affinity }}
+        affinity:
+          {{- toYaml . | nindent 12 }}
+        {{- end }}
+        {{- with .Values.riFirewall.modelServers.deployment.topologySpreadConstraints }}
+        topologySpreadConstraints:
+          {{- toYaml . | nindent 12 }}
+        {{- end }}
+  inference-service-pdb.config: |
+    apiVersion: policy/v1
+    kind: PodDisruptionBudget
+    metadata:
+      name: PLACEHOLDER
+    spec:
+      minAvailable: {{ .Values.riFirewall.modelServers.pdb.minAvailable }}
+      selector:
+        matchLabels:
+          model-server-type: PLACEHOLDER
+  model-settings-configmap.config: |
+    apiVersion: v1
+    kind: ConfigMap
+    metadata:
+      # Controller will set the name based on the model name.
+      name: PLACEHOLDER

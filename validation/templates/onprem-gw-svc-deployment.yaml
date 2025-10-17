@@ -1,0 +1,90 @@
+{{- if .Values.onpremGateway.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ai-defense-onprem-gateway
+  labels:
+    {{- include "ai-defense-onpremises.labels" . | nindent 4 -}}
+    {{- toYaml .Values.onpremGateway.labels | nindent 4 }}
+spec:
+  replicas: {{ .Values.onpremGateway.replicaCount }}
+  selector:
+    matchLabels:
+      {{- toYaml .Values.onpremGateway.labels | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- toYaml .Values.onpremGateway.labels | nindent 8 }}
+    spec:
+      {{- with .Values.onpremGateway.topologySpreadConstraints }}
+      topologySpreadConstraints:
+      {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.onpremGateway.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: ai-defense-onprem-gateway
+          image: "{{ .Values.image.registry }}/{{ .Values.image.repository }}/{{ .Values.onpremGateway.image.service }}:{{ .Values.onpremGateway.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.onpremGateway.image.pullPolicy | default .Values.image.pullPolicy }}
+          env:
+            - name: CLOUD_GATEWAY_GRPC_ENDPOINT
+              value: {{ .Values.env.CLOUD_GATEWAY_GRPC_ENDPOINT }}
+            - name: LOG_LEVEL
+              value: {{ .Values.onpremGateway.env.LOG_LEVEL | quote }}
+            - name: OTEL_TRACING_ENABLED
+              value: {{ .Values.onpremGateway.otel.TRACING_ENABLED | quote }}
+            - name: ONPREM_VERSION
+              value: {{ .Values.onpremGateway.env.ONPREM_VERSION | quote }}
+            - name: SERVICE_CONFIG_PATH
+              value: "/etc/config/onprem-gw-service-config.yaml"
+            - name: RETRY_CONN_BASE_DELAY_SEC
+              value: {{ .Values.onpremGateway.env.RETRY_CONN_BASE_DELAY_SEC | quote }}
+            - name: RETRY_CONN_MAX_DELAY_SEC
+              value: {{ .Values.onpremGateway.env.RETRY_CONN_MAX_DELAY_SEC | quote }}
+            - name: KEEPALIVE_TIME_SEC
+              value: {{ .Values.onpremGateway.env.KEEPALIVE_TIME_SEC | quote }}
+            - name: KEEPALIVE_TIMEOUT_SEC
+              value: {{ .Values.onpremGateway.env.KEEPALIVE_TIMEOUT_SEC | quote }}
+            - name: KEEPALIVE_PERMIT_WITHOUT_STREAM
+              value: {{ .Values.onpremGateway.env.KEEPALIVE_PERMIT_WITHOUT_STREAM | quote }}
+            - name: WORKER_POOL_SIZE
+              value: {{ .Values.onpremGateway.env.WORKER_POOL_SIZE | quote }}
+            - name: API_KEY_SECRET_NAME
+              value: {{ .Values.hybridDeploymentApiKeySecret.name | quote }}
+            - name: API_KEY_SECRET_KEY
+              value: {{ .Values.onpremGateway.env.API_KEY_SECRET_KEY | quote }}
+            - name: API_KEY_SECRET_NAMESPACE
+              value: {{ .Release.Namespace }}
+          ports:
+            - containerPort: {{ .Values.onpremGateway.service.ports.grpc }}
+            - containerPort: {{ .Values.onpremGateway.service.ports.debug }}
+          livenessProbe:
+            exec:
+              command: ["/bin/grpc_health_probe", "-addr=:5555", "-service=liveness"]
+            initialDelaySeconds: {{ .Values.onpremGateway.service.health.livenessProbe.initialDelaySeconds }}
+          readinessProbe:
+            exec:
+              command: ["/bin/grpc_health_probe", "-addr=:5555", "-service=readiness"]
+            initialDelaySeconds: {{ .Values.onpremGateway.service.health.readinessProbe.initialDelaySeconds }}
+          volumeMounts:
+            - name: endpoints-config-volume
+              mountPath: /etc/config
+              readOnly: true
+          resources:
+            requests:
+              memory: {{ .Values.onpremGateway.resources.requests.memory }}
+              cpu: {{ .Values.onpremGateway.resources.requests.cpu }}
+            limits:
+              memory: {{ .Values.onpremGateway.resources.limits.memory }}
+      volumes:
+        - name: endpoints-config-volume
+          configMap:
+            name: onprem-gw-service-config
+      serviceAccountName: {{  .Values.onpremGateway.serviceAccount.name }}
+      imagePullSecrets:
+        {{- range .Values.image.imagePullSecrets }}
+        - name: {{ .name }}
+        {{- end }}
+{{ end }}
