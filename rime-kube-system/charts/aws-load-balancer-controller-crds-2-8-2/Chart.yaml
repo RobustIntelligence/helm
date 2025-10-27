@@ -1,0 +1,14 @@
+apiVersion: v2
+name: aws-load-balancer-crds-2-8-2
+description: A Helm chart with CRDs for AWS Load Balancer 2.8.2 with RI Platform's kube-system resources
+type: application
+# chart version
+version: 0.0.1
+
+# This is the version of the aws-load-balancer that these CRDs are packaged for
+appVersion: "2.8.2"
+
+# Technically, these CRDs only require Kubernetes v1.16 or above.
+# However, Kubernetes upstream has end-of-lifed Kubernetes 1.24 as of July 28th, 2023.
+# Compatible versions of kubernetes.
+kubeVersion: ">=1.24.0-0"
