@@ -1,0 +1,23 @@
+{{- if and .Values.riFirewall.piiAnalyzer.enabled .Values.riFirewall.piiAnalyzer.hpa.enabled }}
+apiVersion: {{ include "ri-firewall.hpa.apiVersion" . }}
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ .Values.riFirewall.piiAnalyzer.name }}-hpa
+  {{- with .Values.riFirewall.piiAnalyzer.hpa.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with .Values.riFirewall.piiAnalyzer.hpa.labels }}
+  labels:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ .Values.riFirewall.piiAnalyzer.name }}-deployment
+  minReplicas: {{ .Values.riFirewall.piiAnalyzer.hpa.minReplicas }}
+  maxReplicas: {{ .Values.riFirewall.piiAnalyzer.hpa.maxReplicas }}
+  metrics:
+    {{- toYaml .Values.riFirewall.piiAnalyzer.hpa.metrics | nindent 4 }}
+{{- end }}
