@@ -1,0 +1,31 @@
+{{- if .Values.riFirewall.piiAnalyzer.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.riFirewall.piiAnalyzer.name }}-service
+  labels:
+    {{- with .Values.riFirewall.piiAnalyzer.service.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  annotations:
+    {{- include "ri-firewall.annotations" . | nindent 4 }}
+    {{- with .Values.riFirewall.piiAnalyzer.service.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  type: {{ .Values.riFirewall.piiAnalyzer.service.type }}
+  {{- if .Values.riFirewall.piiAnalyzer.service.headless }}
+  clusterIP: None
+  {{- end }}
+  ports:
+    - port: {{ .Values.riFirewall.piiAnalyzer.port }}
+      targetPort: {{ .Values.riFirewall.piiAnalyzer.port }}
+      protocol: TCP
+      name: grpc
+    - port: {{ .Values.riFirewall.piiAnalyzer.restPort }}
+      targetPort: {{ .Values.riFirewall.piiAnalyzer.restPort }}
+      protocol: TCP
+      name: http
+  selector:
+    app: {{ .Values.riFirewall.piiAnalyzer.name }}
+{{- end }}
