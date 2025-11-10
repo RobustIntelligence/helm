@@ -1,0 +1,30 @@
+commonAnnotations:
+  ad.datadoghq.com/tags: '{"user":"firewall-abx"}'
+  prometheus.io/scrape: 'true'
+  prometheus.io/port: '8080'
+
+secrets:
+  existingIntegrationSecretsName: validation-abx-secrets-terraform
+
+images:
+  modelServerImage:
+    name: "robustintelligencehq/firewall-model-server:2.15.1"
+    pullPolicy: "IfNotPresent"
+  firewallBackendImage:
+    name: "robustintelligencehq/firewall-backend:2.15.1"
+    pullPolicy: "IfNotPresent"
+
+modelServers:
+  refusalHarmfulDetector:
+    useCachedArtifact:
+      enabled: true
+      dockerImageOverride:
+        registry: "docker.io"
+        name: "robustintelligencehq/firewall-model-server-refusal-harmful-detector:2.15.1"
+        pullPolicy: "IfNotPresent"
+    minReplicas: 2
+    resources:
+      requests:
+        gpu: 1
+      limits:
+        gpu: 1
