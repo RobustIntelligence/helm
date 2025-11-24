@@ -1,0 +1,17 @@
+{{- if eq .Values.rime.internalWorkerJobs.existingConfigSecretName "" }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "rime.fullname" . }}-worker-conf
+data:
+  worker.config: |
+{{ include "rime.serverArgs" . | indent 4 }}
+    internalAgentInitConfig:
+    {{- if .Values.rime.internalAgent.enabled }}
+      agentID: "{{ .Values.rime.internalAgent.agentID }}"
+    {{- end }}
+    internalFirewallAgentInitConfig:
+    {{- if .Values.rime.internalFirewallAgent.enabled }}
+      agentID: "{{ .Values.rime.internalFirewallAgent.agentID }}"
+    {{- end }}
+{{- end }}
