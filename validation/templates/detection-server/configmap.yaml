@@ -1,0 +1,9 @@
+{{- if .Values.aiValidation.detectionServer.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.aiValidation.detectionServer.name }}-system-config
+data:
+  systemConfig: |
+    yara_server_address: ""
+{{- end }}
