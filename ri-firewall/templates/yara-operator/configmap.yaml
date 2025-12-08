@@ -1,0 +1,152 @@
+# Config map that defines templates for YARA Servers.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "ri-firewall.name" . }}-{{ .Values.riFirewall.yaraOperator.name }}-conf
+data:
+  yara-server-configmap.config: |-
+    apiVersion: v1
+    kind: ConfigMap
+    metadata:
+      # Controller will set the name based on the YARA server name.
+      name: PLACEHOLDER
+    data:
+      server.config: |
+{{ include "ri-firewall.serverArgs" . | indent 8 }}
+        yaraServer:
+          autoUpdateEnabled: false
+          yaraRuleRepoRef: PLACEHOLDER
+          storageDir: "/yara"
+          useEmbeddedYaraRules: false
+  yara-server-service.config: |
+    apiVersion: v1
+    kind: Service
+    metadata:
+      # Controller will set the name based on the YARA server name.
+      name: PLACEHOLDER
+      labels:
+        {{- with .Values.riFirewall.hotfixYaraServer.service.labels }}
+        {{- toYaml . | nindent 12 }}
+        {{- end }}
+      annotations:
+        {{- include "ri-firewall.annotations" . | nindent 8 }}
+        {{- with .Values.riFirewall.hotfixYaraServer.service.annotations }}
+        {{- toYaml . | nindent 12 }}
+        {{- end }}
+    spec:
+      type: {{ .Values.riFirewall.hotfixYaraServer.service.type }}
+      ports:
+        - port: {{ .Values.riFirewall.hotfixYaraServer.port }}
+          targetPort: {{ .Values.riFirewall.hotfixYaraServer.port }}
+          protocol: TCP
+          name: yara
+      selector:
+        # Controller needs to fill in this value so the service matches pods
+        # for the YARA Server.
+        app: PLACEHOLDER
+  yara-server-deployment.config: |
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      # Controller will set the name based on the YARA server name.
+      name: PLACEHOLDER
+      labels:
+        app: {{ .Values.riFirewall.hotfixYaraServer.name }}
+        {{- with .Values.riFirewall.hotfixYaraServer.deployment.labels }}
+        {{- toYaml . | nindent 12 }}
+        {{- end }}
+      annotations:
+        {{- include "ri-firewall.annotations" . | nindent 8 }}
+        {{- with .Values.riFirewall.hotfixYaraServer.deployment.annotations }}
+        {{- toYaml . | nindent 12 }}
+        {{- end }}
+    spec:
+      selector:
+        matchLabels:
+          # Each Deployment needs its own matchlabels so the YARA server
+          # replica sets are independent.
+          app: PLACEHOLDER
+      replicas: {{ .Values.riFirewall.hotfixYaraServer.deployment.replicaCount }}
+      template:
+        metadata:
+          labels:
+            # Each Deployment needs its own matchlabels so the YARA server
+            # replica sets are independent.
+            app: PLACEHOLDER
+            service-type: "yara-server"
+            {{- with .Values.riFirewall.hotfixYaraServer.deployment.labels }}
+            {{- toYaml . | nindent 16 }}
+            {{- end }}
+          annotations:
+            {{- include "ri-firewall.annotations" . | nindent 12 }}
+            {{- with .Values.riFirewall.hotfixYaraServer.deployment.annotations }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+        spec:
+          {{- with .Values.riFirewall.images.imagePullSecrets }}
+          imagePullSecrets:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          containers:
+            - name: {{ .Values.riFirewall.hotfixYaraServer.name }}
+              # Controller will set the image based on the YARA server resource spec.
+              image: PLACEHOLDER
+              imagePullPolicy: {{ .Values.riFirewall.images.backendImage.pullPolicy }}
+              ports:
+                - name: yara
+                  containerPort: {{ .Values.riFirewall.hotfixYaraServer.port }}
+                  protocol: TCP
+              livenessProbe:
+                exec:
+                  command: [ "/bin/grpc_health_probe", "-addr=:{{ .Values.riFirewall.hotfixYaraServer.port }}" ]
+                periodSeconds: 5
+              readinessProbe:
+                exec:
+                  command: [ "/bin/grpc_health_probe", "-addr=:{{ .Values.riFirewall.hotfixYaraServer.port }}" ]
+                periodSeconds: 5
+              startupProbe:
+                exec:
+                  command: [ "/bin/grpc_health_probe", "-addr=:{{ .Values.riFirewall.hotfixYaraServer.port }}" ]
+                failureThreshold: 60
+                periodSeconds: 5
+              env:
+                # These GH environment variables are used for authenticating as
+                # a Github app to download snapshots from the rime-yara repo.
+                - name: GH_INSTALLATION_ID # The installation ID for the RI Github App
+                  value: "{{ .Values.riFirewall.hotfixYaraServer.installationID | default "53172568" }}" # Defaults to YARA-Auth-App installation ID
+                - name: GH_APP_ID # The app ID for the RI Github App
+                  value: "{{ .Values.riFirewall.hotfixYaraServer.appID | default "954157" }}" # Defaults to YARA-Auth-App app ID
+                - name: GH_PRIVATE_KEY_PEM # The certificate for the RI Github App
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ .Values.riFirewall.secrets.existingIntegrationSecretsName }}
+                      key: yaraGithubAppPem
+                - name: RI_SERVICE_NAME
+                  value: {{ .Values.riFirewall.hotfixYaraServer.name }}
+              resources:
+                {{- toYaml .Values.riFirewall.hotfixYaraServer.deployment.resources | nindent 16 }}
+              command:
+                - "/ri/firewall"
+              args:
+                - "start-yara-server"
+                - "--port={{ .Values.riFirewall.hotfixYaraServer.port }}"
+                - "--server-config-path=/config/server.config"
+              volumeMounts:
+                - name: {{ include "ri-firewall.name" . }}-{{ .Values.riFirewall.hotfixYaraServer.name }}-ephemeral-storage
+                  mountPath: "/yara"
+          volumes:
+            # Volumes are defined at the Pod level, then mounted into containers within that Pod
+            - name: {{ include "ri-firewall.name" . }}-{{ .Values.riFirewall.hotfixYaraServer.name }}-ephemeral-storage
+              emptyDir: {}
+          {{- with .Values.riFirewall.yaraOperator.deployment.tolerations }}
+          tolerations:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.riFirewall.yaraOperator.deployment.affinity }}
+          affinity:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.riFirewall.yaraOperator.deployment.topologySpreadConstraints }}
+          topologySpreadConstraints:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
